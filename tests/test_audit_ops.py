@@ -106,7 +106,13 @@ def test_b13_source_zip_preserves_postgres_tls_entrypoint(tmp_path):
     for path in ROOT.iterdir():
         if path.is_file() and path.suffix.lower() not in {'.db', '.sqlite', '.sqlite3'} and not path.name.startswith('.env'):
             shutil.copyfile(path, checkout/path.name)
-    shutil.copyfile(ROOT/'.env.example', checkout/'.env.example')
+    env_example = checkout/'.env.example'
+    shutil.copyfile(ROOT/'.env.example', env_example)
+    if os.name == 'nt':
+        # Dotfiles are hidden on Linux; reproduce that provider behavior on Windows.
+        subprocess.run(['attrib', '+H', str(env_example)], check=True, capture_output=True, text=True)
+    (checkout/'.env').write_text('FICTIONAL_PRIVATE_ENV=must-not-be-packaged\n')
+    (checkout/'.env.production').write_text('FICTIONAL_PRIVATE_ENV=must-not-be-packaged\n')
     result = subprocess.run([shell, '-NoProfile', '-File', str(checkout/'scripts/package.ps1'),
                              '-OutputDirectory', str(tmp_path/'dist')], capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, result.stdout+result.stderr
@@ -116,6 +122,9 @@ def test_b13_source_zip_preserves_postgres_tls_entrypoint(tmp_path):
         archive.extractall(extracted)
         assert 'compose.improvements.yaml' in archive.namelist()
         assert 'atlas.db' not in archive.namelist()
+        assert archive.read('.env.example') == (ROOT/'.env.example').read_bytes()
+        assert not any(Path(name).name.startswith('.env') and Path(name).name != '.env.example'
+                       for name in archive.namelist())
     sys.path.insert(0, str(ROOT/'scripts'))
     try:
         archive_checker = module_from(ROOT/'scripts/improvement_archive.py', 'archive_bundle_regression')

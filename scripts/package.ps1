@@ -32,7 +32,7 @@ try {
             ($_.Name -notmatch '(^\.env(\..*)?$|\.(db|sqlite|sqlite3|dump|pyc|pyo)$|\.(db|sqlite3)-(wal|shm|journal)$)')
         }
     # .env.example is the only permitted env file.
-    $envExample = Get-Item -LiteralPath (Join-Path $projectRoot '.env.example')
+    $envExample = Get-Item -LiteralPath (Join-Path $projectRoot '.env.example') -Force
     $files = @($files) + @($envExample)
     foreach ($file in ($files | Sort-Object FullName -Unique)) {
         $entryName = $file.FullName.Substring($projectRoot.Length + 1).Replace([IO.Path]::DirectorySeparatorChar, [char]'/')
