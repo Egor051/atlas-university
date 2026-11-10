@@ -71,6 +71,8 @@ APP_ENV=development DEMO_MODE=true python -m uvicorn app.main:app --host 127.0.0
 
 ## Проверки и материалы
 
+GitHub Actions запускает [Acceptance](.github/workflows/checks.yml): тесты и браузерные сценарии, аудит зависимостей, PostgreSQL/HTTPS и расширенные проверки. Внешние actions закреплены полными 40-символьными SHA; сокращённые SHA не поддерживаются при подготовке задания.
+
 [Фактическая приёмка](docs/release-checklist.md), [статус всех 70 улучшений и оценка](docs/improvements-3.2-status.md), [процесс](docs/process.md), [подлинные промпты/итерации](docs/ai-evidence-3.2.md), [руководство жюри](docs/jury-guide.md).
 
 Текущие JSON и JUnit: `docs/verification/audit-fixes-2026-11-10/`. Снимки до/после: `screenshots/audit-fixes-2026-11-10/`. Материалы версии 3.2 от 9 ноября сохранены в `docs/verification/improvements-2026-11-08/` и `screenshots/improvements-2026-11-09/`, включая ролик `demo/atlas-demo-local.mp4`. Это настоящие автоматизированные локальные проходы, не исследование людей.
