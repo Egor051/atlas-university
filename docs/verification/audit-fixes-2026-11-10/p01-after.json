@@ -1,0 +1,253 @@
+{
+  "project": "atlas-p01-patched-d4636332",
+  "scope": "Original source from before.zip with only current main.py/session_security.py gate patch; no working database; own PostgreSQL/two workers/trusted loopback proxy. Expected overload is HTTP429 with Retry-After; this is not an OOM test.",
+  "bursts": [
+    {
+      "clients": 8,
+      "start": 3740396772400,
+      "end": 3740619489700,
+      "responses": [
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 198.81
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 201.71
+        },
+        {
+          "status": 401,
+          "retry_after": null,
+          "ms": 220.85
+        },
+        {
+          "status": 401,
+          "retry_after": null,
+          "ms": 199.98
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 193.24
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 201.01
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 201.03
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 190.22
+        }
+      ],
+      "memory": {
+        "memory.current": "314429440",
+        "memory.peak": "315101184",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      }
+    },
+    {
+      "clients": 12,
+      "start": 3741441660200,
+      "end": 3741528827100,
+      "responses": [
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 44.61
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 40.95
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 55.03
+        },
+        {
+          "status": 401,
+          "retry_after": null,
+          "ms": 85.06
+        },
+        {
+          "status": 401,
+          "retry_after": null,
+          "ms": 64.74
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 45.93
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 60.72
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 43.39
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 43.29
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 41.88
+        },
+        {
+          "status": 401,
+          "retry_after": null,
+          "ms": 38.26
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 55.1
+        }
+      ],
+      "memory": {
+        "memory.current": "335683584",
+        "memory.peak": "336351232",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      }
+    },
+    {
+      "clients": 16,
+      "start": 3742340032400,
+      "end": 3742448482900,
+      "responses": [
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 55.75
+        },
+        {
+          "status": 401,
+          "retry_after": null,
+          "ms": 98.19
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 67.8
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 73.23
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 66.54
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 50.3
+        },
+        {
+          "status": 401,
+          "retry_after": null,
+          "ms": 59.87
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 54.72
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 72.89
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 48.16
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 51.89
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 52.21
+        },
+        {
+          "status": 401,
+          "retry_after": null,
+          "ms": 105.37
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 62.4
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 52.02
+        },
+        {
+          "status": 429,
+          "retry_after": "1",
+          "ms": 67.79
+        }
+      ],
+      "memory": {
+        "memory.current": "410939392",
+        "memory.peak": "410939392",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      }
+    }
+  ],
+  "failures": [],
+  "container_memory_limit": 536870912,
+  "before": {
+    "memory.current": "272863232",
+    "memory.peak": "278151168",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+  },
+  "kdf_observed_peak": 2,
+  "kdf_event_count": 16,
+  "kdf_workers_observed": [
+    8,
+    9
+  ],
+  "after": {
+    "memory.current": "396382208",
+    "memory.peak": "411201536",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+  },
+  "eventual_valid_login": {
+    "status": 200,
+    "user_id": 1
+  },
+  "bounded_probe_passed": true,
+  "configured_possible_kdf_mib": 570.0,
+  "limitations": [
+    "No attempt was made to kill or exhaust the container. Actual peak KDF work and cgroup memory were measured; full 30-request overlap/OOM remains untested.",
+    "Instrumentation records call boundaries without injecting delays or changing KDF parameters.",
+    "Other Docker projects were neither queried for data nor modified."
+  ],
+  "own_project_stopped": true,
+  "new_test_volume_preserved": true
+}

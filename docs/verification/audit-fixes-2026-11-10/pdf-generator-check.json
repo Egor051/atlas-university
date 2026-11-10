@@ -1,0 +1,22 @@
+{
+  "checked_at_utc": "2026-11-10T15:47:24.177017+00:00",
+  "scope": "Current PDF generator executed against 15 copied historical input files in a temporary directory using patched Pillow13.0.0; no application server or project PDF was modified. This checks report regeneration, not current site E2E.",
+  "status": "PASS",
+  "process_pages": 9,
+  "downloaded_a4_pages": 1,
+  "cyrillic_extraction": "PASS",
+  "all_9_pages_rendered_and_visually_checked": true,
+  "a4_page_rendered_and_visually_checked": true,
+  "pixel_identical_after_Pillow_upgrade": true,
+  "isolated_outputs": "<TEMP_WORKSPACE>\\pdf-generator-pillow13",
+  "input_files": 15,
+  "generator_sources": {
+    "docs/make_current_report.py": "6b879793e2d126de945f5ceb66da0e09131dcefef374de9daf541efe79e3b64c",
+    "docs/make_report.py": "03190f158029a32ffa49b33034b467cb461becc9e21aeb48cd4ff91cab55b261",
+    "docs/requirements-report.txt": "08383163a7ba094ce9791084d339c86c61c699d2ef62af9f186e9398b35ef296"
+  },
+  "not_verified": [
+    "manual calendar import",
+    "new release process PDF (historical3.2PDFs intentionally preserved)"
+  ]
+}

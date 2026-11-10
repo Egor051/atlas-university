@@ -1,0 +1,12 @@
+{
+  "name": "atlas-campus-quality",
+  "version": "3.2.1",
+  "private": true,
+  "description": "Development-only accessibility checks. The application has no browser dependencies.",
+  "scripts": {
+    "check": "node --check static/app.js && node --check static/campus.js && node --check static/improvements.js"
+  },
+  "devDependencies": {
+    "axe-core": "4.14.0"
+  }
+}

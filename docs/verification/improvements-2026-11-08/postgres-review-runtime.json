@@ -1,0 +1,11 @@
+{
+  "project": "atlas-pg-review-20261108211445-f4c8",
+  "scope": "Temporary DB/web pair with no public or host port; credentials only in container environment",
+  "created_at_utc": "2026-11-08T21:14:45.567151+00:00",
+  "status": "STOPPED",
+  "web_container": "d5b9a1ba9ebd01b7570cb0162a745d097d532490034e30a85f8fa5f678f7943d",
+  "db_container": "ef74a483ce2cb7b3e7fdd3d1af2dac53676f0e328d2e59ed1806257392bc5dfa",
+  "database": "atlas_draft_race",
+  "stopped_at_utc": "2026-11-09T10:22:04.276123+00:00",
+  "new_test_volumes_preserved": true
+}

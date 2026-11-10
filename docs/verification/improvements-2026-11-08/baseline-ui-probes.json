@@ -1,0 +1,25 @@
+{
+  "scope": "Local Chromium, isolated SQLite; no production DB access",
+  "checked_at_utc": "2026-11-08T14:25:22.053146+00:00",
+  "next_lesson": {
+    "id": 1,
+    "date": "2026-11-09",
+    "start": "09:00",
+    "end": "10:30",
+    "title": "Алгоритмы и структуры данных",
+    "kind": "Лекция",
+    "room": "А-301",
+    "teacher": "М. Орлов",
+    "color": "violet",
+    "changed": false,
+    "note": null
+  },
+  "schedule_after_next_lesson_link": {
+    "selected_day": "2026-11-08",
+    "visible_text": "воскресенье, 8 ноября\n\nВ этот день занятий нет."
+  },
+  "draft_before": "Вымышленный комментарий для проверки истечения сеанса",
+  "draft_after_session_loss_and_same_user_login": "",
+  "draft_preserved": false,
+  "method_note": "Session loss simulated by clearing browser cookies; no server clock manipulation."
+}

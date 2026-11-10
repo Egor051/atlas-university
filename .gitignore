@@ -1,0 +1,60 @@
+.env
+.env.*
+!.env.example
+
+# Private credentials and local key material
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+credentials*.json
+secrets*.json
+
+# Local databases, backups, journals, and dumps
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.dump
+
+# Python environments, bytecode, and test caches
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.py[cod]
+.coverage
+htmlcov/
+
+# JavaScript dependencies and generated test output
+node_modules/
+playwright-report/
+test-results/
+
+# Machine-local artifacts, archives, and scratch output
+/artifacts/
+/backups/
+/dist/
+/output/
+/outputs/
+/tmp/
+*.log
+
+# Generated browser failure captures; curated release screenshots remain tracked
+screenshots/test.png
+screenshots/extension-failure-*.png
+
+# Private, owner-only Google Drive submission links from local preparation
+/docs/verification/improvements-2026-11-08/prepared-drive-links.json
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

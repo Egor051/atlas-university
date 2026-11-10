@@ -1,0 +1,147 @@
+{
+  "started_at_utc": "2026-11-09T10:18:47.814493+00:00",
+  "scope": "Real local HTTP and isolated fictional SQLite; bounded mixed reads/writes with same-key replay. No real users, public-site traffic or production capacity claim.",
+  "source_sha256": {
+    "app/__init__.py": "2c77512cf5c1b955c924160a6505b64d9467c7ac2ffc701a27f27d89b2512d68",
+    "app/campus.py": "f01658488c81c7c8474ba13e32560ff8231628f5b13ad29bd885123072a498d7",
+    "app/campus_db.py": "6979b034fd999fe8c9602a84dfd3c7243171db0651031cfaf524b33254168517",
+    "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+    "app/db.py": "eb4302197df940c9b78157df90819f0239b5ff3e3c784bef69d312234bc19765",
+    "app/improvement_db.py": "3f1040e73631a82046580d3eaad60c5cd4eeb5f6538efe3ff9a38488546838f1",
+    "app/improvements.py": "91a29b296e636039d35c0b084bdfb146b9751a4c6eba0b30dff7d862963397f7",
+    "app/learning.py": "f23a28c6438d14b2f1d0a9c9c8fa16aa7a09e132be32cac74dec8e718c21eb15",
+    "app/learning_db.py": "4211ed7b7c01637327a0f16c2eaabe64bea3376766d835985fb9eda41d770331",
+    "app/main.py": "8434982f107ba1a4439587022dbb7eba566383f7c5b55a79515d01cfd68922fd",
+    "app/services.py": "64448fdcd639de511266e51b915a18a0a8d036e0ad5eb2732378e068aaf170ce",
+    "app/services_db.py": "e69f5a2cbd1c715ab14cbc2458ed62de441b6c07d397eac0332a59244f73dbc0",
+    "app/version.py": "1959d420611ab0da5cdd8630d353f7b7fa0d02b93b680e949defa52e7f92fd2b",
+    "static/app.js": "5bd6a89048479405365c698b8971d6ee09939bad474f938fefefe5e000e72fd7",
+    "static/campus.css": "bc83e9a6d9497f7ad2bb7a4f0aeeda753927a2c2aac8aac8971ce7753c5fa09c",
+    "static/campus.js": "88af58ba49a5a79b307cf6b15f3b04e09a4590b57624780cb6d41df64afc3662",
+    "static/favicon.svg": "949dad734f87fd471c4bd0a55dc70bef0311af9bc54290e7e6b31d906706d057",
+    "static/improvements.js": "1575ee546195db0a1459c31d2b8b2a87b5fc69cb903d2d75cdc918259bd6d764",
+    "static/index.html": "5082e6ae8f20da950e26bf77d85332539fa76dc9c6d99aff7ee4e7701a15d45d",
+    "static/style.css": "26440cc4553d78ed7fa071ae4aa8cb3bd8dc8c53d957fb888604b1b1dfdd2a52",
+    "static/usability.css": "9e2d7d77a9e55a458ed9d40eed7fe7a81c3a72917957fd31c25f2de0e13e9527",
+    "compose.improvements.yaml": "6485fdb00f666214754e167a40bd85b8ce720598869705da714bfc473cedaae3",
+    "compose.test.yaml": "3d35c1c54d1204bfd2b900c6be4a8c635b432165fe979a68cb74f2f508282d77",
+    "compose.yaml": "80245486b44b0daed6567ea234bf3addcc0739cfad40f1adcd0fef2687d1e66d",
+    "Dockerfile": "4126959d440fe1c234cf4656eb1027ecfe384ca9b42130ce4357bbadac36af05",
+    "requirements.txt": "575e32efb45434c5a2a5a3b70358ca4142b37f2c550cec7b888bf034f9dbdbd9",
+    "requirements-runtime.lock": "be93e44ba3d17d0cb936b6dece4e197839ea6a938beb94db91dbe0d8c665a470",
+    "scripts/improvement_adaptation.py": "ff0f6b92d16101e92e56cc175791a0136a5b2d7a9955742bbdee53c08607e452",
+    "scripts/improvement_archive.py": "f67fdc65c36938c37134bc05fbee19abdcf806557929c28e19c852a1d1f9ca5c",
+    "scripts/improvement_crossbrowser.py": "1d1790c006be28012ec9a496f10a68f41472af89fa387aa51d8a7a1ddb7e5688",
+    "scripts/improvement_deployment.py": "da5da4674ced285d197eae5e355ced186d574a5cdaecd67c322158a3e1a1f902",
+    "scripts/improvement_load.py": "c442e09795be3bbb60b24a91f131a279d31a5c258bd493dcf939639bc075f477",
+    "scripts/improvement_monitor.py": "d29af0ba12bdff1b8201867828d875d556e21366853c506f8c30028d94059e01",
+    "scripts/improvement_performance.py": "dba0ad1ae8107293bf5eb898623887e60961d69ae8001d2410107564b454fbaf",
+    "scripts/improvement_pg_coordination.py": "76b2a97c2734dfe7a5a6fbf5af793c11282bade59fae56cab0e0bfed6398353a",
+    "scripts/improvement_prepare_deploy.py": "0f330386ca204e4e4c2548ceff9ad14b112c35f6a5811c8e2a84683259e06744",
+    "scripts/improvement_runtime.py": "f6d9ef8eae7e076df4aa3668dbb0b873dc379a8b86a5769036a05a3550c9be29",
+    "scripts/improvement_sql.py": "16755a779409dc6f8ac8bf1dcd293da2b285cde6e766d16cb3ffcbf30cedab5b",
+    "scripts/improvement_ui_capture.py": "800332f4dff5acf577bb45854945a6d5d152fb202407e6013d66b5629c61690b"
+  },
+  "checks": [
+    "real HTTP",
+    "isolated fixtures",
+    "both fictional student accounts",
+    "declared data volume",
+    "latency distribution",
+    "no unexpected errors"
+  ],
+  "failures": [],
+  "environment": {
+    "python": "3.13.13",
+    "os": "Windows-11-10.0.26300-SP0",
+    "workers": 1,
+    "database": "SQLite"
+  },
+  "declared_profile": {
+    "clients": 32,
+    "read_requests": 5000,
+    "extra_library_books": 1000,
+    "extra_support_tickets": 350,
+    "extra_notes_per_student": 100,
+    "think_time_ms": 5,
+    "acceptance": "0 unexpected responses; p95 <= 1000ms on this declared local profile"
+  },
+  "app_health": {
+    "ok": true,
+    "service": "ATLAS Campus",
+    "version": "3.2.0",
+    "build": "f7c740bfdf36973b"
+  },
+  "duration_seconds": 32.828,
+  "throughput_reads_per_second": 152.31,
+  "total_reads": 5000,
+  "mixed_writes": {
+    "created": 256,
+    "replayed": 256,
+    "unexpected_duplicates": 0,
+    "write_and_replay_p95_ms": 3553.94,
+    "actors": [
+      0,
+      1
+    ]
+  },
+  "p50_ms": 122.1,
+  "p95_ms": 170.72,
+  "p99_ms": 209.63,
+  "endpoints": [
+    {
+      "endpoint": "/api/dashboard",
+      "samples": 500,
+      "p95_ms": 187.2
+    },
+    {
+      "endpoint": "/api/grades",
+      "samples": 500,
+      "p95_ms": 168.1
+    },
+    {
+      "endpoint": "/api/schedule",
+      "samples": 500,
+      "p95_ms": 177.62
+    },
+    {
+      "endpoint": "/api/requests?paginated=true&limit=30",
+      "samples": 500,
+      "p95_ms": 167.55
+    },
+    {
+      "endpoint": "/api/learning/courses",
+      "samples": 500,
+      "p95_ms": 164.15
+    },
+    {
+      "endpoint": "/api/learning/assignments",
+      "samples": 500,
+      "p95_ms": 159.18
+    },
+    {
+      "endpoint": "/api/services/library?paginated=true&limit=30",
+      "samples": 500,
+      "p95_ms": 167.22
+    },
+    {
+      "endpoint": "/api/services/tickets?paginated=true&limit=30",
+      "samples": 500,
+      "p95_ms": 168.62
+    },
+    {
+      "endpoint": "/api/services/consultations?paginated=true&limit=30",
+      "samples": 500,
+      "p95_ms": 167.91
+    },
+    {
+      "endpoint": "/api/services/events?paginated=true&limit=30",
+      "samples": 500,
+      "p95_ms": 170.13
+    }
+  ],
+  "unexpected_responses": [],
+  "finished_at_utc": "2026-11-09T10:19:23.387233+00:00",
+  "source_changed_during_run": [],
+  "status": "PASS"
+}

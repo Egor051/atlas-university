@@ -1,0 +1,93 @@
+{
+  "audit": "ATLAS Campus contest assessment: targeted security/reliability probes",
+  "generated_at_utc": "2026-11-08T14:27:01.450525+00:00",
+  "scope": "Local ASGI TestClient, isolated temporary SQLite; no public URL, no TLS or real device verification.",
+  "working_database_touched": false,
+  "application_sources_changed": false,
+  "source_sha256": {
+    "app/main.py": "1897c8af2ba5df1d64d170f71aee6406207fd6ab6b0d34f764d8fad41a6dd487",
+    "app/services.py": "765743146551d57bb2b703c1eb7490e15f28c8ec580b05f181cae468ddc2c404",
+    "app/services_db.py": "0ed223d5cb3fb919cb1c53be0c132884e8e22dd95270426d10d4ec71d8610078",
+    "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+    "static/campus.js": "b942707a067338c8eaf19bea32749a1849496a7bd55a44151c75ed9a951b6511",
+    "README.md": "a9bfa43f364b1c2ef66ee9a665227d35ce600bd2bd219171189b16d2860229d7"
+  },
+  "probe_script_sha256": "338bfc1cb34909aba2cf1050ca3a28253d33315ada583b89ac259eac8cfefa63",
+  "authorization_and_csrf": {
+    "expected": {
+      "other_student_request": 404,
+      "other_student_notification": 404,
+      "student_staff_api": 403,
+      "staff_student_grades": 403,
+      "missing_csrf_header": 403,
+      "foreign_origin": 403,
+      "forged_owner": 422,
+      "private_cache_control": "no-store, private"
+    },
+    "observed": {
+      "other_student_request": 404,
+      "other_student_notification": 404,
+      "student_staff_api": 403,
+      "staff_student_grades": 403,
+      "missing_csrf_header": 403,
+      "foreign_origin": 403,
+      "forged_owner": 422,
+      "private_cache_control": "no-store, private"
+    },
+    "passed": true
+  },
+  "library_search_after_limit": {
+    "source": "app/services.py:362-365",
+    "query": "ZZ unique audit target",
+    "existing_target_id": 310,
+    "response_status": 200,
+    "response_items": [],
+    "issue_reproduced": true
+  },
+  "future_entries_hidden_by_archive": [
+    {
+      "endpoint": "/api/services/events",
+      "future_records_in_database": 6,
+      "returned_records": 300,
+      "future_records_returned": 0,
+      "issue_reproduced": true
+    },
+    {
+      "endpoint": "/api/services/consultations",
+      "future_records_in_database": 6,
+      "returned_records": 300,
+      "future_records_returned": 0,
+      "issue_reproduced": true
+    }
+  ],
+  "repeated_ticket_post": {
+    "source": "app/services.py:235-243",
+    "method": "Two sequential identical POSTs with the same Idempotency-Key; both responses were received.",
+    "network_response_loss_injected": false,
+    "response_loss_consequence": "Potential duplicate after a lost post-commit response is inferred; this probe does not simulate that loss.",
+    "responses": [
+      {
+        "status": 201,
+        "id": 1
+      },
+      {
+        "status": 201,
+        "id": 2
+      }
+    ],
+    "issue_reproduced": true
+  },
+  "version_consistency": {
+    "readme_version": "3.1",
+    "health_version": "3.0.0",
+    "config_version": "3.0.0",
+    "mismatch_observed": true
+  },
+  "temporary_database_removed": true,
+  "limitations": [
+    "No full test-suite execution in this script.",
+    "Synthetic high-volume fixtures establish boundary defects; they do not establish current public traffic or a public incident.",
+    "No network-response-loss injection; repeated ticket requests alone are observed.",
+    "No production PostgreSQL, public domain, TLS, Russian connection, or physical-device test."
+  ]
+}

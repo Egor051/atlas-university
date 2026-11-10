@@ -1,0 +1,199 @@
+{
+  "scope": "Two additive migrations of frozen workspace DB COPY only; original DB never opened for writing.",
+  "source_db_sha256": "91ad8fae65489acd94ec9dc71ac38d90b72a51c549bec97dc35a287600913683",
+  "tables": {
+    "users": {
+      "original_rows": 3,
+      "result_rows": 3,
+      "original_columns": 12
+    },
+    "login_sessions": {
+      "original_rows": 4,
+      "result_rows": 4,
+      "original_columns": 4
+    },
+    "lessons": {
+      "original_rows": 25,
+      "result_rows": 25,
+      "original_columns": 10
+    },
+    "grades": {
+      "original_rows": 10,
+      "result_rows": 10,
+      "original_columns": 12
+    },
+    "deadlines": {
+      "original_rows": 10,
+      "result_rows": 10,
+      "original_columns": 6
+    },
+    "document_requests": {
+      "original_rows": 4,
+      "result_rows": 4,
+      "original_columns": 11
+    },
+    "notifications": {
+      "original_rows": 11,
+      "result_rows": 11,
+      "original_columns": 9
+    },
+    "lesson_changes": {
+      "original_rows": 25,
+      "result_rows": 25,
+      "original_columns": 7
+    },
+    "request_events": {
+      "original_rows": 6,
+      "result_rows": 6,
+      "original_columns": 7
+    },
+    "request_idempotency": {
+      "original_rows": 1,
+      "result_rows": 1,
+      "original_columns": 5
+    },
+    "login_attempts": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 4
+    },
+    "schema_migrations": {
+      "original_rows": 4,
+      "result_rows": 5,
+      "original_columns": 2
+    },
+    "learning_seeds": {
+      "original_rows": 2,
+      "result_rows": 2,
+      "original_columns": 2
+    },
+    "learning_courses": {
+      "original_rows": 10,
+      "result_rows": 10,
+      "original_columns": 8
+    },
+    "learning_submissions": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 9
+    },
+    "learning_notes": {
+      "original_rows": 2,
+      "result_rows": 2,
+      "original_columns": 7
+    },
+    "learning_flashcards": {
+      "original_rows": 4,
+      "result_rows": 4,
+      "original_columns": 9
+    },
+    "learning_quizzes": {
+      "original_rows": 4,
+      "result_rows": 4,
+      "original_columns": 6
+    },
+    "learning_attendance": {
+      "original_rows": 30,
+      "result_rows": 30,
+      "original_columns": 6
+    },
+    "learning_tasks": {
+      "original_rows": 4,
+      "result_rows": 4,
+      "original_columns": 8
+    },
+    "learning_focus_sessions": {
+      "original_rows": 2,
+      "result_rows": 2,
+      "original_columns": 5
+    },
+    "consultation_slots": {
+      "original_rows": 138,
+      "result_rows": 138,
+      "original_columns": 9
+    },
+    "support_tickets": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 7
+    },
+    "campus_events": {
+      "original_rows": 28,
+      "result_rows": 28,
+      "original_columns": 10
+    },
+    "library_books": {
+      "original_rows": 8,
+      "result_rows": 8,
+      "original_columns": 8
+    },
+    "finance_entries": {
+      "original_rows": 8,
+      "result_rows": 8,
+      "original_columns": 6
+    },
+    "student_preferences": {
+      "original_rows": 2,
+      "result_rows": 2,
+      "original_columns": 5
+    },
+    "portfolio_items": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 8
+    },
+    "learning_course_modules": {
+      "original_rows": 40,
+      "result_rows": 40,
+      "original_columns": 6
+    },
+    "learning_quiz_attempts": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 7
+    },
+    "consultation_bookings": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 5
+    },
+    "ticket_messages": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 7
+    },
+    "event_registrations": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 5
+    },
+    "library_loans": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 7
+    },
+    "service_idempotency": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 7
+    },
+    "personal_drafts": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 5
+    },
+    "write_quotas": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 5
+    },
+    "request_followup_receipts": {
+      "original_rows": 0,
+      "result_rows": 0,
+      "original_columns": 5
+    }
+  },
+  "intentional_changes": [],
+  "failures": [],
+  "status": "PASS"
+}

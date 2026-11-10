@@ -1,0 +1,54 @@
+{
+  "verified_at": "2026-11-06T21:46:40.873344+03:00",
+  "command": "Start-ATLAS.cmd -NoBrowser -Port 18023",
+  "readiness": {
+    "ok": true,
+    "database": "ready"
+  },
+  "app_version": "2.0.0",
+  "index_http_status": 200,
+  "csp_present": true,
+  "served_javascript_matches_current_source": true,
+  "javascript_sha256": "960eac42a98158a6fabbe1c9f55c2506eac4326454657d1eceacca63f5b9a338",
+  "original_requests_preserved": true,
+  "original_users_preserved": true,
+  "original_request_count": 3,
+  "current_request_count": 3,
+  "credentials_included": false,
+  "status": "PASS",
+  "existing_data_audit": {
+    "verified_at": "2026-11-06T21:48:14.778386+03:00",
+    "comparison": "Every original column and record, by ID, in seven academic tables against the pre-iteration backup; authentication sessions excluded",
+    "tables": {
+      "users": {
+        "original_records": 3,
+        "all_original_fields_preserved": true
+      },
+      "lessons": {
+        "original_records": 25,
+        "all_original_fields_preserved": true
+      },
+      "lesson_changes": {
+        "original_records": 25,
+        "all_original_fields_preserved": true
+      },
+      "grades": {
+        "original_records": 10,
+        "all_original_fields_preserved": true
+      },
+      "deadlines": {
+        "original_records": 10,
+        "all_original_fields_preserved": true
+      },
+      "document_requests": {
+        "original_records": 3,
+        "all_original_fields_preserved": true
+      },
+      "notifications": {
+        "original_records": 8,
+        "all_original_fields_preserved": true
+      }
+    },
+    "result": "PASS"
+  }
+}

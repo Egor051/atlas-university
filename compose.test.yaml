@@ -1,0 +1,17 @@
+# LOCAL integration check only. Always use -p atlas-release-check with this file.
+# docker compose -p atlas-release-check -f compose.yaml -f compose.test.yaml up -d --build
+services:
+  web:
+    image: atlas-campus:local-check
+    environment:
+      PUBLIC_ORIGIN: https://localhost:18443
+      ALLOWED_HOSTS: localhost
+  caddy:
+    ports: !override
+      - "127.0.0.1:18443:443"
+    environment:
+      DOMAIN: localhost
+    volumes: !override
+      - ./deploy/Caddyfile.test:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config

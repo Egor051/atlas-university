@@ -1,0 +1,55 @@
+{
+  "verified_at": "2026-11-07T04:45:52.158869+03:00",
+  "scope": "Existing local SQLite compared against native backup taken immediately before v3 startup; no row values or session tokens exported",
+  "checks": [
+    {
+      "table": "users",
+      "before": 3,
+      "after": 3,
+      "unchanged": true
+    },
+    {
+      "table": "lessons",
+      "before": 25,
+      "after": 25,
+      "unchanged": true
+    },
+    {
+      "table": "lesson_changes",
+      "before": 25,
+      "after": 25,
+      "unchanged": true
+    },
+    {
+      "table": "grades",
+      "before": 10,
+      "after": 10,
+      "unchanged": true
+    },
+    {
+      "table": "deadlines",
+      "before": 10,
+      "after": 10,
+      "unchanged": true
+    },
+    {
+      "table": "document_requests",
+      "before": 4,
+      "after": 4,
+      "unchanged": true
+    },
+    {
+      "table": "notifications",
+      "before": 11,
+      "after": 11,
+      "unchanged": true
+    },
+    {
+      "table": "request_events",
+      "before": 6,
+      "after": 6,
+      "unchanged": true
+    }
+  ],
+  "status": "PASS"
+}

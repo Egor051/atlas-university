@@ -1,0 +1,47 @@
+{
+  "recorded_from": "Actual full pytest stdout and pytest-results.xml",
+  "date": "2026-11-08",
+  "version": "3.1.0",
+  "command": "ATLAS_RUN_BROWSER_TESTS=1 python -m pytest -q tests/ --junitxml=docs/verification/pytest-results.xml",
+  "passed": 141,
+  "failed": 0,
+  "skipped": 0,
+  "warning_count": 2,
+  "warnings": [
+    "Starlette TestClient httpx deprecation",
+    "Starlette/AnyIO deprecated BlockingPortal alias"
+  ],
+  "duration_seconds": 72.927,
+  "real_browser_tests": 23,
+  "runtime_versions": {
+    "fastapi": "0.133.0",
+    "starlette": "1.3.1",
+    "SQLAlchemy": "2.0.50",
+    "uvicorn": "0.48.0",
+    "pydantic": "2.13.5",
+    "psycopg": "3.3.2",
+    "playwright": "1.56.0",
+    "pytest": "9.0.2"
+  },
+  "scope": "Core and extended API, IDOR, CSRF, process persistence, CLI migrations, concurrency, real Chromium security/service/usability regressions. Temporary databases only.",
+  "source_sha256": {
+    "app/__init__.py": "2c77512cf5c1b955c924160a6505b64d9467c7ac2ffc701a27f27d89b2512d68",
+    "app/campus.py": "f01658488c81c7c8474ba13e32560ff8231628f5b13ad29bd885123072a498d7",
+    "app/campus_db.py": "6979b034fd999fe8c9602a84dfd3c7243171db0651031cfaf524b33254168517",
+    "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+    "app/db.py": "d36e34b55e78d62b1da0f3078a03bceee3247ec171eab8c8f61d02418fb669ed",
+    "app/learning.py": "05f18fc666bbd7f1abecd4ae04cfff3d25103bea767c0eceee6a3d3de921f31a",
+    "app/learning_db.py": "4211ed7b7c01637327a0f16c2eaabe64bea3376766d835985fb9eda41d770331",
+    "app/main.py": "1897c8af2ba5df1d64d170f71aee6406207fd6ab6b0d34f764d8fad41a6dd487",
+    "app/services.py": "765743146551d57bb2b703c1eb7490e15f28c8ec580b05f181cae468ddc2c404",
+    "app/services_db.py": "0ed223d5cb3fb919cb1c53be0c132884e8e22dd95270426d10d4ec71d8610078",
+    "static/app.js": "533fc8181976d6327ad800fd2526e76b466a58a0ef7e3400d9b74e899adc319d",
+    "static/campus.css": "d72873bbd1e835295a67ffd1ef2210b4b3fabcef39c8dbfea6f5066d28eade34",
+    "static/campus.js": "b942707a067338c8eaf19bea32749a1849496a7bd55a44151c75ed9a951b6511",
+    "static/favicon.svg": "949dad734f87fd471c4bd0a55dc70bef0311af9bc54290e7e6b31d906706d057",
+    "static/index.html": "e12347c8647668b3547e8bc933fe17f56068161bee918a0aed180f227a8d5ce7",
+    "static/style.css": "26440cc4553d78ed7fa071ae4aa8cb3bd8dc8c53d957fb888604b1b1dfdd2a52",
+    "static/usability.css": "ab31e48833d41775269cf9b0d9a03298ceedf001dddcb5b6e4474957727610b7"
+  },
+  "status": "PASS"
+}

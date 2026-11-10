@@ -1,0 +1,213 @@
+{
+  "project": "atlas-p01-original-3f6d5938",
+  "scope": "Original source from before.zip, no working database; cached runtime, own PostgreSQL and trusted loopback-only proxy. Bounded KDF concurrency measurement, not an OOM test.",
+  "bursts": [
+    {
+      "clients": 8,
+      "start": 3582360099300,
+      "end": 3582643302500,
+      "responses": [
+        {
+          "status": 401,
+          "ms": 270.04
+        },
+        {
+          "status": 401,
+          "ms": 281.21
+        },
+        {
+          "status": 401,
+          "ms": 256.95
+        },
+        {
+          "status": 401,
+          "ms": 222.38
+        },
+        {
+          "status": 401,
+          "ms": 239.25
+        },
+        {
+          "status": 401,
+          "ms": 249.73
+        },
+        {
+          "status": 401,
+          "ms": 263.68
+        },
+        {
+          "status": 401,
+          "ms": 275.98
+        }
+      ],
+      "memory": {
+        "memory.current": "448425984",
+        "memory.peak": "449110016",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      }
+    },
+    {
+      "clients": 12,
+      "start": 3583452981000,
+      "end": 3583606392000,
+      "responses": [
+        {
+          "status": 401,
+          "ms": 74.53
+        },
+        {
+          "status": 401,
+          "ms": 139.35
+        },
+        {
+          "status": 401,
+          "ms": 81.6
+        },
+        {
+          "status": 401,
+          "ms": 97.68
+        },
+        {
+          "status": 401,
+          "ms": 127.03
+        },
+        {
+          "status": 401,
+          "ms": 115.45
+        },
+        {
+          "status": 401,
+          "ms": 133.06
+        },
+        {
+          "status": 401,
+          "ms": 150.43
+        },
+        {
+          "status": 401,
+          "ms": 84.94
+        },
+        {
+          "status": 401,
+          "ms": 107.99
+        },
+        {
+          "status": 401,
+          "ms": 144.63
+        },
+        {
+          "status": 401,
+          "ms": 121.1
+        }
+      ],
+      "memory": {
+        "memory.current": "529715200",
+        "memory.peak": "530382848",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      }
+    },
+    {
+      "clients": 16,
+      "start": 3584420747900,
+      "end": 3584706672400,
+      "responses": [
+        {
+          "status": 401,
+          "ms": 281.44
+        },
+        {
+          "status": 401,
+          "ms": 112.22
+        },
+        {
+          "status": 401,
+          "ms": 257.85
+        },
+        {
+          "status": 401,
+          "ms": 98.23
+        },
+        {
+          "status": 401,
+          "ms": 281.83
+        },
+        {
+          "status": 401,
+          "ms": 141.57
+        },
+        {
+          "status": 401,
+          "ms": 280.25
+        },
+        {
+          "status": 401,
+          "ms": 281.39
+        },
+        {
+          "status": 401,
+          "ms": 88.95
+        },
+        {
+          "status": 401,
+          "ms": 280.48
+        },
+        {
+          "status": 401,
+          "ms": 281.87
+        },
+        {
+          "status": 401,
+          "ms": 105.03
+        },
+        {
+          "status": 401,
+          "ms": 256.79
+        },
+        {
+          "status": 401,
+          "ms": 280.63
+        },
+        {
+          "status": 401,
+          "ms": 257.08
+        },
+        {
+          "status": 401,
+          "ms": 281.12
+        }
+      ],
+      "memory": {
+        "memory.current": "527814656",
+        "memory.peak": "536899584",
+        "memory.events": "low 0\nhigh 0\nmax 465\noom 0\noom_kill 0\noom_group_kill 0"
+      }
+    }
+  ],
+  "failures": [],
+  "container_memory_limit": 536870912,
+  "before": {
+    "memory.current": "286957568",
+    "memory.peak": "292028416",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+  },
+  "kdf_observed_peak": 13,
+  "kdf_event_count": 72,
+  "kdf_workers_observed": [
+    8,
+    9
+  ],
+  "after": {
+    "memory.current": "527327232",
+    "memory.peak": "536899584",
+    "memory.events": "low 0\nhigh 0\nmax 465\noom 0\noom_kill 0\noom_group_kill 0"
+  },
+  "bounded_probe_passed": true,
+  "configured_possible_kdf_mib": 570.0,
+  "limitations": [
+    "No attempt was made to kill or exhaust the container. Actual peak KDF work and cgroup memory were measured; full 30-request overlap/OOM remains untested.",
+    "Instrumentation records call boundaries without injecting delays or changing KDF parameters.",
+    "Other Docker projects were neither queried for data nor modified."
+  ],
+  "own_project_stopped": true,
+  "new_test_volume_preserved": true
+}

@@ -1,0 +1,4163 @@
+{
+  "rubric_version": "1.0",
+  "baseline_date": "2026-11-08",
+  "project_version": "3.1.0 (README); API reports 3.0.0",
+  "method": "4 equally weighted criteria, 10 weighted indicators each, 5 binary evidence conditions per indicator; unknown earns zero confirmed points",
+  "categories": {
+    "I": "Проработанность идеи",
+    "A": "Масштаб использования нейротехнологий",
+    "E": "Имплементация",
+    "Q": "Качество"
+  },
+  "scores": {
+    "I": "5.85",
+    "A": "7.10",
+    "E": "7.15",
+    "Q": "6.00"
+  },
+  "total_40": "26.10",
+  "normalized_10": "6.525",
+  "rows": [
+    {
+      "id": "I01",
+      "title": "Доказательства проблем студентов",
+      "weight": "1.5",
+      "evidence": "docs/research.md:3–27",
+      "checks": [
+        {
+          "id": "I01.1",
+          "criterion": "I",
+          "requirement": "Сформулированы 3–5 конкретных проблем из контекста задачи",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "docs/research.md:3–27",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "2–5 дней на весь исследовательский пакет",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I01.2",
+          "criterion": "I",
+          "requirement": "Гипотезы явно отделены от наблюдений",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "docs/research.md:3–27",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "2–5 дней на весь исследовательский пакет",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I01.3",
+          "criterion": "I",
+          "requirement": "Есть реальные обезличенные случаи и согласие участников исследования",
+          "passed": false,
+          "points": "0.3",
+          "evidence": "docs/research.md:3–27",
+          "improvement": "Провести 5–8 добровольных интервью или наблюдений и сохранить обезличенные факты последних учебных затруднений.",
+          "priority": "P1",
+          "effort": "2–5 дней на весь исследовательский пакет",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "I01.4",
+          "criterion": "I",
+          "requirement": "Приоритеты проблем обоснованы частотой в выборке и тяжестью последствий",
+          "passed": false,
+          "points": "0.3",
+          "evidence": "docs/research.md:3–27",
+          "improvement": "Ранжировать обнаруженные проблемы по частоте в своей выборке, последствиям и затратам времени.",
+          "priority": "P1",
+          "effort": "2–5 дней на весь исследовательский пакет",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "I01.5",
+          "criterion": "I",
+          "requirement": "Проверены отличающиеся ситуации студентов и опровергающие наблюдения",
+          "passed": false,
+          "points": "0.3",
+          "evidence": "docs/research.md:3–27",
+          "improvement": "Включить разные курсы и привычки использования телефона; зафиксировать случаи, когда исходная гипотеза не подтвердилась.",
+          "priority": "P1",
+          "effort": "2–5 дней на весь исследовательский пакет",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "I02",
+      "title": "Полнота обязательного ядра как продукта",
+      "weight": "1.25",
+      "evidence": "README.md:21–68; docs/features.md; docs/api-contracts.md",
+      "checks": [
+        {
+          "id": "I02.1",
+          "criterion": "I",
+          "requirement": "Вход и профиль охватывают все требуемые поля",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "README.md:21–68; docs/features.md; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I02.2",
+          "criterion": "I",
+          "requirement": "Расписание включает день, неделю, место, преподавателя и переносы",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "README.md:21–68; docs/features.md; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I02.3",
+          "criterion": "I",
+          "requirement": "Успеваемость охватывает дисциплины, зачёты и сессию",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "README.md:21–68; docs/features.md; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I02.4",
+          "criterion": "I",
+          "requirement": "Заявка имеет понятный результат и отслеживаемый статус",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "README.md:21–68; docs/features.md; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I02.5",
+          "criterion": "I",
+          "requirement": "Объявления и напоминания связаны с учебными событиями",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "README.md:21–68; docs/features.md; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        }
+      ]
+    },
+    {
+      "id": "I03",
+      "title": "Связность пути от сигнала к действию",
+      "weight": "1.5",
+      "evidence": "static/app.js:153–179; static/campus.js:106–108,170–180; outputs/contest-assessment-2026-11-08/ui-probes.json",
+      "checks": [
+        {
+          "id": "I03.1",
+          "criterion": "I",
+          "requirement": "Заявка связана с обработкой, историей и результатом",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "static/app.js:153–179; static/campus.js:106–108,170–180; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I03.2",
+          "criterion": "I",
+          "requirement": "Уведомление открывает соответствующую личную запись",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "static/app.js:153–179; static/campus.js:106–108,170–180; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I03.3",
+          "criterion": "I",
+          "requirement": "Ближайшая пара открывается на правильной дате и неделе",
+          "passed": false,
+          "points": "0.3",
+          "evidence": "static/app.js:153–179; static/campus.js:106–108,170–180; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": "Исправить переход с ближайшей пары: передавать дату, неделю и идентификатор занятия, выделять его.",
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Подтверждённый дефект"
+        },
+        {
+          "id": "I03.4",
+          "criterion": "I",
+          "requirement": "Учебный риск ведёт к подходящей дисциплине, работе или консультации",
+          "passed": false,
+          "points": "0.3",
+          "evidence": "static/app.js:153–179; static/campus.js:106–108,170–180; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": "Сохранять предметный контекст в цепочке «риск → материал / работа / консультация» и объяснять отсутствие подходящего действия.",
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "I03.5",
+          "criterion": "I",
+          "requirement": "Запись календаря и дедлайн открывают конкретный объект без повторного поиска",
+          "passed": false,
+          "points": "0.3",
+          "evidence": "static/app.js:153–179; static/campus.js:106–108,170–180; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": "Добавить точные переходы из общего календаря и строк дедлайнов к работам, событиям, задачам и занятиям.",
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        }
+      ]
+    },
+    {
+      "id": "I04",
+      "title": "Отличительная ценность концепции",
+      "weight": "1.25",
+      "evidence": "docs/research.md:9–17; docs/process.md:7–19; static/app.js:155–180",
+      "checks": [
+        {
+          "id": "I04.1",
+          "criterion": "I",
+          "requirement": "Есть цельная идея повседневного кабинета, выраженная в прототипе",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/research.md:9–17; docs/process.md:7–19; static/app.js:155–180",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "2–5 дней; зависит от I01",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I04.2",
+          "criterion": "I",
+          "requirement": "Персональные сигналы помогают выбрать следующее действие и имеют объяснение",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/research.md:9–17; docs/process.md:7–19; static/app.js:155–180",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "2–5 дней; зависит от I01",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I04.3",
+          "criterion": "I",
+          "requirement": "Сравнены альтернативные способы решения проблемы и показано отличие выбранного",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "docs/research.md:9–17; docs/process.md:7–19; static/app.js:155–180",
+          "improvement": "Сравнить 3–5 доступных альтернатив решения задачи по результату для студента; отделить реальные наблюдения от модельных конкурентов.",
+          "priority": "P1",
+          "effort": "2–5 дней; зависит от I01",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "I04.4",
+          "criterion": "I",
+          "requirement": "Один сильный авторский сценарий получил подтверждение ценности у студентов",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "docs/research.md:9–17; docs/process.md:7–19; static/app.js:155–180",
+          "improvement": "Выбрать и довести один отличительный сценарий после исследования: например, путь от учебного риска к выполнимому плану и результату.",
+          "priority": "P1",
+          "effort": "2–5 дней; зависит от I01",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "I04.5",
+          "criterion": "I",
+          "requirement": "Повторное использование подтверждает полезность отличительного сценария",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "docs/research.md:9–17; docs/process.md:7–19; static/app.js:155–180",
+          "improvement": "Проверить этот сценарий в коротком повторном использовании с добровольцами и скорректировать его по наблюдениям.",
+          "priority": "P1",
+          "effort": "2–5 дней; зависит от I01",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "I05",
+      "title": "Учет индивидуального контекста",
+      "weight": "1",
+      "evidence": "README.md; docs/research.md; static/app.js:155–180; static/campus.js",
+      "checks": [
+        {
+          "id": "I05.1",
+          "criterion": "I",
+          "requirement": "Два студента имеют действительно разные данные и ситуации",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "README.md; docs/research.md; static/app.js:155–180; static/campus.js",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I05.2",
+          "criterion": "I",
+          "requirement": "Главная учитывает время и личные учебные события",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "README.md; docs/research.md; static/app.js:155–180; static/campus.js",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I05.3",
+          "criterion": "I",
+          "requirement": "Отсутствие данных не трактуется как нулевая успеваемость",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "README.md; docs/research.md; static/app.js:155–180; static/campus.js",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I05.4",
+          "criterion": "I",
+          "requirement": "Разные потребности отражены в проверенных сценариях, а не в выдуманных персонах",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "README.md; docs/research.md; static/app.js:155–180; static/campus.js",
+          "improvement": "Сформировать сценарии для подтверждённых исследованием различий: например, первый курс, работающий студент, редкое посещение кабинета.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "I05.5",
+          "criterion": "I",
+          "requirement": "Предусмотрен полезный следующий шаг при отсутствии доступного слота или материала",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "README.md; docs/research.md; static/app.js:155–180; static/campus.js",
+          "improvement": "Спроектировать продолжение пути при отсутствии консультации/материала: подходящий контакт, сообщение или другой доступный шаг.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        }
+      ]
+    },
+    {
+      "id": "I06",
+      "title": "Приоритеты и управляемая сложность",
+      "weight": "1",
+      "evidence": "docs/usability-2026-11-08.md; static/app.js:36–52,111–113,184–186; docs/features.md",
+      "checks": [
+        {
+          "id": "I06.1",
+          "criterion": "I",
+          "requirement": "Пять основных сценариев выделены в постоянной навигации",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/usability-2026-11-08.md; static/app.js:36–52,111–113,184–186; docs/features.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I06.2",
+          "criterion": "I",
+          "requirement": "Второстепенные разделы сгруппированы и раскрываются по необходимости",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/usability-2026-11-08.md; static/app.js:36–52,111–113,184–186; docs/features.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I06.3",
+          "criterion": "I",
+          "requirement": "Поиск понимает названия основных задач и синонимы",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/usability-2026-11-08.md; static/app.js:36–52,111–113,184–186; docs/features.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I06.4",
+          "criterion": "I",
+          "requirement": "Приоритет всех дополнительных функций связан с доказанной потребностью",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/usability-2026-11-08.md; static/app.js:36–52,111–113,184–186; docs/features.md",
+          "improvement": "Построить матрицу ценности 27 разделов; убрать из первых экранов то, что не помогает выбранным главным задачам.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "I06.5",
+          "criterion": "I",
+          "requirement": "Связанные личные задачи, сдачи и результаты согласованы и соединены на уровне сценария",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/usability-2026-11-08.md; static/app.js:36–52,111–113,184–186; docs/features.md",
+          "improvement": "Проверить и уточнить общую модель «Мой план / Личные задачи / Сдать работу / Оценки», связать связанные записи.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        }
+      ]
+    },
+    {
+      "id": "I07",
+      "title": "Глубина услуг и работы деканата",
+      "weight": "1",
+      "evidence": "docs/features.md:115; docs/api-contracts.md; tests/test_api.py; static/app.js:245–260",
+      "checks": [
+        {
+          "id": "I07.1",
+          "criterion": "I",
+          "requirement": "Перед отправкой понятно назначение услуги",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/features.md:115; docs/api-contracts.md; tests/test_api.py; static/app.js:245–260",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–3 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I07.2",
+          "criterion": "I",
+          "requirement": "До отправки видны результат и ориентир срока",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/features.md:115; docs/api-contracts.md; tests/test_api.py; static/app.js:245–260",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–3 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I07.3",
+          "criterion": "I",
+          "requirement": "Есть осмысленная обработка сотрудником, ответ и причина отказа",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/features.md:115; docs/api-contracts.md; tests/test_api.py; static/app.js:245–260",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–3 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I07.4",
+          "criterion": "I",
+          "requirement": "Три востребованные услуги имеют подходящие поля и условия, выбранные по исследованию",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/features.md:115; docs/api-contracts.md; tests/test_api.py; static/app.js:245–260",
+          "improvement": "Для трёх приоритетных услуг добавить подходящие поля, пояснения и проверки вместо универсального комментария.",
+          "priority": "P1",
+          "effort": "1–3 дня",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "I07.5",
+          "criterion": "I",
+          "requirement": "Продуман путь уточнения, исправления или отмены обращения без потери истории",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/features.md:115; docs/api-contracts.md; tests/test_api.py; static/app.js:245–260",
+          "improvement": "Добавить осмысленные уточнение/исправление/отмену там, где это требуется сценарием, с допустимыми переходами и сохранённой историей.",
+          "priority": "P1",
+          "effort": "1–3 дня",
+          "gap_type": "Доработка или подготовка"
+        }
+      ]
+    },
+    {
+      "id": "I08",
+      "title": "Честность и границы концепта",
+      "weight": "0.5",
+      "evidence": "README.md; docs/research.md:17; docs/demo-video-script.md:5; docs/process.md:164",
+      "checks": [
+        {
+          "id": "I08.1",
+          "criterion": "I",
+          "requirement": "Конкурсный и неофициальный статус ясно виден",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "README.md; docs/research.md:17; docs/demo-video-script.md:5; docs/process.md:164",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–2 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I08.2",
+          "criterion": "I",
+          "requirement": "Все учебные данные и персонажи вымышлены",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "README.md; docs/research.md:17; docs/demo-video-script.md:5; docs/process.md:164",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–2 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I08.3",
+          "criterion": "I",
+          "requirement": "Условные сроки и учебные правила обозначены демонстрационными",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "README.md; docs/research.md:17; docs/demo-video-script.md:5; docs/process.md:164",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–2 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I08.4",
+          "criterion": "I",
+          "requirement": "Описание возможностей не обещает отсутствующий интеллект или реальные интеграции",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "README.md; docs/research.md:17; docs/demo-video-script.md:5; docs/process.md:164",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–2 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I08.5",
+          "criterion": "I",
+          "requirement": "Актуальные исследовательские и демонстрационные материалы не описывают удалённые возможности",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "README.md; docs/research.md:17; docs/demo-video-script.md:5; docs/process.md:164",
+          "improvement": "Удалить устаревшие упоминания «Навигатора» из актуального исследования и сценария демонстрации либо явно пометить их историческими.",
+          "priority": "P2",
+          "effort": "1–2 часа",
+          "gap_type": "Подтверждённый дефект"
+        }
+      ]
+    },
+    {
+      "id": "I09",
+      "title": "Адаптируемость идеи",
+      "weight": "0.5",
+      "evidence": "app/main.py; app/learning.py; app/services.py; app/campus.py; docs/api-contracts.md",
+      "checks": [
+        {
+          "id": "I09.1",
+          "criterion": "I",
+          "requirement": "Роли и основные сущности отделены от оформления",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "app/main.py; app/learning.py; app/services.py; app/campus.py; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I09.2",
+          "criterion": "I",
+          "requirement": "Правила и ограничения объяснены в документации",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "app/main.py; app/learning.py; app/services.py; app/campus.py; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I09.3",
+          "criterion": "I",
+          "requirement": "Модули учебы и услуг выделены в отдельные предметные области",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "app/main.py; app/learning.py; app/services.py; app/campus.py; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I09.4",
+          "criterion": "I",
+          "requirement": "Есть конкретная инструкция адаптации к другой вымышленной структуре факультета",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "app/main.py; app/learning.py; app/services.py; app/campus.py; docs/api-contracts.md",
+          "improvement": "Описать, какие справочники, услуги и правила меняются при адаптации к другому вымышленному факультету.",
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "I09.5",
+          "criterion": "I",
+          "requirement": "Такая адаптация показана на небольшом примере без настоящих вузовских данных",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "app/main.py; app/learning.py; app/services.py; app/campus.py; docs/api-contracts.md",
+          "improvement": "Подготовить небольшой проверяемый пример такой адаптации без копирования приложения и без реальной интеграции.",
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        }
+      ]
+    },
+    {
+      "id": "I10",
+      "title": "Проверяемость продуктовых решений",
+      "weight": "0.5",
+      "evidence": "docs/research.md; docs/jury-guide.md; docs/features.md",
+      "checks": [
+        {
+          "id": "I10.1",
+          "criterion": "I",
+          "requirement": "Проблемы связаны со сценариями и реализацией",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "docs/research.md; docs/jury-guide.md; docs/features.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня после исследования",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I10.2",
+          "criterion": "I",
+          "requirement": "Заданы будущие критерии успешности пользовательских задач",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "docs/research.md; docs/jury-guide.md; docs/features.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня после исследования",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I10.3",
+          "criterion": "I",
+          "requirement": "Отмечены ограничения и непроверенные утверждения",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "docs/research.md; docs/jury-guide.md; docs/features.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня после исследования",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I10.4",
+          "criterion": "I",
+          "requirement": "Понятно, какие действия студент и сотрудник выполняют до результата",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "docs/research.md; docs/jury-guide.md; docs/features.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня после исследования",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "I10.5",
+          "criterion": "I",
+          "requirement": "По итогам исследования есть обоснованные решения «сохранить / изменить / отложить» и критерии их успеха",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "docs/research.md; docs/jury-guide.md; docs/features.md",
+          "improvement": "Завершить цикл исследования журналом решений по функциям и повторной проверкой существенных изменений.",
+          "priority": "P1",
+          "effort": "0,5–2 дня после исследования",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "A01",
+      "title": "Постановка задач ИИ",
+      "weight": "1.25",
+      "evidence": "AGENTS.md; docs/contest-brief.md; docs/api-contracts.md; docs/ai-log.md:3,56",
+      "checks": [
+        {
+          "id": "A01.1",
+          "criterion": "A",
+          "requirement": "Сохранено исходное конкурсное задание",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "AGENTS.md; docs/contest-brief.md; docs/api-contracts.md; docs/ai-log.md:3,56",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A01.2",
+          "criterion": "A",
+          "requirement": "Задачи разделены на сценарии и этапы",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "AGENTS.md; docs/contest-brief.md; docs/api-contracts.md; docs/ai-log.md:3,56",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A01.3",
+          "criterion": "A",
+          "requirement": "Ограничения безопасности входят в постановку",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "AGENTS.md; docs/contest-brief.md; docs/api-contracts.md; docs/ai-log.md:3,56",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A01.4",
+          "criterion": "A",
+          "requirement": "Определены контракты и приемка результата",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "AGENTS.md; docs/contest-brief.md; docs/api-contracts.md; docs/ai-log.md:3,56",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A01.5",
+          "criterion": "A",
+          "requirement": "Для ключевых этапов доступны исходные постановки с датой и результатом",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "AGENTS.md; docs/contest-brief.md; docs/api-contracts.md; docs/ai-log.md:3,56",
+          "improvement": "Приложить подлинные постановки 6–10 ключевых задач с датой, функцией и ссылкой на полученный результат.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "A02",
+      "title": "Качество промптов и уточнений",
+      "weight": "1.25",
+      "evidence": "docs/ai-log.md; docs/process.md:93–117,158–166",
+      "checks": [
+        {
+          "id": "A02.1",
+          "criterion": "A",
+          "requirement": "Промпты описывают задачу пользователя и контекст",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/ai-log.md; docs/process.md:93–117,158–166",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A02.2",
+          "criterion": "A",
+          "requirement": "Видны ограничения и проверяемые ожидания",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/ai-log.md; docs/process.md:93–117,158–166",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A02.3",
+          "criterion": "A",
+          "requirement": "Описаны уточнения при обнаружении ошибок и смене требований",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/ai-log.md; docs/process.md:93–117,158–166",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A02.4",
+          "criterion": "A",
+          "requirement": "Есть подлинные фрагменты нескольких полных цепочек «задача → ответ → уточнение»",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "docs/ai-log.md; docs/process.md:93–117,158–166",
+          "improvement": "Добавить первичные фрагменты диалогов для 3–5 полных итераций; пересказы подписать как пересказы.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "A02.5",
+          "criterion": "A",
+          "requirement": "Показано, почему изменение постановки улучшило результат, с сопоставлением артефактов",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "docs/ai-log.md; docs/process.md:93–117,158–166",
+          "improvement": "Для этих итераций объяснить влияние уточнений на результат и показать соответствующие версии до/после.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "A03",
+      "title": "Работа с ошибками ИИ",
+      "weight": "1.5",
+      "evidence": "docs/process.md:103–117,162; docs/security-review.md; docs/ux-security-review-2026-11-08.md; tests/",
+      "checks": [
+        {
+          "id": "A03.1",
+          "criterion": "A",
+          "requirement": "Ошибки ИИ перечислены конкретно",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "docs/process.md:103–117,162; docs/security-review.md; docs/ux-security-review-2026-11-08.md; tests/",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A03.2",
+          "criterion": "A",
+          "requirement": "Для существенных ошибок есть воспроизведение",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "docs/process.md:103–117,162; docs/security-review.md; docs/ux-security-review-2026-11-08.md; tests/",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A03.3",
+          "criterion": "A",
+          "requirement": "Исправления защищены регрессионными проверками",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "docs/process.md:103–117,162; docs/security-review.md; docs/ux-security-review-2026-11-08.md; tests/",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A03.4",
+          "criterion": "A",
+          "requirement": "Результат проверялся реальным локальным браузером и API",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "docs/process.md:103–117,162; docs/security-review.md; docs/ux-security-review-2026-11-08.md; tests/",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A03.5",
+          "criterion": "A",
+          "requirement": "Несколько историй ошибок снабжены первичными доказательствами провала и успешной перепроверки",
+          "passed": false,
+          "points": "0.3",
+          "evidence": "docs/process.md:103–117,162; docs/security-review.md; docs/ux-security-review-2026-11-08.md; tests/",
+          "improvement": "Оформить 3–5 коротких доказательных историй ошибок: исходный провал, исходное сообщение, исправление и прошедшая регрессия.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "A04",
+      "title": "Организация проверок и ролей",
+      "weight": "1",
+      "evidence": "AGENTS.md; docs/process.md:74–91,158–166; docs/ai-log.md",
+      "checks": [
+        {
+          "id": "A04.1",
+          "criterion": "A",
+          "requirement": "Есть отдельные роли или этапы анализа, реализации и проверки",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "AGENTS.md; docs/process.md:74–91,158–166; docs/ai-log.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A04.2",
+          "criterion": "A",
+          "requirement": "Зафиксированы границы ответственности",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "AGENTS.md; docs/process.md:74–91,158–166; docs/ai-log.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A04.3",
+          "criterion": "A",
+          "requirement": "Контракты связывают части работы",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "AGENTS.md; docs/process.md:74–91,158–166; docs/ai-log.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A04.4",
+          "criterion": "A",
+          "requirement": "Проверяющая роль специально ищет ошибки и ограничения",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "AGENTS.md; docs/process.md:74–91,158–166; docs/ai-log.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A04.5",
+          "criterion": "A",
+          "requirement": "Фактические поручения и интеграционные решения доступны в первичных материалах",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "AGENTS.md; docs/process.md:74–91,158–166; docs/ai-log.md",
+          "improvement": "Включить реальные поручения и результаты внутренних review с обозначением, кто интегрировал решения и какие замечания отклонил.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "A05",
+      "title": "ИИ для дизайна и содержания",
+      "weight": "1",
+      "evidence": "docs/process.md:19,91,158–166; docs/ai-log.md:79; screenshots/ux-before-2026-11-08; screenshots/ux-after-2026-11-08",
+      "checks": [
+        {
+          "id": "A05.1",
+          "criterion": "A",
+          "requirement": "ИИ применялся к интерфейсу, а не только серверному коду",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/process.md:19,91,158–166; docs/ai-log.md:79; screenshots/ux-before-2026-11-08; screenshots/ux-after-2026-11-08",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A05.2",
+          "criterion": "A",
+          "requirement": "ИИ помогал создавать понятные тексты и сценарии",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/process.md:19,91,158–166; docs/ai-log.md:79; screenshots/ux-before-2026-11-08; screenshots/ux-after-2026-11-08",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A05.3",
+          "criterion": "A",
+          "requirement": "Есть реальные изображения интерфейса до и после",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/process.md:19,91,158–166; docs/ai-log.md:79; screenshots/ux-before-2026-11-08; screenshots/ux-after-2026-11-08",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A05.4",
+          "criterion": "A",
+          "requirement": "Показаны реально созданные альтернативы и неудачные варианты",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/process.md:19,91,158–166; docs/ai-log.md:79; screenshots/ux-before-2026-11-08; screenshots/ux-after-2026-11-08",
+          "improvement": "Собрать реальные альтернативы дизайна и текстов, включая отклоненные, с указанием причины выбора.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "A05.5",
+          "criterion": "A",
+          "requirement": "Выбор варианта объяснен проверяемой пользой и пользовательскими наблюдениями",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/process.md:19,91,158–166; docs/ai-log.md:79; screenshots/ux-before-2026-11-08; screenshots/ux-after-2026-11-08",
+          "improvement": "Связать выбор интерфейсного варианта с результатами задач студентов; при необходимости провести новую реальную итерацию.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "A06",
+      "title": "Контекст и документы для агентов",
+      "weight": "1",
+      "evidence": "AGENTS.md:7–17; app/learning.py; app/services.py; app/campus.py; static/campus.js; docs/api-contracts.md",
+      "checks": [
+        {
+          "id": "A06.1",
+          "criterion": "A",
+          "requirement": "Есть AGENTS.md с целью и инвариантами",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "AGENTS.md:7–17; app/learning.py; app/services.py; app/campus.py; static/campus.js; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A06.2",
+          "criterion": "A",
+          "requirement": "Контракты API описаны отдельно",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "AGENTS.md:7–17; app/learning.py; app/services.py; app/campus.py; static/campus.js; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A06.3",
+          "criterion": "A",
+          "requirement": "Карта проекта в инструкциях соответствует всем текущим модулям и слоям UI",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "AGENTS.md:7–17; app/learning.py; app/services.py; app/campus.py; static/campus.js; docs/api-contracts.md",
+          "improvement": "Обновить карту AGENTS.md: включить learning/services/campus, их модели, CSS и соответствующие тесты; сохранить ограничения.",
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "A06.4",
+          "criterion": "A",
+          "requirement": "Есть воспроизводимые команды проверок",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "AGENTS.md:7–17; app/learning.py; app/services.py; app/campus.py; static/campus.js; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A06.5",
+          "criterion": "A",
+          "requirement": "Границы данных, ролей и допустимых утверждений явно заданы",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "AGENTS.md:7–17; app/learning.py; app/services.py; app/campus.py; static/campus.js; docs/api-contracts.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        }
+      ]
+    },
+    {
+      "id": "A07",
+      "title": "Прозрачность инструментов и ручного вклада",
+      "weight": "1.25",
+      "evidence": "docs/process.md:74–91,151,158–166; docs/ai-log.md:69–81",
+      "checks": [
+        {
+          "id": "A07.1",
+          "criterion": "A",
+          "requirement": "ИИ-инструменты названы вместе с назначением",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/process.md:74–91,151,158–166; docs/ai-log.md:69–81",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–1 день; второй пункт требует участия капитана",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A07.2",
+          "criterion": "A",
+          "requirement": "Обычные программы и библиотеки не выдаются за нейросети",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/process.md:74–91,151,158–166; docs/ai-log.md:69–81",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–1 день; второй пункт требует участия капитана",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A07.3",
+          "criterion": "A",
+          "requirement": "Не заявлены неиспользованные модели, интервью и внешняя независимая экспертиза",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/process.md:74–91,151,158–166; docs/ai-log.md:69–81",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–1 день; второй пункт требует участия капитана",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A07.4",
+          "criterion": "A",
+          "requirement": "Единый актуальный реестр охватывает все итерации, доступные версии и неизвестные сведения",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "docs/process.md:74–91,151,158–166; docs/ai-log.md:69–81",
+          "improvement": "Свести инструменты всех итераций в один реестр: назначение, этап, результат, доступные версии; неизвестное указать явно.",
+          "priority": "P1",
+          "effort": "0,5–1 день; второй пункт требует участия капитана",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "A07.5",
+          "criterion": "A",
+          "requirement": "Ручные решения и проверки капитана фактически подтверждены им, граница с ИИ ясна",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "docs/process.md:74–91,151,158–166; docs/ai-log.md:69–81",
+          "improvement": "Получить от капитана фактическое описание его решений и ручных шагов, не восстанавливая их вымышленной ретроспективой.",
+          "priority": "P1",
+          "effort": "0,5–1 день; второй пункт требует участия капитана",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "A08",
+      "title": "Актуальность и ясность отчёта процесса",
+      "weight": "1",
+      "evidence": "docs/process.md:3,158–166; docs/ATLAS_Process_Report.pdf; docs/ATLAS_Campus_3_Report.pdf",
+      "checks": [
+        {
+          "id": "A08.1",
+          "criterion": "A",
+          "requirement": "Объяснены проблема и выбор разделов",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/process.md:3,158–166; docs/ATLAS_Process_Report.pdf; docs/ATLAS_Campus_3_Report.pdf",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A08.2",
+          "criterion": "A",
+          "requirement": "Вход, хранение и защита описаны простыми словами",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/process.md:3,158–166; docs/ATLAS_Process_Report.pdf; docs/ATLAS_Campus_3_Report.pdf",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A08.3",
+          "criterion": "A",
+          "requirement": "Есть скриншоты ключевых этапов",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/process.md:3,158–166; docs/ATLAS_Process_Report.pdf; docs/ATLAS_Campus_3_Report.pdf",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A08.4",
+          "criterion": "A",
+          "requirement": "Один актуальный документ описывает финальную версию без смешения исторических результатов",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/process.md:3,158–166; docs/ATLAS_Process_Report.pdf; docs/ATLAS_Campus_3_Report.pdf",
+          "improvement": "Собрать один актуальный отчёт версии 3.1 с текущими снимками и явно выделенной историей; PDF или доступный документ.",
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "A08.5",
+          "criterion": "A",
+          "requirement": "Из отчёта легко перейти к конкретным доказательствам нужной функции и проверки",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/process.md:3,158–166; docs/ATLAS_Process_Report.pdf; docs/ATLAS_Campus_3_Report.pdf",
+          "improvement": "Добавить компактный указатель «критерий → решение → первичный артефакт → проверка → версия».",
+          "priority": "P0",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "A09",
+      "title": "Воспроизводимость процесса",
+      "weight": "0.5",
+      "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; docs/verification/ux-release-2026-11-08.json; README.md",
+      "checks": [
+        {
+          "id": "A09.1",
+          "criterion": "A",
+          "requirement": "Исходники доступны в локальном чистом архиве",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; docs/verification/ux-release-2026-11-08.json; README.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "2–4 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A09.2",
+          "criterion": "A",
+          "requirement": "Зависимости и запуск описаны",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; docs/verification/ux-release-2026-11-08.json; README.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "2–4 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A09.3",
+          "criterion": "A",
+          "requirement": "Проверки имеют машинные результаты",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; docs/verification/ux-release-2026-11-08.json; README.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "2–4 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A09.4",
+          "criterion": "A",
+          "requirement": "Текущие исходники связаны с хешами приёмки",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; docs/verification/ux-release-2026-11-08.json; README.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "2–4 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A09.5",
+          "criterion": "A",
+          "requirement": "Один манифест связывает финальные исходники, отчёт, снимки и демонстрацию",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; docs/verification/ux-release-2026-11-08.json; README.md",
+          "improvement": "Подготовить единый манифест конкурсной версии с хешами и ссылками на исходники, отчёт и доказательства.",
+          "priority": "P2",
+          "effort": "2–4 часа",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "A10",
+      "title": "Наглядность демонстрации работы с ИИ",
+      "weight": "0.25",
+      "evidence": "docs/jury-guide.md; docs/demo-video-script.md; docs/process.md:153,166",
+      "checks": [
+        {
+          "id": "A10.1",
+          "criterion": "A",
+          "requirement": "Есть короткий сценарий показа",
+          "passed": true,
+          "points": "0.05",
+          "evidence": "docs/jury-guide.md; docs/demo-video-script.md; docs/process.md:153,166",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–1 день",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A10.2",
+          "criterion": "A",
+          "requirement": "Сценарий охватывает студентов и сотрудника",
+          "passed": true,
+          "points": "0.05",
+          "evidence": "docs/jury-guide.md; docs/demo-video-script.md; docs/process.md:153,166",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–1 день",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A10.3",
+          "criterion": "A",
+          "requirement": "Есть реальные изображения результата",
+          "passed": true,
+          "points": "0.05",
+          "evidence": "docs/jury-guide.md; docs/demo-video-script.md; docs/process.md:153,166",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–1 день",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A10.4",
+          "criterion": "A",
+          "requirement": "Локальные снимки явно отделены от проверки публичного сайта",
+          "passed": true,
+          "points": "0.05",
+          "evidence": "docs/jury-guide.md; docs/demo-video-script.md; docs/process.md:153,166",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–1 день",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "A10.5",
+          "criterion": "A",
+          "requirement": "Есть актуальная короткая демонстрация или равноценная аннотированная последовательность с понятными подписями",
+          "passed": false,
+          "points": "0.05",
+          "evidence": "docs/jury-guide.md; docs/demo-video-script.md; docs/process.md:153,166",
+          "improvement": "Сделать актуальную демонстрацию до пяти минут либо компактную аннотированную последовательность; в видео добавить субтитры.",
+          "priority": "P2",
+          "effort": "0,5–1 день",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "E01",
+      "title": "Работоспособность пяти основных сценариев",
+      "weight": "1.5",
+      "evidence": "outputs/contest-assessment-2026-11-08/pytest-results.xml; tests/test_api.py; tests/test_frontend_contracts.py",
+      "checks": [
+        {
+          "id": "E01.1",
+          "criterion": "E",
+          "requirement": "Вход и профиль работают на настоящем API",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "outputs/contest-assessment-2026-11-08/pytest-results.xml; tests/test_api.py; tests/test_frontend_contracts.py",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E01.2",
+          "criterion": "E",
+          "requirement": "Расписание дня и недели работает",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "outputs/contest-assessment-2026-11-08/pytest-results.xml; tests/test_api.py; tests/test_frontend_contracts.py",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E01.3",
+          "criterion": "E",
+          "requirement": "Оценки и сессия доступны владельцу",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "outputs/contest-assessment-2026-11-08/pytest-results.xml; tests/test_api.py; tests/test_frontend_contracts.py",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E01.4",
+          "criterion": "E",
+          "requirement": "Создание заявки, статус и результат проходят через сервер",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "outputs/contest-assessment-2026-11-08/pytest-results.xml; tests/test_api.py; tests/test_frontend_contracts.py",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E01.5",
+          "criterion": "E",
+          "requirement": "Уведомления загружаются и меняют состояние чтения",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "outputs/contest-assessment-2026-11-08/pytest-results.xml; tests/test_api.py; tests/test_frontend_contracts.py",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        }
+      ]
+    },
+    {
+      "id": "E02",
+      "title": "Разделение данных и ролей",
+      "weight": "1.5",
+      "evidence": "tests/test_api.py; tests/test_security.py; tests/test_extension_frontend_security.py; outputs/contest-assessment-2026-11-08/security-probes.json",
+      "checks": [
+        {
+          "id": "E02.1",
+          "criterion": "E",
+          "requirement": "Студент не читает чужие личные записи по прямому ID",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "tests/test_api.py; tests/test_security.py; tests/test_extension_frontend_security.py; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E02.2",
+          "criterion": "E",
+          "requirement": "Владелец записи назначается сервером",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "tests/test_api.py; tests/test_security.py; tests/test_extension_frontend_security.py; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E02.3",
+          "criterion": "E",
+          "requirement": "Студент и сотрудник ограничены своей ролью",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "tests/test_api.py; tests/test_security.py; tests/test_extension_frontend_security.py; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E02.4",
+          "criterion": "E",
+          "requirement": "Выдача документов и другие экспорты проверяют владельца",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "tests/test_api.py; tests/test_security.py; tests/test_extension_frontend_security.py; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E02.5",
+          "criterion": "E",
+          "requirement": "Смена аккаунта и поздние ответы не раскрывают данные прежнего пользователя",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "tests/test_api.py; tests/test_security.py; tests/test_extension_frontend_security.py; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        }
+      ]
+    },
+    {
+      "id": "E03",
+      "title": "Защита входа, запросов и данных",
+      "weight": "1.25",
+      "evidence": "app/main.py:213–255,463–500; app/services.py:223–243,352–357,432–438; tests/test_security.py",
+      "checks": [
+        {
+          "id": "E03.1",
+          "criterion": "E",
+          "requirement": "Пароли хешируются, токены сеанса защищены",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "app/main.py:213–255,463–500; app/services.py:223–243,352–357,432–438; tests/test_security.py",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E03.2",
+          "criterion": "E",
+          "requirement": "CSRF, чужой Origin и неверные роли отклоняются",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "app/main.py:213–255,463–500; app/services.py:223–243,352–357,432–438; tests/test_security.py",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E03.3",
+          "criterion": "E",
+          "requirement": "Пользовательский HTML и выгрузки безопасно экранированы",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "app/main.py:213–255,463–500; app/services.py:223–243,352–357,432–438; tests/test_security.py",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E03.4",
+          "criterion": "E",
+          "requirement": "Размер тела, входные данные, заголовки и production-настройки ограничены",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "app/main.py:213–255,463–500; app/services.py:223–243,352–357,432–438; tests/test_security.py",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E03.5",
+          "criterion": "E",
+          "requirement": "Публичные демонстрационные операции записи имеют разумные квоты и защиту от захламления",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "app/main.py:213–255,463–500; app/services.py:223–243,352–357,432–438; tests/test_security.py",
+          "improvement": "Добавить квоты и ограничения частоты создания заявок, тем, объявлений и событий с понятной ошибкой и защитой обычного пути жюри.",
+          "priority": "P0",
+          "effort": "1–2 дня",
+          "gap_type": "Доработка или подготовка"
+        }
+      ]
+    },
+    {
+      "id": "E04",
+      "title": "Сохранение и устойчивость изменений",
+      "weight": "1.25",
+      "evidence": "tests/test_workflows.py; tests/test_extension_workflows.py; app/services.py:235–243; docs/verification/deployment-report.json; docs/release-checklist.md:43",
+      "checks": [
+        {
+          "id": "E04.1",
+          "criterion": "E",
+          "requirement": "Записи переживают новый процесс на текущей локальной БД",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "tests/test_workflows.py; tests/test_extension_workflows.py; app/services.py:235–243; docs/verification/deployment-report.json; docs/release-checklist.md:43",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E04.2",
+          "criterion": "E",
+          "requirement": "Миграции и повторная инициализация сохраняют данные",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "tests/test_workflows.py; tests/test_extension_workflows.py; app/services.py:235–243; docs/verification/deployment-report.json; docs/release-checklist.md:43",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E04.3",
+          "criterion": "E",
+          "requirement": "Конкурирующие решения сотрудника не затирают историю",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "tests/test_workflows.py; tests/test_extension_workflows.py; app/services.py:235–243; docs/verification/deployment-report.json; docs/release-checklist.md:43",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E04.4",
+          "criterion": "E",
+          "requirement": "Повтор важной отправки после неопределенного результата не создает дубль",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "tests/test_workflows.py; tests/test_extension_workflows.py; app/services.py:235–243; docs/verification/deployment-report.json; docs/release-checklist.md:43",
+          "improvement": "Распространить идемпотентность на темы/сообщения и другие важные создания; проверить потерю ответа после сохранения.",
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Подтверждённый дефект"
+        },
+        {
+          "id": "E04.5",
+          "criterion": "E",
+          "requirement": "Текущая версия прошла сохранение, миграции и восстановление на выбранной целевой БД и HTTPS",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "tests/test_workflows.py; tests/test_extension_workflows.py; app/services.py:235–243; docs/verification/deployment-report.json; docs/release-checklist.md:43",
+          "improvement": "Перепроверить именно 3.1 на целевой БД с HTTPS, перезапуском, конкуренцией и восстановлением новых сущностей; для текущего плана это PostgreSQL.",
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "E05",
+      "title": "Мобильное и браузерное исполнение",
+      "weight": "1",
+      "evidence": "docs/verification/ux-release-2026-11-08.json; docs/usability-2026-11-08.md:77; tests/test_usability.py",
+      "checks": [
+        {
+          "id": "E05.1",
+          "criterion": "E",
+          "requirement": "Основные разделы работают при 360 px без горизонтального переполнения",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; docs/usability-2026-11-08.md:77; tests/test_usability.py",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–2 дня при наличии устройств",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E05.2",
+          "criterion": "E",
+          "requirement": "Проверена ширина 390 px",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; docs/usability-2026-11-08.md:77; tests/test_usability.py",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–2 дня при наличии устройств",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E05.3",
+          "criterion": "E",
+          "requirement": "Проверены планшет и широкий экран",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; docs/usability-2026-11-08.md:77; tests/test_usability.py",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–2 дня при наличии устройств",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E05.4",
+          "criterion": "E",
+          "requirement": "Основные сценарии пройдены на физическом Android с записью версии браузера",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; docs/usability-2026-11-08.md:77; tests/test_usability.py",
+          "improvement": "Пройти пять основных задач на физическом Android: вход, расписание, оценки, заявка и результат.",
+          "priority": "P0",
+          "effort": "0,5–2 дня при наличии устройств",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "E05.5",
+          "criterion": "E",
+          "requirement": "Основные сценарии пройдены на физическом iPhone/Safari и ещё одном настольном движке",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; docs/usability-2026-11-08.md:77; tests/test_usability.py",
+          "improvement": "Пройти тот же набор на физическом iPhone/Safari и Firefox; устранить обнаруженные несовместимости.",
+          "priority": "P0",
+          "effort": "0,5–2 дня при наличии устройств",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "E06",
+      "title": "Доступность конкурсного стенда",
+      "weight": "1",
+      "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+      "checks": [
+        {
+          "id": "E06.1",
+          "criterion": "E",
+          "requirement": "Есть фактически открывающийся публичный адрес с валидным HTTPS",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+          "improvement": "Опубликовать текущую проверенную сборку на постоянном адресе с HTTPS.",
+          "priority": "P0",
+          "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "E06.2",
+          "criterion": "E",
+          "requirement": "Есть реальная проверка из России без VPN с датой и способом",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+          "improvement": "Проверить опубликованный адрес с реального российского подключения без VPN и сохранить датированное подтверждение.",
+          "priority": "P0",
+          "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "E06.3",
+          "criterion": "E",
+          "requirement": "Организованы мониторинг, оплаченный период и восстановление до 28 ноября",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+          "improvement": "Обеспечить хостинг до 28 ноября, мониторинг доступности, ответственного за сбои и проверенное восстановление.",
+          "priority": "P0",
+          "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "E06.4",
+          "criterion": "E",
+          "requirement": "Два студента и сотрудник проверены на публичном адресе со сквозным результатом",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+          "improvement": "Пройти на публичном адресе путь двух студентов и сотрудника; проверить вход, изоляцию, заявку и скачивание результата.",
+          "priority": "P0",
+          "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "E06.5",
+          "criterion": "E",
+          "requirement": "Демонстрационные даты и записи сохраняют осмысленные сценарии до конца конкурса",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+          "improvement": "Подготовить будущие вымышленные консультации и события до 28 ноября; проверить даты 8/15/28 ноября без сброса накопленных данных.",
+          "priority": "P0",
+          "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+          "gap_type": "Доработка или подготовка"
+        }
+      ]
+    },
+    {
+      "id": "E07",
+      "title": "Диагностика и эксплуатационная ясность",
+      "weight": "1",
+      "evidence": "app/main.py:54,196,210; docs/operations.md; README.md:3; outputs/contest-assessment-2026-11-08/security-probes.json",
+      "checks": [
+        {
+          "id": "E07.1",
+          "criterion": "E",
+          "requirement": "Есть проверки живости и готовности приложения",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "app/main.py:54,196,210; docs/operations.md; README.md:3; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E07.2",
+          "criterion": "E",
+          "requirement": "Личные ответы запрещают небезопасное кеширование",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "app/main.py:54,196,210; docs/operations.md; README.md:3; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E07.3",
+          "criterion": "E",
+          "requirement": "Ошибки возвращаются контролируемо без внутренних трасс пользователю",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "app/main.py:54,196,210; docs/operations.md; README.md:3; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E07.4",
+          "criterion": "E",
+          "requirement": "Есть инструкции резервирования, обновления и восстановления",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "app/main.py:54,196,210; docs/operations.md; README.md:3; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E07.5",
+          "criterion": "E",
+          "requirement": "Версия в API, интерфейсе, отчёте и архиве совпадает и идентифицирует сборку",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "app/main.py:54,196,210; docs/operations.md; README.md:3; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": "Ввести единый источник версии и идентификатор сборки: сейчас API сообщает 3.0.0, а README — 3.1.",
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Подтверждённый дефект"
+        }
+      ]
+    },
+    {
+      "id": "E08",
+      "title": "Корректность при росте данных",
+      "weight": "0.5",
+      "evidence": "tests/test_pagination.py; tests/test_campus_security.py; app/services.py:177,232,292,309,362–369; app/learning.py:35–49,74–85; outputs/contest-assessment-2026-11-08/security-probes.json",
+      "checks": [
+        {
+          "id": "E08.1",
+          "criterion": "E",
+          "requirement": "Основные заявки и уведомления имеют серверные страницы и точные счётчики",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "tests/test_pagination.py; tests/test_campus_security.py; app/services.py:177,232,292,309,362–369; app/learning.py:35–49,74–85; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–3 дня на пакет роста",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E08.2",
+          "criterion": "E",
+          "requirement": "Поиск и выбор будущих записей выполняются до ограничения результатов",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "tests/test_pagination.py; tests/test_campus_security.py; app/services.py:177,232,292,309,362–369; app/learning.py:35–49,74–85; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": "Исправить библиотечный поиск и списки будущих событий/консультаций: фильтр до LIMIT, архив отдельно, доступ к 301-й записи.",
+          "priority": "P1",
+          "effort": "1–3 дня на пакет роста",
+          "gap_type": "Подтверждённый дефект"
+        },
+        {
+          "id": "E08.3",
+          "criterion": "E",
+          "requirement": "Длинная история услуг и переписки доступна через страницы",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "tests/test_pagination.py; tests/test_campus_security.py; app/services.py:177,232,292,309,362–369; app/learning.py:35–49,74–85; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": "Добавить согласованную пагинацию тем, истории выдач и записей; показать total/has_more и переходы в интерфейсе.",
+          "priority": "P1",
+          "effort": "1–3 дня на пакет роста",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "E08.4",
+          "criterion": "E",
+          "requirement": "Нагрузка и число запросов БД измерены на объявленном объёме, узкие места устранены",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "tests/test_pagination.py; tests/test_campus_security.py; app/services.py:177,232,292,309,362–369; app/learning.py:35–49,74–85; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": "Задать ожидаемый размер стенда, измерить p95 и SQL-запросы; устранить N+1 и другие узкие места по результатам.",
+          "priority": "P1",
+          "effort": "1–3 дня на пакет роста",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "E08.5",
+          "criterion": "E",
+          "requirement": "Конкуренция за последнее место или экземпляр обрабатывается атомарно",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "tests/test_pagination.py; tests/test_campus_security.py; app/services.py:177,232,292,309,362–369; app/learning.py:35–49,74–85; outputs/contest-assessment-2026-11-08/security-probes.json",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–3 дня на пакет роста",
+          "gap_type": "Зачтено"
+        }
+      ]
+    },
+    {
+      "id": "E09",
+      "title": "Передача исходников и воспроизводимый запуск",
+      "weight": "0.5",
+      "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; dist/ux-release-verification-2026-11-08.json; scripts/package.ps1; README.md",
+      "checks": [
+        {
+          "id": "E09.1",
+          "criterion": "E",
+          "requirement": "Существует текущий архив исходников",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; dist/ux-release-verification-2026-11-08.json; scripts/package.ps1; README.md",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–1 день",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E09.2",
+          "criterion": "E",
+          "requirement": "Архив исключает рабочие БД и секретные файлы",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; dist/ux-release-verification-2026-11-08.json; scripts/package.ps1; README.md",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–1 день",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E09.3",
+          "criterion": "E",
+          "requirement": "Документирован локальный запуск и тестовые аккаунты",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; dist/ux-release-verification-2026-11-08.json; scripts/package.ps1; README.md",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "0,5–1 день",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E09.4",
+          "criterion": "E",
+          "requirement": "Архив или репозиторий доступен жюри по проверенной ссылке",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; dist/ux-release-verification-2026-11-08.json; scripts/package.ps1; README.md",
+          "improvement": "Разместить актуальный чистый архив или репозиторий и проверить доступ жюри по ссылке.",
+          "priority": "P0",
+          "effort": "0,5–1 день",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "E09.5",
+          "criterion": "E",
+          "requirement": "Финальный передаваемый архив проверен запуском в чистом окружении",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; dist/ux-release-verification-2026-11-08.json; scripts/package.ps1; README.md",
+          "improvement": "Развернуть именно передаваемый архив в чистом окружении и пройти краткую приёмку; привязать результат к его хешу.",
+          "priority": "P0",
+          "effort": "0,5–1 день",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "E10",
+      "title": "Остальные обязательные ограничения",
+      "weight": "0.5",
+      "evidence": "docs/third-party.md; LICENSE; static/index.html; app/config.py; docs/security-review.md; scripts/package.ps1",
+      "checks": [
+        {
+          "id": "E10.1",
+          "criterion": "E",
+          "requirement": "В проекте только вымышленные учебные данные",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "docs/third-party.md; LICENSE; static/index.html; app/config.py; docs/security-review.md; scripts/package.ps1",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E10.2",
+          "criterion": "E",
+          "requirement": "Сохранен публичный статус конкурсного концепта",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "docs/third-party.md; LICENSE; static/index.html; app/config.py; docs/security-review.md; scripts/package.ps1",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E10.3",
+          "criterion": "E",
+          "requirement": "Не используется официальный логотип университета",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "docs/third-party.md; LICENSE; static/index.html; app/config.py; docs/security-review.md; scripts/package.ps1",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E10.4",
+          "criterion": "E",
+          "requirement": "Сторонние материалы и библиотеки имеют указанные разрешающие лицензии",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "docs/third-party.md; LICENSE; static/index.html; app/config.py; docs/security-review.md; scripts/package.ps1",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "E10.5",
+          "criterion": "E",
+          "requirement": "В исходниках и клиенте не обнаружены реальные сервисные пароли и ключи в проверенном объеме",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "docs/third-party.md; LICENSE; static/index.html; app/config.py; docs/security-review.md; scripts/package.ps1",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        }
+      ]
+    },
+    {
+      "id": "Q01",
+      "title": "Находимость и навигация",
+      "weight": "1.25",
+      "evidence": "static/app.js:102–113; docs/usability-2026-11-08.md; tests/test_usability.py; docs/research.md:24–27",
+      "checks": [
+        {
+          "id": "Q01.1",
+          "criterion": "Q",
+          "requirement": "Главные действия постоянно доступны",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "static/app.js:102–113; docs/usability-2026-11-08.md; tests/test_usability.py; docs/research.md:24–27",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "в рамках пользовательского теста",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q01.2",
+          "criterion": "Q",
+          "requirement": "Дополнительные разделы доступны через группы и поиск",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "static/app.js:102–113; docs/usability-2026-11-08.md; tests/test_usability.py; docs/research.md:24–27",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "в рамках пользовательского теста",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q01.3",
+          "criterion": "Q",
+          "requirement": "Текущее местоположение и активный пункт обозначены",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "static/app.js:102–113; docs/usability-2026-11-08.md; tests/test_usability.py; docs/research.md:24–27",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "в рамках пользовательского теста",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q01.4",
+          "criterion": "Q",
+          "requirement": "Новые пользователи находят пять главных задач максимум за два перехода в заданном тесте",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "static/app.js:102–113; docs/usability-2026-11-08.md; tests/test_usability.py; docs/research.md:24–27",
+          "improvement": "Измерить нахождение пяти главных задач новыми пользователями; устранить препятствия до заранее принятого порога успеха.",
+          "priority": "P1",
+          "effort": "в рамках пользовательского теста",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "Q01.5",
+          "criterion": "Q",
+          "requirement": "Названия и группы понятны без объяснения исследователя и проверены поисковыми задачами",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "static/app.js:102–113; docs/usability-2026-11-08.md; tests/test_usability.py; docs/research.md:24–27",
+          "improvement": "Проверить названия и группировку разделов методом поиска задач; уточнить неоднозначные названия по наблюдениям.",
+          "priority": "P1",
+          "effort": "в рамках пользовательского теста",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "Q02",
+      "title": "Успешность основных задач",
+      "weight": "1.5",
+      "evidence": "static/app.js; docs/jury-guide.md; docs/research.md:24–27; docs/usability-2026-11-08.md:44–58",
+      "checks": [
+        {
+          "id": "Q02.1",
+          "criterion": "Q",
+          "requirement": "Формы явно объясняют действие и результат",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "static/app.js; docs/jury-guide.md; docs/research.md:24–27; docs/usability-2026-11-08.md:44–58",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "2–4 дня вместе с I01/Q01",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q02.2",
+          "criterion": "Q",
+          "requirement": "Статусы и следующий шаг заявки видны",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "static/app.js; docs/jury-guide.md; docs/research.md:24–27; docs/usability-2026-11-08.md:44–58",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "2–4 дня вместе с I01/Q01",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q02.3",
+          "criterion": "Q",
+          "requirement": "Каждый шаг основного пути имеет явное действие и подтверждение результата",
+          "passed": true,
+          "points": "0.3",
+          "evidence": "static/app.js; docs/jury-guide.md; docs/research.md:24–27; docs/usability-2026-11-08.md:44–58",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "2–4 дня вместе с I01/Q01",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q02.4",
+          "criterion": "Q",
+          "requirement": "Не менее 4 из 5 участников завершают каждую основную задачу без подсказки в исследовательском раунде",
+          "passed": false,
+          "points": "0.3",
+          "evidence": "static/app.js; docs/jury-guide.md; docs/research.md:24–27; docs/usability-2026-11-08.md:44–58",
+          "improvement": "Провести наблюдаемый тест пяти основных задач, записывая завершение, время, ошибки и подсказки по каждому участнику.",
+          "priority": "P1",
+          "effort": "2–4 дня вместе с I01/Q01",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "Q02.5",
+          "criterion": "Q",
+          "requirement": "После исправлений повторный тест подтверждает уменьшение ошибок или времени без ухудшения других задач",
+          "passed": false,
+          "points": "0.3",
+          "evidence": "static/app.js; docs/jury-guide.md; docs/research.md:24–27; docs/usability-2026-11-08.md:44–58",
+          "improvement": "Исправить обнаруженные препятствия и провести повторный тест сопоставимых задач; сохранить исходные результаты.",
+          "priority": "P1",
+          "effort": "2–4 дня вместе с I01/Q01",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "Q03",
+      "title": "Визуальная цельность и аккуратность",
+      "weight": "1.25",
+      "evidence": "static/style.css; static/usability.css:364; screenshots/ux-after-2026-11-08/360-home.png; screenshots/ux-after-2026-11-08/1440-home.png",
+      "checks": [
+        {
+          "id": "Q03.1",
+          "criterion": "Q",
+          "requirement": "Есть единая система цвета, типографики и компонентов",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "static/style.css; static/usability.css:364; screenshots/ux-after-2026-11-08/360-home.png; screenshots/ux-after-2026-11-08/1440-home.png",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q03.2",
+          "criterion": "Q",
+          "requirement": "Главное действие визуально выделено",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "static/style.css; static/usability.css:364; screenshots/ux-after-2026-11-08/360-home.png; screenshots/ux-after-2026-11-08/1440-home.png",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q03.3",
+          "criterion": "Q",
+          "requirement": "Списки и подробности имеют понятную иерархию",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "static/style.css; static/usability.css:364; screenshots/ux-after-2026-11-08/360-home.png; screenshots/ux-after-2026-11-08/1440-home.png",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q03.4",
+          "criterion": "Q",
+          "requirement": "Стиль и собственная символика последовательны на разных страницах",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "static/style.css; static/usability.css:364; screenshots/ux-after-2026-11-08/360-home.png; screenshots/ux-after-2026-11-08/1440-home.png",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q03.5",
+          "criterion": "Q",
+          "requirement": "Ключевые подписи не разрываются нелепо и проверены на минимальной ширине",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "static/style.css; static/usability.css:364; screenshots/ux-after-2026-11-08/360-home.png; screenshots/ux-after-2026-11-08/1440-home.png",
+          "improvement": "Исправить перенос «Расписани / е» в нижнем меню на 360 px; проверить 360/375/390 px без уменьшения читаемости и области нажатия.",
+          "priority": "P2",
+          "effort": "1–3 часа",
+          "gap_type": "Подтверждённый дефект"
+        }
+      ]
+    },
+    {
+      "id": "Q04",
+      "title": "Доступность для разных способов взаимодействия",
+      "weight": "1.25",
+      "evidence": "docs/verification/ux-release-2026-11-08.json; scripts/accessibility_check.py; tests/test_usability.py; docs/release-checklist.md",
+      "checks": [
+        {
+          "id": "Q04.1",
+          "criterion": "Q",
+          "requirement": "Текущие состояния прошли автоматические правила доступности",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; scripts/accessibility_check.py; tests/test_usability.py; docs/release-checklist.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q04.2",
+          "criterion": "Q",
+          "requirement": "Клавиатура, модальные окна и возврат фокуса проверяются",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; scripts/accessibility_check.py; tests/test_usability.py; docs/release-checklist.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q04.3",
+          "criterion": "Q",
+          "requirement": "Есть подписи, семантика и альтернативы цветовым сигналам",
+          "passed": true,
+          "points": "0.25",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; scripts/accessibility_check.py; tests/test_usability.py; docs/release-checklist.md",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q04.4",
+          "criterion": "Q",
+          "requirement": "Основные задачи пройдены вручную со скринридером, ошибки исправлены",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; scripts/accessibility_check.py; tests/test_usability.py; docs/release-checklist.md",
+          "improvement": "Пройти основные задачи с NVDA и хотя бы одним мобильным скринридером; проверить озвучивание обновлений и порядок фокуса.",
+          "priority": "P1",
+          "effort": "1–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "Q04.5",
+          "criterion": "Q",
+          "requirement": "Увеличение текста, масштаб и переразмещение контента проверены по применимым WCAG 2.2 AA",
+          "passed": false,
+          "points": "0.25",
+          "evidence": "docs/verification/ux-release-2026-11-08.json; scripts/accessibility_check.py; tests/test_usability.py; docs/release-checklist.md",
+          "improvement": "Проверить увеличение текста до 200%, reflow при эквиваленте 320 CSS px и перекрытие фокуса; исправить применимые нарушения.",
+          "priority": "P1",
+          "effort": "1–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "Q05",
+      "title": "Загрузка, ошибки и актуальность данных",
+      "weight": "1",
+      "evidence": "static/app.js:67,389–390,314–315; docs/usability-2026-11-08.md; tests/test_frontend_contracts.py",
+      "checks": [
+        {
+          "id": "Q05.1",
+          "criterion": "Q",
+          "requirement": "Загрузка обозначена доступным состоянием",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "static/app.js:67,389–390,314–315; docs/usability-2026-11-08.md; tests/test_frontend_contracts.py",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q05.2",
+          "criterion": "Q",
+          "requirement": "Пустой ответ объясняет ситуацию и следующий шаг",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "static/app.js:67,389–390,314–315; docs/usability-2026-11-08.md; tests/test_frontend_contracts.py",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q05.3",
+          "criterion": "Q",
+          "requirement": "Сетевая ошибка допускает понятный повтор",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "static/app.js:67,389–390,314–315; docs/usability-2026-11-08.md; tests/test_frontend_contracts.py",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q05.4",
+          "criterion": "Q",
+          "requirement": "Потеря связи обозначена постоянно, пока состояние актуально",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "static/app.js:67,389–390,314–315; docs/usability-2026-11-08.md; tests/test_frontend_contracts.py",
+          "improvement": "Добавить постоянный индикатор отсутствия связи вместо единственного исчезающего сообщения.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "Q05.5",
+          "criterion": "Q",
+          "requirement": "После восстановления видно, насколько свежи данные, и есть безопасное обновление",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "static/app.js:67,389–390,314–315; docs/usability-2026-11-08.md; tests/test_frontend_contracts.py",
+          "improvement": "Показать время актуальности и действие обновления; после возвращения связи обновлять безопасно, не стирая открытую форму.",
+          "priority": "P1",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        }
+      ]
+    },
+    {
+      "id": "Q06",
+      "title": "Сохранность работы пользователя",
+      "weight": "1",
+      "evidence": "static/app.js:84,235–252,305; tests/test_usability.py; outputs/contest-assessment-2026-11-08/ui-probes.json",
+      "checks": [
+        {
+          "id": "Q06.1",
+          "criterion": "Q",
+          "requirement": "Закрытие изменённой формы предупреждает о потере",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "static/app.js:84,235–252,305; tests/test_usability.py; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q06.2",
+          "criterion": "Q",
+          "requirement": "Обычная сетевая ошибка сохраняет введённый текст",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "static/app.js:84,235–252,305; tests/test_usability.py; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q06.3",
+          "criterion": "Q",
+          "requirement": "Черновик заявки отделён от поданной заявки и от другого пользователя",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "static/app.js:84,235–252,305; tests/test_usability.py; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": null,
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q06.4",
+          "criterion": "Q",
+          "requirement": "Потеря сеанса позволяет безопасно восстановить ввод после входа того же пользователя",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "static/app.js:84,235–252,305; tests/test_usability.py; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": "Исправить потерю черновика при 401: временно сохранять ввод, восстанавливать лишь после подтверждения той же личности.",
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Подтверждённый дефект"
+        },
+        {
+          "id": "Q06.5",
+          "criterion": "Q",
+          "requirement": "Длинные формы имеют понятное восстановление после перезагрузки или закрытия вкладки",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "static/app.js:84,235–252,305; tests/test_usability.py; outputs/contest-assessment-2026-11-08/ui-probes.json",
+          "improvement": "Добавить личные черновики для длинных форм или другое безопасное восстановление; согласовать подпись «Сохранить на потом» со сроком хранения.",
+          "priority": "P0",
+          "effort": "1–3 дня",
+          "gap_type": "Доработка или подготовка"
+        }
+      ]
+    },
+    {
+      "id": "Q07",
+      "title": "Удобство на телефоне",
+      "weight": "1",
+      "evidence": "screenshots/ux-after-2026-11-08; static/usability.css; docs/usability-2026-11-08.md:77",
+      "checks": [
+        {
+          "id": "Q07.1",
+          "criterion": "Q",
+          "requirement": "Макет перестраивается под узкую ширину",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "screenshots/ux-after-2026-11-08; static/usability.css; docs/usability-2026-11-08.md:77",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "вместе с E05, 0,5–1 день дополнительной проверки",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q07.2",
+          "criterion": "Q",
+          "requirement": "Главные действия доступны в нижнем меню",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "screenshots/ux-after-2026-11-08; static/usability.css; docs/usability-2026-11-08.md:77",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "вместе с E05, 0,5–1 день дополнительной проверки",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q07.3",
+          "criterion": "Q",
+          "requirement": "Длинные сведения раскрываются без скрытия основного действия",
+          "passed": true,
+          "points": "0.2",
+          "evidence": "screenshots/ux-after-2026-11-08; static/usability.css; docs/usability-2026-11-08.md:77",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "вместе с E05, 0,5–1 день дополнительной проверки",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q07.4",
+          "criterion": "Q",
+          "requirement": "Реальная клавиатура, поворот и увеличение текста не перекрывают ввод и подтверждение",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "screenshots/ux-after-2026-11-08; static/usability.css; docs/usability-2026-11-08.md:77",
+          "improvement": "Проверить формы на телефонах с открытой клавиатурой, поворотом и системным увеличением текста; исправить перекрытия.",
+          "priority": "P1",
+          "effort": "вместе с E05, 0,5–1 день дополнительной проверки",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "Q07.5",
+          "criterion": "Q",
+          "requirement": "Размеры и расстояния целей нажатия проверены в реальном сенсорном использовании",
+          "passed": false,
+          "points": "0.2",
+          "evidence": "screenshots/ux-after-2026-11-08; static/usability.css; docs/usability-2026-11-08.md:77",
+          "improvement": "Измерить и проверить пальцем цели нажатия, соседние действия и мелкие подписи; довести проблемные элементы.",
+          "priority": "P1",
+          "effort": "вместе с E05, 0,5–1 день дополнительной проверки",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "Q08",
+      "title": "Скорость и визуальная стабильность",
+      "weight": "0.75",
+      "evidence": "static/app.js:67–85; static/index.html; package.json; docs/release-checklist.md; отсутствие отчёта производительности в просмотренных материалах",
+      "checks": [
+        {
+          "id": "Q08.1",
+          "criterion": "Q",
+          "requirement": "Запросы имеют конечное ожидание и позволяют вернуть управление пользователю",
+          "passed": true,
+          "points": "0.15",
+          "evidence": "static/app.js:67–85; static/index.html; package.json; docs/release-checklist.md; отсутствие отчёта производительности в просмотренных материалах",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–2 дня на весь пакет производительности",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q08.2",
+          "criterion": "Q",
+          "requirement": "Сбой необязательных внешних ресурсов не блокирует основные сценарии",
+          "passed": true,
+          "points": "0.15",
+          "evidence": "static/app.js:67–85; static/index.html; package.json; docs/release-checklist.md; отсутствие отчёта производительности в просмотренных материалах",
+          "improvement": null,
+          "priority": "P1",
+          "effort": "1–2 дня на весь пакет производительности",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q08.3",
+          "criterion": "Q",
+          "requirement": "Холодная загрузка измерена на объявленном профиле сети и устройства, бюджет выполняется",
+          "passed": false,
+          "points": "0.15",
+          "evidence": "static/app.js:67–85; static/index.html; package.json; docs/release-checklist.md; отсутствие отчёта производительности в просмотренных материалах",
+          "improvement": "Измерить холодную загрузку и размер передачи на ограниченной мобильной сети; установить и выполнить бюджет.",
+          "priority": "P1",
+          "effort": "1–2 дня на весь пакет производительности",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "Q08.4",
+          "criterion": "Q",
+          "requirement": "LCP и CLS измерены в указанной среде и достигают согласованных ориентиров",
+          "passed": false,
+          "points": "0.15",
+          "evidence": "static/app.js:67–85; static/index.html; package.json; docs/release-checklist.md; отсутствие отчёта производительности в просмотренных материалах",
+          "improvement": "Измерить LCP и CLS на реальном стенде; ориентиры 2,5 с и 0,1, с явным разделением лабораторных и полевых данных.",
+          "priority": "P1",
+          "effort": "1–2 дня на весь пакет производительности",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "Q08.5",
+          "criterion": "Q",
+          "requirement": "Отклик главных действий измерен, медленные взаимодействия устранены",
+          "passed": false,
+          "points": "0.15",
+          "evidence": "static/app.js:67–85; static/index.html; package.json; docs/release-checklist.md; отсутствие отчёта производительности в просмотренных материалах",
+          "improvement": "Измерить отклик поиска, переходов, открытия форм и фильтров; ориентир INP 200 мс использовать только при корректной методике сбора.",
+          "priority": "P1",
+          "effort": "1–2 дня на весь пакет производительности",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "Q09",
+      "title": "Понятность показателей и учебных действий",
+      "weight": "0.5",
+      "evidence": "static/app.js:178–186; screenshots/ux-after-2026-11-08/360-grades.png; docs/research.md",
+      "checks": [
+        {
+          "id": "Q09.1",
+          "criterion": "Q",
+          "requirement": "Демонстрационные правила ясно помечены",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "static/app.js:178–186; screenshots/ux-after-2026-11-08/360-grades.png; docs/research.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q09.2",
+          "criterion": "Q",
+          "requirement": "Отсутствующая оценка отличается от нуля",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "static/app.js:178–186; screenshots/ux-after-2026-11-08/360-grades.png; docs/research.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q09.3",
+          "criterion": "Q",
+          "requirement": "Срок и статус заявки выражены понятными словами",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "static/app.js:178–186; screenshots/ux-after-2026-11-08/360-grades.png; docs/research.md",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q09.4",
+          "criterion": "Q",
+          "requirement": "Средний балл и тренды объясняют формулу, период и значение",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "static/app.js:178–186; screenshots/ux-after-2026-11-08/360-grades.png; docs/research.md",
+          "improvement": "Добавить короткое объяснение расчёта среднего и периода стрелок роста/снижения, проверив согласованность с данными.",
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        },
+        {
+          "id": "Q09.5",
+          "criterion": "Q",
+          "requirement": "Пользователь правильно различает личное выполнение, отправку работы и выставление оценки",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "static/app.js:178–186; screenshots/ux-after-2026-11-08/360-grades.png; docs/research.md",
+          "improvement": "Проверить понимание учебных действий методом пересказа; устранить путаницу в подписях и подтверждениях.",
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    },
+    {
+      "id": "Q10",
+      "title": "Точность обратной связи и результата",
+      "weight": "0.5",
+      "evidence": "static/app.js:85,169; tests/test_api.py; docs/api-contracts.md; screenshots/ux-after-2026-11-08/360-schedule.png",
+      "checks": [
+        {
+          "id": "Q10.1",
+          "criterion": "Q",
+          "requirement": "Скачиваемые документы и календарь являются реальными файлами",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "static/app.js:85,169; tests/test_api.py; docs/api-contracts.md; screenshots/ux-after-2026-11-08/360-schedule.png",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q10.2",
+          "criterion": "Q",
+          "requirement": "Подтверждение, отказ и демонстрационный статус результата выражены явно",
+          "passed": true,
+          "points": "0.1",
+          "evidence": "static/app.js:85,169; tests/test_api.py; docs/api-contracts.md; screenshots/ux-after-2026-11-08/360-schedule.png",
+          "improvement": null,
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Зачтено"
+        },
+        {
+          "id": "Q10.3",
+          "criterion": "Q",
+          "requirement": "Ошибка ввода привязана к полю и ведёт фокус к месту исправления",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "static/app.js:85,169; tests/test_api.py; docs/api-contracts.md; screenshots/ux-after-2026-11-08/360-schedule.png",
+          "improvement": "Разбирать ошибки 422 по полям, сохранять ввод и фокусировать первое неверное поле с конкретной подсказкой.",
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "Q10.4",
+          "criterion": "Q",
+          "requirement": "Сообщение о переносе занятия позволяет сразу увидеть изменённую пару и прежние/новые данные",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "static/app.js:85,169; tests/test_api.py; docs/api-contracts.md; screenshots/ux-after-2026-11-08/360-schedule.png",
+          "improvement": "Сделать баннер изменений расписания переходом к нужному дню и паре с понятным сравнением старого и нового значения.",
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Доработка или подготовка"
+        },
+        {
+          "id": "Q10.5",
+          "criterion": "Q",
+          "requirement": "Выходные документы и календарь проверены печатью и открытием в распространённом приложении",
+          "passed": false,
+          "points": "0.1",
+          "evidence": "static/app.js:85,169; tests/test_api.py; docs/api-contracts.md; screenshots/ux-after-2026-11-08/360-schedule.png",
+          "improvement": "Проверить печать образца на A4, кириллицу и длинные строки, а ICS — импортом с правильными временем и длительностью.",
+          "priority": "P2",
+          "effort": "0,5–2 дня",
+          "gap_type": "Исследование, проверка или доказательства"
+        }
+      ]
+    }
+  ],
+  "improvements": [
+    {
+      "id": "I01.3",
+      "criterion": "I",
+      "requirement": "Есть реальные обезличенные случаи и согласие участников исследования",
+      "passed": false,
+      "points": "0.3",
+      "evidence": "docs/research.md:3–27",
+      "improvement": "Провести 5–8 добровольных интервью или наблюдений и сохранить обезличенные факты последних учебных затруднений.",
+      "priority": "P1",
+      "effort": "2–5 дней на весь исследовательский пакет",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "I01.4",
+      "criterion": "I",
+      "requirement": "Приоритеты проблем обоснованы частотой в выборке и тяжестью последствий",
+      "passed": false,
+      "points": "0.3",
+      "evidence": "docs/research.md:3–27",
+      "improvement": "Ранжировать обнаруженные проблемы по частоте в своей выборке, последствиям и затратам времени.",
+      "priority": "P1",
+      "effort": "2–5 дней на весь исследовательский пакет",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "I01.5",
+      "criterion": "I",
+      "requirement": "Проверены отличающиеся ситуации студентов и опровергающие наблюдения",
+      "passed": false,
+      "points": "0.3",
+      "evidence": "docs/research.md:3–27",
+      "improvement": "Включить разные курсы и привычки использования телефона; зафиксировать случаи, когда исходная гипотеза не подтвердилась.",
+      "priority": "P1",
+      "effort": "2–5 дней на весь исследовательский пакет",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "I03.3",
+      "criterion": "I",
+      "requirement": "Ближайшая пара открывается на правильной дате и неделе",
+      "passed": false,
+      "points": "0.3",
+      "evidence": "static/app.js:153–179; static/campus.js:106–108,170–180; outputs/contest-assessment-2026-11-08/ui-probes.json",
+      "improvement": "Исправить переход с ближайшей пары: передавать дату, неделю и идентификатор занятия, выделять его.",
+      "priority": "P0",
+      "effort": "0,5–2 дня",
+      "gap_type": "Подтверждённый дефект"
+    },
+    {
+      "id": "I03.4",
+      "criterion": "I",
+      "requirement": "Учебный риск ведёт к подходящей дисциплине, работе или консультации",
+      "passed": false,
+      "points": "0.3",
+      "evidence": "static/app.js:153–179; static/campus.js:106–108,170–180; outputs/contest-assessment-2026-11-08/ui-probes.json",
+      "improvement": "Сохранять предметный контекст в цепочке «риск → материал / работа / консультация» и объяснять отсутствие подходящего действия.",
+      "priority": "P0",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "I03.5",
+      "criterion": "I",
+      "requirement": "Запись календаря и дедлайн открывают конкретный объект без повторного поиска",
+      "passed": false,
+      "points": "0.3",
+      "evidence": "static/app.js:153–179; static/campus.js:106–108,170–180; outputs/contest-assessment-2026-11-08/ui-probes.json",
+      "improvement": "Добавить точные переходы из общего календаря и строк дедлайнов к работам, событиям, задачам и занятиям.",
+      "priority": "P0",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "I04.3",
+      "criterion": "I",
+      "requirement": "Сравнены альтернативные способы решения проблемы и показано отличие выбранного",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "docs/research.md:9–17; docs/process.md:7–19; static/app.js:155–180",
+      "improvement": "Сравнить 3–5 доступных альтернатив решения задачи по результату для студента; отделить реальные наблюдения от модельных конкурентов.",
+      "priority": "P1",
+      "effort": "2–5 дней; зависит от I01",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "I04.4",
+      "criterion": "I",
+      "requirement": "Один сильный авторский сценарий получил подтверждение ценности у студентов",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "docs/research.md:9–17; docs/process.md:7–19; static/app.js:155–180",
+      "improvement": "Выбрать и довести один отличительный сценарий после исследования: например, путь от учебного риска к выполнимому плану и результату.",
+      "priority": "P1",
+      "effort": "2–5 дней; зависит от I01",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "I04.5",
+      "criterion": "I",
+      "requirement": "Повторное использование подтверждает полезность отличительного сценария",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "docs/research.md:9–17; docs/process.md:7–19; static/app.js:155–180",
+      "improvement": "Проверить этот сценарий в коротком повторном использовании с добровольцами и скорректировать его по наблюдениям.",
+      "priority": "P1",
+      "effort": "2–5 дней; зависит от I01",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "I05.4",
+      "criterion": "I",
+      "requirement": "Разные потребности отражены в проверенных сценариях, а не в выдуманных персонах",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "README.md; docs/research.md; static/app.js:155–180; static/campus.js",
+      "improvement": "Сформировать сценарии для подтверждённых исследованием различий: например, первый курс, работающий студент, редкое посещение кабинета.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "I05.5",
+      "criterion": "I",
+      "requirement": "Предусмотрен полезный следующий шаг при отсутствии доступного слота или материала",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "README.md; docs/research.md; static/app.js:155–180; static/campus.js",
+      "improvement": "Спроектировать продолжение пути при отсутствии консультации/материала: подходящий контакт, сообщение или другой доступный шаг.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "I06.4",
+      "criterion": "I",
+      "requirement": "Приоритет всех дополнительных функций связан с доказанной потребностью",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/usability-2026-11-08.md; static/app.js:36–52,111–113,184–186; docs/features.md",
+      "improvement": "Построить матрицу ценности 27 разделов; убрать из первых экранов то, что не помогает выбранным главным задачам.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "I06.5",
+      "criterion": "I",
+      "requirement": "Связанные личные задачи, сдачи и результаты согласованы и соединены на уровне сценария",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/usability-2026-11-08.md; static/app.js:36–52,111–113,184–186; docs/features.md",
+      "improvement": "Проверить и уточнить общую модель «Мой план / Личные задачи / Сдать работу / Оценки», связать связанные записи.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "I07.4",
+      "criterion": "I",
+      "requirement": "Три востребованные услуги имеют подходящие поля и условия, выбранные по исследованию",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/features.md:115; docs/api-contracts.md; tests/test_api.py; static/app.js:245–260",
+      "improvement": "Для трёх приоритетных услуг добавить подходящие поля, пояснения и проверки вместо универсального комментария.",
+      "priority": "P1",
+      "effort": "1–3 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "I07.5",
+      "criterion": "I",
+      "requirement": "Продуман путь уточнения, исправления или отмены обращения без потери истории",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/features.md:115; docs/api-contracts.md; tests/test_api.py; static/app.js:245–260",
+      "improvement": "Добавить осмысленные уточнение/исправление/отмену там, где это требуется сценарием, с допустимыми переходами и сохранённой историей.",
+      "priority": "P1",
+      "effort": "1–3 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "I08.5",
+      "criterion": "I",
+      "requirement": "Актуальные исследовательские и демонстрационные материалы не описывают удалённые возможности",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "README.md; docs/research.md:17; docs/demo-video-script.md:5; docs/process.md:164",
+      "improvement": "Удалить устаревшие упоминания «Навигатора» из актуального исследования и сценария демонстрации либо явно пометить их историческими.",
+      "priority": "P2",
+      "effort": "1–2 часа",
+      "gap_type": "Подтверждённый дефект"
+    },
+    {
+      "id": "I09.4",
+      "criterion": "I",
+      "requirement": "Есть конкретная инструкция адаптации к другой вымышленной структуре факультета",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "app/main.py; app/learning.py; app/services.py; app/campus.py; docs/api-contracts.md",
+      "improvement": "Описать, какие справочники, услуги и правила меняются при адаптации к другому вымышленному факультету.",
+      "priority": "P2",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "I09.5",
+      "criterion": "I",
+      "requirement": "Такая адаптация показана на небольшом примере без настоящих вузовских данных",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "app/main.py; app/learning.py; app/services.py; app/campus.py; docs/api-contracts.md",
+      "improvement": "Подготовить небольшой проверяемый пример такой адаптации без копирования приложения и без реальной интеграции.",
+      "priority": "P2",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "I10.5",
+      "criterion": "I",
+      "requirement": "По итогам исследования есть обоснованные решения «сохранить / изменить / отложить» и критерии их успеха",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "docs/research.md; docs/jury-guide.md; docs/features.md",
+      "improvement": "Завершить цикл исследования журналом решений по функциям и повторной проверкой существенных изменений.",
+      "priority": "P1",
+      "effort": "0,5–2 дня после исследования",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A01.5",
+      "criterion": "A",
+      "requirement": "Для ключевых этапов доступны исходные постановки с датой и результатом",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "AGENTS.md; docs/contest-brief.md; docs/api-contracts.md; docs/ai-log.md:3,56",
+      "improvement": "Приложить подлинные постановки 6–10 ключевых задач с датой, функцией и ссылкой на полученный результат.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A02.4",
+      "criterion": "A",
+      "requirement": "Есть подлинные фрагменты нескольких полных цепочек «задача → ответ → уточнение»",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "docs/ai-log.md; docs/process.md:93–117,158–166",
+      "improvement": "Добавить первичные фрагменты диалогов для 3–5 полных итераций; пересказы подписать как пересказы.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A02.5",
+      "criterion": "A",
+      "requirement": "Показано, почему изменение постановки улучшило результат, с сопоставлением артефактов",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "docs/ai-log.md; docs/process.md:93–117,158–166",
+      "improvement": "Для этих итераций объяснить влияние уточнений на результат и показать соответствующие версии до/после.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A03.5",
+      "criterion": "A",
+      "requirement": "Несколько историй ошибок снабжены первичными доказательствами провала и успешной перепроверки",
+      "passed": false,
+      "points": "0.3",
+      "evidence": "docs/process.md:103–117,162; docs/security-review.md; docs/ux-security-review-2026-11-08.md; tests/",
+      "improvement": "Оформить 3–5 коротких доказательных историй ошибок: исходный провал, исходное сообщение, исправление и прошедшая регрессия.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A04.5",
+      "criterion": "A",
+      "requirement": "Фактические поручения и интеграционные решения доступны в первичных материалах",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "AGENTS.md; docs/process.md:74–91,158–166; docs/ai-log.md",
+      "improvement": "Включить реальные поручения и результаты внутренних review с обозначением, кто интегрировал решения и какие замечания отклонил.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A05.4",
+      "criterion": "A",
+      "requirement": "Показаны реально созданные альтернативы и неудачные варианты",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/process.md:19,91,158–166; docs/ai-log.md:79; screenshots/ux-before-2026-11-08; screenshots/ux-after-2026-11-08",
+      "improvement": "Собрать реальные альтернативы дизайна и текстов, включая отклоненные, с указанием причины выбора.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A05.5",
+      "criterion": "A",
+      "requirement": "Выбор варианта объяснен проверяемой пользой и пользовательскими наблюдениями",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/process.md:19,91,158–166; docs/ai-log.md:79; screenshots/ux-before-2026-11-08; screenshots/ux-after-2026-11-08",
+      "improvement": "Связать выбор интерфейсного варианта с результатами задач студентов; при необходимости провести новую реальную итерацию.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A06.3",
+      "criterion": "A",
+      "requirement": "Карта проекта в инструкциях соответствует всем текущим модулям и слоям UI",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "AGENTS.md:7–17; app/learning.py; app/services.py; app/campus.py; static/campus.js; docs/api-contracts.md",
+      "improvement": "Обновить карту AGENTS.md: включить learning/services/campus, их модели, CSS и соответствующие тесты; сохранить ограничения.",
+      "priority": "P2",
+      "effort": "1–3 часа",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "A07.4",
+      "criterion": "A",
+      "requirement": "Единый актуальный реестр охватывает все итерации, доступные версии и неизвестные сведения",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "docs/process.md:74–91,151,158–166; docs/ai-log.md:69–81",
+      "improvement": "Свести инструменты всех итераций в один реестр: назначение, этап, результат, доступные версии; неизвестное указать явно.",
+      "priority": "P1",
+      "effort": "0,5–1 день; второй пункт требует участия капитана",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A07.5",
+      "criterion": "A",
+      "requirement": "Ручные решения и проверки капитана фактически подтверждены им, граница с ИИ ясна",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "docs/process.md:74–91,151,158–166; docs/ai-log.md:69–81",
+      "improvement": "Получить от капитана фактическое описание его решений и ручных шагов, не восстанавливая их вымышленной ретроспективой.",
+      "priority": "P1",
+      "effort": "0,5–1 день; второй пункт требует участия капитана",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A08.4",
+      "criterion": "A",
+      "requirement": "Один актуальный документ описывает финальную версию без смешения исторических результатов",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/process.md:3,158–166; docs/ATLAS_Process_Report.pdf; docs/ATLAS_Campus_3_Report.pdf",
+      "improvement": "Собрать один актуальный отчёт версии 3.1 с текущими снимками и явно выделенной историей; PDF или доступный документ.",
+      "priority": "P0",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A08.5",
+      "criterion": "A",
+      "requirement": "Из отчёта легко перейти к конкретным доказательствам нужной функции и проверки",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/process.md:3,158–166; docs/ATLAS_Process_Report.pdf; docs/ATLAS_Campus_3_Report.pdf",
+      "improvement": "Добавить компактный указатель «критерий → решение → первичный артефакт → проверка → версия».",
+      "priority": "P0",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A09.5",
+      "criterion": "A",
+      "requirement": "Один манифест связывает финальные исходники, отчёт, снимки и демонстрацию",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; docs/verification/ux-release-2026-11-08.json; README.md",
+      "improvement": "Подготовить единый манифест конкурсной версии с хешами и ссылками на исходники, отчёт и доказательства.",
+      "priority": "P2",
+      "effort": "2–4 часа",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "A10.5",
+      "criterion": "A",
+      "requirement": "Есть актуальная короткая демонстрация или равноценная аннотированная последовательность с понятными подписями",
+      "passed": false,
+      "points": "0.05",
+      "evidence": "docs/jury-guide.md; docs/demo-video-script.md; docs/process.md:153,166",
+      "improvement": "Сделать актуальную демонстрацию до пяти минут либо компактную аннотированную последовательность; в видео добавить субтитры.",
+      "priority": "P2",
+      "effort": "0,5–1 день",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "E03.5",
+      "criterion": "E",
+      "requirement": "Публичные демонстрационные операции записи имеют разумные квоты и защиту от захламления",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "app/main.py:213–255,463–500; app/services.py:223–243,352–357,432–438; tests/test_security.py",
+      "improvement": "Добавить квоты и ограничения частоты создания заявок, тем, объявлений и событий с понятной ошибкой и защитой обычного пути жюри.",
+      "priority": "P0",
+      "effort": "1–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "E04.4",
+      "criterion": "E",
+      "requirement": "Повтор важной отправки после неопределенного результата не создает дубль",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "tests/test_workflows.py; tests/test_extension_workflows.py; app/services.py:235–243; docs/verification/deployment-report.json; docs/release-checklist.md:43",
+      "improvement": "Распространить идемпотентность на темы/сообщения и другие важные создания; проверить потерю ответа после сохранения.",
+      "priority": "P0",
+      "effort": "1–3 дня",
+      "gap_type": "Подтверждённый дефект"
+    },
+    {
+      "id": "E04.5",
+      "criterion": "E",
+      "requirement": "Текущая версия прошла сохранение, миграции и восстановление на выбранной целевой БД и HTTPS",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "tests/test_workflows.py; tests/test_extension_workflows.py; app/services.py:235–243; docs/verification/deployment-report.json; docs/release-checklist.md:43",
+      "improvement": "Перепроверить именно 3.1 на целевой БД с HTTPS, перезапуском, конкуренцией и восстановлением новых сущностей; для текущего плана это PostgreSQL.",
+      "priority": "P0",
+      "effort": "1–3 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "E05.4",
+      "criterion": "E",
+      "requirement": "Основные сценарии пройдены на физическом Android с записью версии браузера",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/verification/ux-release-2026-11-08.json; docs/usability-2026-11-08.md:77; tests/test_usability.py",
+      "improvement": "Пройти пять основных задач на физическом Android: вход, расписание, оценки, заявка и результат.",
+      "priority": "P0",
+      "effort": "0,5–2 дня при наличии устройств",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "E05.5",
+      "criterion": "E",
+      "requirement": "Основные сценарии пройдены на физическом iPhone/Safari и ещё одном настольном движке",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/verification/ux-release-2026-11-08.json; docs/usability-2026-11-08.md:77; tests/test_usability.py",
+      "improvement": "Пройти тот же набор на физическом iPhone/Safari и Firefox; устранить обнаруженные несовместимости.",
+      "priority": "P0",
+      "effort": "0,5–2 дня при наличии устройств",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "E06.1",
+      "criterion": "E",
+      "requirement": "Есть фактически открывающийся публичный адрес с валидным HTTPS",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+      "improvement": "Опубликовать текущую проверенную сборку на постоянном адресе с HTTPS.",
+      "priority": "P0",
+      "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "E06.2",
+      "criterion": "E",
+      "requirement": "Есть реальная проверка из России без VPN с датой и способом",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+      "improvement": "Проверить опубликованный адрес с реального российского подключения без VPN и сохранить датированное подтверждение.",
+      "priority": "P0",
+      "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "E06.3",
+      "criterion": "E",
+      "requirement": "Организованы мониторинг, оплаченный период и восстановление до 28 ноября",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+      "improvement": "Обеспечить хостинг до 28 ноября, мониторинг доступности, ответственного за сбои и проверенное восстановление.",
+      "priority": "P0",
+      "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "E06.4",
+      "criterion": "E",
+      "requirement": "Два студента и сотрудник проверены на публичном адресе со сквозным результатом",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+      "improvement": "Пройти на публичном адресе путь двух студентов и сотрудника; проверить вход, изоляцию, заявку и скачивание результата.",
+      "priority": "P0",
+      "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "E06.5",
+      "criterion": "E",
+      "requirement": "Демонстрационные даты и записи сохраняют осмысленные сценарии до конца конкурса",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "docs/release-checklist.md:102–109; docs/deployment.md; app/services_db.py:125–150; docs/process.md:153",
+      "improvement": "Подготовить будущие вымышленные консультации и события до 28 ноября; проверить даты 8/15/28 ноября без сброса накопленных данных.",
+      "priority": "P0",
+      "effort": "0,5–2 дня на запуск; сопровождение до 28 ноября",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "E07.5",
+      "criterion": "E",
+      "requirement": "Версия в API, интерфейсе, отчёте и архиве совпадает и идентифицирует сборку",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "app/main.py:54,196,210; docs/operations.md; README.md:3; outputs/contest-assessment-2026-11-08/security-probes.json",
+      "improvement": "Ввести единый источник версии и идентификатор сборки: сейчас API сообщает 3.0.0, а README — 3.1.",
+      "priority": "P2",
+      "effort": "1–3 часа",
+      "gap_type": "Подтверждённый дефект"
+    },
+    {
+      "id": "E08.2",
+      "criterion": "E",
+      "requirement": "Поиск и выбор будущих записей выполняются до ограничения результатов",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "tests/test_pagination.py; tests/test_campus_security.py; app/services.py:177,232,292,309,362–369; app/learning.py:35–49,74–85; outputs/contest-assessment-2026-11-08/security-probes.json",
+      "improvement": "Исправить библиотечный поиск и списки будущих событий/консультаций: фильтр до LIMIT, архив отдельно, доступ к 301-й записи.",
+      "priority": "P1",
+      "effort": "1–3 дня на пакет роста",
+      "gap_type": "Подтверждённый дефект"
+    },
+    {
+      "id": "E08.3",
+      "criterion": "E",
+      "requirement": "Длинная история услуг и переписки доступна через страницы",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "tests/test_pagination.py; tests/test_campus_security.py; app/services.py:177,232,292,309,362–369; app/learning.py:35–49,74–85; outputs/contest-assessment-2026-11-08/security-probes.json",
+      "improvement": "Добавить согласованную пагинацию тем, истории выдач и записей; показать total/has_more и переходы в интерфейсе.",
+      "priority": "P1",
+      "effort": "1–3 дня на пакет роста",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "E08.4",
+      "criterion": "E",
+      "requirement": "Нагрузка и число запросов БД измерены на объявленном объёме, узкие места устранены",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "tests/test_pagination.py; tests/test_campus_security.py; app/services.py:177,232,292,309,362–369; app/learning.py:35–49,74–85; outputs/contest-assessment-2026-11-08/security-probes.json",
+      "improvement": "Задать ожидаемый размер стенда, измерить p95 и SQL-запросы; устранить N+1 и другие узкие места по результатам.",
+      "priority": "P1",
+      "effort": "1–3 дня на пакет роста",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "E09.4",
+      "criterion": "E",
+      "requirement": "Архив или репозиторий доступен жюри по проверенной ссылке",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; dist/ux-release-verification-2026-11-08.json; scripts/package.ps1; README.md",
+      "improvement": "Разместить актуальный чистый архив или репозиторий и проверить доступ жюри по ссылке.",
+      "priority": "P0",
+      "effort": "0,5–1 день",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "E09.5",
+      "criterion": "E",
+      "requirement": "Финальный передаваемый архив проверен запуском в чистом окружении",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "dist/ATLAS-campus-source-20261108-010343.zip; dist/ux-release-verification-2026-11-08.json; scripts/package.ps1; README.md",
+      "improvement": "Развернуть именно передаваемый архив в чистом окружении и пройти краткую приёмку; привязать результат к его хешу.",
+      "priority": "P0",
+      "effort": "0,5–1 день",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q01.4",
+      "criterion": "Q",
+      "requirement": "Новые пользователи находят пять главных задач максимум за два перехода в заданном тесте",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "static/app.js:102–113; docs/usability-2026-11-08.md; tests/test_usability.py; docs/research.md:24–27",
+      "improvement": "Измерить нахождение пяти главных задач новыми пользователями; устранить препятствия до заранее принятого порога успеха.",
+      "priority": "P1",
+      "effort": "в рамках пользовательского теста",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q01.5",
+      "criterion": "Q",
+      "requirement": "Названия и группы понятны без объяснения исследователя и проверены поисковыми задачами",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "static/app.js:102–113; docs/usability-2026-11-08.md; tests/test_usability.py; docs/research.md:24–27",
+      "improvement": "Проверить названия и группировку разделов методом поиска задач; уточнить неоднозначные названия по наблюдениям.",
+      "priority": "P1",
+      "effort": "в рамках пользовательского теста",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q02.4",
+      "criterion": "Q",
+      "requirement": "Не менее 4 из 5 участников завершают каждую основную задачу без подсказки в исследовательском раунде",
+      "passed": false,
+      "points": "0.3",
+      "evidence": "static/app.js; docs/jury-guide.md; docs/research.md:24–27; docs/usability-2026-11-08.md:44–58",
+      "improvement": "Провести наблюдаемый тест пяти основных задач, записывая завершение, время, ошибки и подсказки по каждому участнику.",
+      "priority": "P1",
+      "effort": "2–4 дня вместе с I01/Q01",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q02.5",
+      "criterion": "Q",
+      "requirement": "После исправлений повторный тест подтверждает уменьшение ошибок или времени без ухудшения других задач",
+      "passed": false,
+      "points": "0.3",
+      "evidence": "static/app.js; docs/jury-guide.md; docs/research.md:24–27; docs/usability-2026-11-08.md:44–58",
+      "improvement": "Исправить обнаруженные препятствия и провести повторный тест сопоставимых задач; сохранить исходные результаты.",
+      "priority": "P1",
+      "effort": "2–4 дня вместе с I01/Q01",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q03.5",
+      "criterion": "Q",
+      "requirement": "Ключевые подписи не разрываются нелепо и проверены на минимальной ширине",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "static/style.css; static/usability.css:364; screenshots/ux-after-2026-11-08/360-home.png; screenshots/ux-after-2026-11-08/1440-home.png",
+      "improvement": "Исправить перенос «Расписани / е» в нижнем меню на 360 px; проверить 360/375/390 px без уменьшения читаемости и области нажатия.",
+      "priority": "P2",
+      "effort": "1–3 часа",
+      "gap_type": "Подтверждённый дефект"
+    },
+    {
+      "id": "Q04.4",
+      "criterion": "Q",
+      "requirement": "Основные задачи пройдены вручную со скринридером, ошибки исправлены",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "docs/verification/ux-release-2026-11-08.json; scripts/accessibility_check.py; tests/test_usability.py; docs/release-checklist.md",
+      "improvement": "Пройти основные задачи с NVDA и хотя бы одним мобильным скринридером; проверить озвучивание обновлений и порядок фокуса.",
+      "priority": "P1",
+      "effort": "1–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q04.5",
+      "criterion": "Q",
+      "requirement": "Увеличение текста, масштаб и переразмещение контента проверены по применимым WCAG 2.2 AA",
+      "passed": false,
+      "points": "0.25",
+      "evidence": "docs/verification/ux-release-2026-11-08.json; scripts/accessibility_check.py; tests/test_usability.py; docs/release-checklist.md",
+      "improvement": "Проверить увеличение текста до 200%, reflow при эквиваленте 320 CSS px и перекрытие фокуса; исправить применимые нарушения.",
+      "priority": "P1",
+      "effort": "1–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q05.4",
+      "criterion": "Q",
+      "requirement": "Потеря связи обозначена постоянно, пока состояние актуально",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "static/app.js:67,389–390,314–315; docs/usability-2026-11-08.md; tests/test_frontend_contracts.py",
+      "improvement": "Добавить постоянный индикатор отсутствия связи вместо единственного исчезающего сообщения.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "Q05.5",
+      "criterion": "Q",
+      "requirement": "После восстановления видно, насколько свежи данные, и есть безопасное обновление",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "static/app.js:67,389–390,314–315; docs/usability-2026-11-08.md; tests/test_frontend_contracts.py",
+      "improvement": "Показать время актуальности и действие обновления; после возвращения связи обновлять безопасно, не стирая открытую форму.",
+      "priority": "P1",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "Q06.4",
+      "criterion": "Q",
+      "requirement": "Потеря сеанса позволяет безопасно восстановить ввод после входа того же пользователя",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "static/app.js:84,235–252,305; tests/test_usability.py; outputs/contest-assessment-2026-11-08/ui-probes.json",
+      "improvement": "Исправить потерю черновика при 401: временно сохранять ввод, восстанавливать лишь после подтверждения той же личности.",
+      "priority": "P0",
+      "effort": "1–3 дня",
+      "gap_type": "Подтверждённый дефект"
+    },
+    {
+      "id": "Q06.5",
+      "criterion": "Q",
+      "requirement": "Длинные формы имеют понятное восстановление после перезагрузки или закрытия вкладки",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "static/app.js:84,235–252,305; tests/test_usability.py; outputs/contest-assessment-2026-11-08/ui-probes.json",
+      "improvement": "Добавить личные черновики для длинных форм или другое безопасное восстановление; согласовать подпись «Сохранить на потом» со сроком хранения.",
+      "priority": "P0",
+      "effort": "1–3 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "Q07.4",
+      "criterion": "Q",
+      "requirement": "Реальная клавиатура, поворот и увеличение текста не перекрывают ввод и подтверждение",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "screenshots/ux-after-2026-11-08; static/usability.css; docs/usability-2026-11-08.md:77",
+      "improvement": "Проверить формы на телефонах с открытой клавиатурой, поворотом и системным увеличением текста; исправить перекрытия.",
+      "priority": "P1",
+      "effort": "вместе с E05, 0,5–1 день дополнительной проверки",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q07.5",
+      "criterion": "Q",
+      "requirement": "Размеры и расстояния целей нажатия проверены в реальном сенсорном использовании",
+      "passed": false,
+      "points": "0.2",
+      "evidence": "screenshots/ux-after-2026-11-08; static/usability.css; docs/usability-2026-11-08.md:77",
+      "improvement": "Измерить и проверить пальцем цели нажатия, соседние действия и мелкие подписи; довести проблемные элементы.",
+      "priority": "P1",
+      "effort": "вместе с E05, 0,5–1 день дополнительной проверки",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q08.3",
+      "criterion": "Q",
+      "requirement": "Холодная загрузка измерена на объявленном профиле сети и устройства, бюджет выполняется",
+      "passed": false,
+      "points": "0.15",
+      "evidence": "static/app.js:67–85; static/index.html; package.json; docs/release-checklist.md; отсутствие отчёта производительности в просмотренных материалах",
+      "improvement": "Измерить холодную загрузку и размер передачи на ограниченной мобильной сети; установить и выполнить бюджет.",
+      "priority": "P1",
+      "effort": "1–2 дня на весь пакет производительности",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q08.4",
+      "criterion": "Q",
+      "requirement": "LCP и CLS измерены в указанной среде и достигают согласованных ориентиров",
+      "passed": false,
+      "points": "0.15",
+      "evidence": "static/app.js:67–85; static/index.html; package.json; docs/release-checklist.md; отсутствие отчёта производительности в просмотренных материалах",
+      "improvement": "Измерить LCP и CLS на реальном стенде; ориентиры 2,5 с и 0,1, с явным разделением лабораторных и полевых данных.",
+      "priority": "P1",
+      "effort": "1–2 дня на весь пакет производительности",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q08.5",
+      "criterion": "Q",
+      "requirement": "Отклик главных действий измерен, медленные взаимодействия устранены",
+      "passed": false,
+      "points": "0.15",
+      "evidence": "static/app.js:67–85; static/index.html; package.json; docs/release-checklist.md; отсутствие отчёта производительности в просмотренных материалах",
+      "improvement": "Измерить отклик поиска, переходов, открытия форм и фильтров; ориентир INP 200 мс использовать только при корректной методике сбора.",
+      "priority": "P1",
+      "effort": "1–2 дня на весь пакет производительности",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q09.4",
+      "criterion": "Q",
+      "requirement": "Средний балл и тренды объясняют формулу, период и значение",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "static/app.js:178–186; screenshots/ux-after-2026-11-08/360-grades.png; docs/research.md",
+      "improvement": "Добавить короткое объяснение расчёта среднего и периода стрелок роста/снижения, проверив согласованность с данными.",
+      "priority": "P2",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q09.5",
+      "criterion": "Q",
+      "requirement": "Пользователь правильно различает личное выполнение, отправку работы и выставление оценки",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "static/app.js:178–186; screenshots/ux-after-2026-11-08/360-grades.png; docs/research.md",
+      "improvement": "Проверить понимание учебных действий методом пересказа; устранить путаницу в подписях и подтверждениях.",
+      "priority": "P2",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    },
+    {
+      "id": "Q10.3",
+      "criterion": "Q",
+      "requirement": "Ошибка ввода привязана к полю и ведёт фокус к месту исправления",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "static/app.js:85,169; tests/test_api.py; docs/api-contracts.md; screenshots/ux-after-2026-11-08/360-schedule.png",
+      "improvement": "Разбирать ошибки 422 по полям, сохранять ввод и фокусировать первое неверное поле с конкретной подсказкой.",
+      "priority": "P2",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "Q10.4",
+      "criterion": "Q",
+      "requirement": "Сообщение о переносе занятия позволяет сразу увидеть изменённую пару и прежние/новые данные",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "static/app.js:85,169; tests/test_api.py; docs/api-contracts.md; screenshots/ux-after-2026-11-08/360-schedule.png",
+      "improvement": "Сделать баннер изменений расписания переходом к нужному дню и паре с понятным сравнением старого и нового значения.",
+      "priority": "P2",
+      "effort": "0,5–2 дня",
+      "gap_type": "Доработка или подготовка"
+    },
+    {
+      "id": "Q10.5",
+      "criterion": "Q",
+      "requirement": "Выходные документы и календарь проверены печатью и открытием в распространённом приложении",
+      "passed": false,
+      "points": "0.1",
+      "evidence": "static/app.js:85,169; tests/test_api.py; docs/api-contracts.md; screenshots/ux-after-2026-11-08/360-schedule.png",
+      "improvement": "Проверить печать образца на A4, кириллицу и длинные строки, а ICS — импортом с правильными временем и длительностью.",
+      "priority": "P2",
+      "effort": "0,5–2 дня",
+      "gap_type": "Исследование, проверка или доказательства"
+    }
+  ],
+  "bundles": [
+    {
+      "id": "B01",
+      "title": "Исследовать потребности и обосновать приоритеты",
+      "conditions": [
+        "I01.3",
+        "I01.4",
+        "I01.5",
+        "I05.4",
+        "I06.4",
+        "I10.5"
+      ],
+      "delta_40": "1.4"
+    },
+    {
+      "id": "B02",
+      "title": "Проверить понятность и успешность задач с людьми",
+      "conditions": [
+        "Q01.4",
+        "Q01.5",
+        "Q02.4",
+        "Q02.5",
+        "Q09.5"
+      ],
+      "delta_40": "1.20"
+    },
+    {
+      "id": "B03",
+      "title": "Довести отличительный сценарий и подтвердить его ценность",
+      "conditions": [
+        "I04.3",
+        "I04.4",
+        "I04.5",
+        "I05.5"
+      ],
+      "delta_40": "0.95"
+    },
+    {
+      "id": "B04",
+      "title": "Соединить пару, календарь, дедлайны и учебный риск с точными действиями",
+      "conditions": [
+        "I03.3",
+        "I03.4",
+        "I03.5",
+        "Q10.4"
+      ],
+      "delta_40": "1.0"
+    },
+    {
+      "id": "B05",
+      "title": "Углубить важные услуги и согласовать учебные действия",
+      "conditions": [
+        "I06.5",
+        "I07.4",
+        "I07.5"
+      ],
+      "delta_40": "0.6"
+    },
+    {
+      "id": "B06",
+      "title": "Показать адаптацию к другому вымышленному факультету",
+      "conditions": [
+        "I09.4",
+        "I09.5"
+      ],
+      "delta_40": "0.2"
+    },
+    {
+      "id": "B07",
+      "title": "Приложить подлинные промпты, итерации, ошибки и поручения",
+      "conditions": [
+        "A01.5",
+        "A02.4",
+        "A02.5",
+        "A03.5",
+        "A04.5"
+      ],
+      "delta_40": "1.25"
+    },
+    {
+      "id": "B08",
+      "title": "Показать варианты дизайна и обоснованные решения ИИ",
+      "conditions": [
+        "A05.4",
+        "A05.5"
+      ],
+      "delta_40": "0.4"
+    },
+    {
+      "id": "B09",
+      "title": "Собрать актуальный отчёт и реестр инструментов/ручных шагов",
+      "conditions": [
+        "A07.4",
+        "A07.5",
+        "A08.4",
+        "A08.5"
+      ],
+      "delta_40": "0.90"
+    },
+    {
+      "id": "B10",
+      "title": "Согласовать документацию, версию, манифест и демонстрацию",
+      "conditions": [
+        "I08.5",
+        "A06.3",
+        "A09.5",
+        "A10.5",
+        "E07.5"
+      ],
+      "delta_40": "0.65"
+    },
+    {
+      "id": "B11",
+      "title": "Защитить запись от дублей, захламления и потери ввода",
+      "conditions": [
+        "E03.5",
+        "E04.4",
+        "Q06.4",
+        "Q06.5"
+      ],
+      "delta_40": "0.90"
+    },
+    {
+      "id": "B12",
+      "title": "Подготовить публичную подачу, целевую БД и работу до финала",
+      "conditions": [
+        "E04.5",
+        "E06.1",
+        "E06.2",
+        "E06.3",
+        "E06.4",
+        "E06.5",
+        "E09.4",
+        "E09.5"
+      ],
+      "delta_40": "1.45"
+    },
+    {
+      "id": "B13",
+      "title": "Проверить реальные телефоны, браузеры и сенсорные сценарии",
+      "conditions": [
+        "E05.4",
+        "E05.5",
+        "Q07.4",
+        "Q07.5"
+      ],
+      "delta_40": "0.8"
+    },
+    {
+      "id": "B14",
+      "title": "Исправить большие каталоги и измерить рост нагрузки",
+      "conditions": [
+        "E08.2",
+        "E08.3",
+        "E08.4"
+      ],
+      "delta_40": "0.3"
+    },
+    {
+      "id": "B15",
+      "title": "Исправить перенос подписи нижнего меню",
+      "conditions": [
+        "Q03.5"
+      ],
+      "delta_40": "0.25"
+    },
+    {
+      "id": "B16",
+      "title": "Проверить скринридеры, масштаб и доступность",
+      "conditions": [
+        "Q04.4",
+        "Q04.5"
+      ],
+      "delta_40": "0.50"
+    },
+    {
+      "id": "B17",
+      "title": "Показать связь и актуальность данных",
+      "conditions": [
+        "Q05.4",
+        "Q05.5"
+      ],
+      "delta_40": "0.4"
+    },
+    {
+      "id": "B18",
+      "title": "Измерить и улучшить загрузку, стабильность и отклик",
+      "conditions": [
+        "Q08.3",
+        "Q08.4",
+        "Q08.5"
+      ],
+      "delta_40": "0.45"
+    },
+    {
+      "id": "B19",
+      "title": "Уточнить показатели, ошибки полей и выходные файлы",
+      "conditions": [
+        "Q09.4",
+        "Q10.3",
+        "Q10.5"
+      ],
+      "delta_40": "0.3"
+    }
+  ],
+  "synthetic_profiles": [
+    {
+      "name": "Визуально сильный макет",
+      "counts": {
+        "I": [
+          2,
+          4,
+          1,
+          2,
+          1,
+          3,
+          1,
+          4,
+          1,
+          1
+        ],
+        "A": [
+          2,
+          2,
+          0,
+          1,
+          3,
+          1,
+          1,
+          3,
+          0,
+          3
+        ],
+        "E": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2
+        ],
+        "Q": [
+          3,
+          1,
+          5,
+          1,
+          1,
+          0,
+          2,
+          1,
+          2,
+          1
+        ]
+      },
+      "ready": "Нет: работающего ядра нет",
+      "scores": {
+        "I": "4.00",
+        "A": "3.00",
+        "E": "0.20",
+        "Q": "3.60"
+      },
+      "total": "10.80"
+    },
+    {
+      "name": "Компактный кабинет с сильным ядром",
+      "counts": {
+        "I": [
+          3,
+          5,
+          5,
+          3,
+          4,
+          5,
+          4,
+          5,
+          3,
+          4
+        ],
+        "A": [
+          4,
+          3,
+          4,
+          3,
+          3,
+          4,
+          4,
+          4,
+          4,
+          4
+        ],
+        "E": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          4,
+          4,
+          5,
+          5
+        ],
+        "Q": [
+          5,
+          5,
+          4,
+          4,
+          5,
+          5,
+          5,
+          4,
+          4,
+          4
+        ]
+      },
+      "ready": "Условно да, по допущениям профиля",
+      "scores": {
+        "I": "8.20",
+        "A": "7.35",
+        "E": "9.70",
+        "Q": "9.15"
+      },
+      "total": "34.40"
+    },
+    {
+      "name": "Много разделов, мало связности",
+      "counts": {
+        "I": [
+          1,
+          5,
+          2,
+          2,
+          3,
+          1,
+          2,
+          4,
+          2,
+          1
+        ],
+        "A": [
+          3,
+          2,
+          2,
+          2,
+          2,
+          3,
+          2,
+          2,
+          2,
+          2
+        ],
+        "E": [
+          4,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          1,
+          3,
+          4
+        ],
+        "Q": [
+          2,
+          2,
+          4,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "ready": "Нет: остаются обязательные пробелы",
+      "scores": {
+        "I": "4.55",
+        "A": "4.45",
+        "E": "6.20",
+        "Q": "4.50"
+      },
+      "total": "19.70"
+    },
+    {
+      "name": "Сильный продукт, слабые доказательства ИИ",
+      "counts": {
+        "I": [
+          4,
+          5,
+          5,
+          4,
+          5,
+          5,
+          5,
+          5,
+          4,
+          4
+        ],
+        "A": [
+          2,
+          1,
+          2,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "E": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          4,
+          5,
+          5
+        ],
+        "Q": [
+          5,
+          5,
+          5,
+          4,
+          5,
+          5,
+          5,
+          4,
+          5,
+          5
+        ]
+      },
+      "ready": "Нужен полный пакет процесса",
+      "scores": {
+        "I": "9.25",
+        "A": "3.10",
+        "E": "9.90",
+        "Q": "9.60"
+      },
+      "total": "31.85"
+    },
+    {
+      "name": "Сбалансированный модельный финалист",
+      "counts": {
+        "I": [
+          5,
+          5,
+          5,
+          4,
+          5,
+          5,
+          4,
+          5,
+          4,
+          5
+        ],
+        "A": [
+          5,
+          5,
+          5,
+          4,
+          4,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "E": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          4,
+          5,
+          5
+        ],
+        "Q": [
+          5,
+          5,
+          5,
+          4,
+          5,
+          5,
+          5,
+          4,
+          5,
+          5
+        ]
+      },
+      "ready": "Условно да, по допущениям профиля",
+      "scores": {
+        "I": "9.45",
+        "A": "9.60",
+        "E": "9.90",
+        "Q": "9.60"
+      },
+      "total": "38.55"
+    },
+    {
+      "name": "Идеальный конкурсный прототип",
+      "counts": {
+        "I": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "A": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "E": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "Q": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ]
+      },
+      "ready": "Все обязательные условия и условия эталона подтверждены",
+      "scores": {
+        "I": "10.00",
+        "A": "10.00",
+        "E": "10.00",
+        "Q": "10.00"
+      },
+      "total": "40.00"
+    }
+  ],
+  "weight_sensitivity": {
+    "method": "Each indicator weight varies independently within ±20%, each category still sums to 10; exact linear extrema with unchanged pass/fail marks. Not a confidence interval.",
+    "uniform_total": "26.0",
+    "minimum_total": "25.0600",
+    "maximum_total": "27.1400"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "files": [
+    "README.md",
+    "docs/process.md",
+    "docs/release-checklist.md",
+    "docs/audit-fixes-2026-11-10.md",
+    "screenshots/README.md",
+    "migrations/README.md",
+    "docs/api-contracts.md",
+    "docs/learning-api.md",
+    "docs/services-api.md"
+  ],
+  "local_links_checked": 98,
+  "source_files_checked": 83,
+  "findings": 34,
+  "failures": []
+}

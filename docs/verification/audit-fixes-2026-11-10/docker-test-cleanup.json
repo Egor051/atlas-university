@@ -1,0 +1,83 @@
+{
+  "checked_at_utc": "2026-11-10T15:53:27.297152+00:00",
+  "scope": "Cleanup of only the exact isolated Docker projects created by this fix session after completed checks. No prune, no Supabase resources, no working application DB.",
+  "projects": [
+    "atlas-p01-original-3f6d5938",
+    "atlas-p01-patched-d4636332",
+    "atlas-improvements-20261110153411-4edf",
+    "atlas-improvements-20261110153544-a613",
+    "atlas-improvements-20261110154322-e974"
+  ],
+  "volumes": [
+    {
+      "name": "atlas-p01-original-3f6d5938_p01_data",
+      "verified_project_label": "atlas-p01-original-3f6d5938",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-p01-patched-d4636332_p01_data",
+      "verified_project_label": "atlas-p01-patched-d4636332",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-improvements-20261110153411-4edf_atlas_pgdata",
+      "verified_project_label": "atlas-improvements-20261110153411-4edf",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-improvements-20261110153411-4edf_caddy_config",
+      "verified_project_label": "atlas-improvements-20261110153411-4edf",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-improvements-20261110153411-4edf_caddy_data",
+      "verified_project_label": "atlas-improvements-20261110153411-4edf",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-improvements-20261110153544-a613_atlas_pgdata",
+      "verified_project_label": "atlas-improvements-20261110153544-a613",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-improvements-20261110153544-a613_caddy_config",
+      "verified_project_label": "atlas-improvements-20261110153544-a613",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-improvements-20261110153544-a613_caddy_data",
+      "verified_project_label": "atlas-improvements-20261110153544-a613",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-improvements-20261110154322-e974_atlas_pgdata",
+      "verified_project_label": "atlas-improvements-20261110154322-e974",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-improvements-20261110154322-e974_caddy_config",
+      "verified_project_label": "atlas-improvements-20261110154322-e974",
+      "attached_containers": 0,
+      "deleted": true
+    },
+    {
+      "name": "atlas-improvements-20261110154322-e974_caddy_data",
+      "verified_project_label": "atlas-improvements-20261110154322-e974",
+      "attached_containers": 0,
+      "deleted": true
+    }
+  ],
+  "failures": [],
+  "unrelated_supabase_container_names_unchanged": true,
+  "working_database_sha256": "91ad8fae65489acd94ec9dc71ac38d90b72a51c549bec97dc35a287600913683",
+  "status": "PASS"
+}

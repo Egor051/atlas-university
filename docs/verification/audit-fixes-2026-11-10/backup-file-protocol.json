@@ -1,0 +1,13 @@
+{
+  "scope": "Actual Linux file protocol with fake Docker only, no database connection",
+  "before": {
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/source/scripts/backup_regression.py\", line 102, in <module>\n    main()\n    ~~~~^^\n  File \"/source/scripts/backup_regression.py\", line 98, in main\n    print(json.dumps(check(args.script)))\n                     ~~~~~^^^^^^^^^^^^^\n  File \"/source/scripts/backup_regression.py\", line 63, in check\n    assert verified() == 2, 'Same-second backups replaced a completed archive'\n           ^^^^^^^^^^^^^^^\nAssertionError: Same-second backups replaced a completed archive\n"
+  },
+  "after": {
+    "exit_code": 0,
+    "stdout": "{\"status\": \"PASS\", \"database_calls\": 0, \"verified_backups\": 3, \"checks\": [\"same-second unique publication\", \"dump failure preserves prior hashes\", \"restore validation failure preserves prior hashes\", \"concurrent writer rejected\", \"published checksums match\", \"temporary files removed\"]}\n",
+    "stderr": ""
+  }
+}

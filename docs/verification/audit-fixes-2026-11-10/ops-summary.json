@@ -1,0 +1,123 @@
+{
+  "checked_at_utc": "2026-11-10T15:55:08.454283+00:00",
+  "version": "3.2.1",
+  "build": "8aadcff3f102161c",
+  "status": "PASS",
+  "scope": "Ops/QA fixes and actual isolated deployment checks; final delivered-source ZIP acceptance is recorded separately.",
+  "findings": {
+    "B13": {
+      "status": "FIXED",
+      "fix": "Ship compose.improvements.yaml; require the complete PostgreSQL/TLS entrypoint in packaging and in the extracted bundle validator.",
+      "regressions": [
+        "test_b13_source_zip_preserves_postgres_tls_entrypoint"
+      ],
+      "evidence": [
+        "ops-pytest.xml",
+        "postgres-https.json"
+      ]
+    },
+    "B14": {
+      "status": "FIXED",
+      "fix": "flock serializes backups; unique private temporary files; validate before atomic no-replace publication; cleanup on failures and signals.",
+      "regressions": [
+        "test_b14_backup_file_protocol_without_a_database"
+      ],
+      "evidence": [
+        "backup-file-protocol.json",
+        "postgres-https.json"
+      ]
+    },
+    "P01": {
+      "status": "FIXED",
+      "fix": "PostgreSQL transaction-scoped global two-slot KDF admission across workers; local bounded semaphore for SQLite; overload429 with Retry-After1.",
+      "actual_before": {
+        "peak_simultaneous_KDF": 13,
+        "peak_memory_bytes": 536899584,
+        "memory_max_events": 465,
+        "oom_kills": 0
+      },
+      "actual_after": {
+        "peak_simultaneous_KDF": 2,
+        "peak_memory_bytes": 411201536,
+        "memory_max_events": 0,
+        "oom_kills": 0,
+        "eventual_valid_login": 200
+      },
+      "limitation": "Bounded real pressure experiment without artificial KDF delay; no deliberate OOM or production-capacity claim."
+    },
+    "P03": {
+      "status": "FIXED",
+      "fix": "Pin ReportLab/Pillow/pypdf in docs/requirements-report.txt; run Chromium result conversion with the same Python interpreter; declare setup and CI dependencies. Pillow patched to13.0.0 after fresh advisory scan.",
+      "regressions": [
+        "test_p03_current_report_dependencies_are_declared_and_importable"
+      ],
+      "evidence": [
+        "pdf-generator-check.json",
+        "development-security-audit.json"
+      ]
+    },
+    "P04": {
+      "status": "FIXED",
+      "fix": "No scan side effects on import; CLI exits nonzero on REVIEW, install/scanner/infrastructure errors, incomplete or mismatched inventory and advisory results.",
+      "regressions": [
+        "test_p04_audit_exit_matches_actual_scanner_result",
+        "test_p04_import_has_no_scan_or_report_side_effects"
+      ],
+      "evidence": [
+        "ops-pytest.xml",
+        "linux-runtime/runtime-audit.json"
+      ]
+    },
+    "P05": {
+      "status": "FIXED",
+      "fix": "Correct20relative links after moving historical process text into docs/history.",
+      "regressions": [
+        "test_p05_historical_document_links_resolve"
+      ],
+      "evidence": [
+        "ops-pytest.xml"
+      ]
+    }
+  },
+  "checks": {
+    "ops_pytest": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 3.38
+    },
+    "docker_postgres_https": {
+      "passed": 17,
+      "failed": 0,
+      "source_changed_during_run": [],
+      "evidence": "postgres-https.json"
+    },
+    "current_image_id": "sha256:cb3b64b6bdf4ff13b9221c6f87cb2bf450b98c507e4d2aafa8d1f6e76f3ca7ee",
+    "linux_runtime_packages": 22,
+    "windows_runtime_test_report_packages": 38,
+    "advisory_services": [
+      "PyPI",
+      "OSV"
+    ],
+    "known_advisories_after": 0,
+    "skipped_packages_after": 0,
+    "npm_advisories": 0
+  },
+  "deployment_actions": [
+    "Back up and verify a new restore database before changing the running deployment.",
+    "Use current image for the additive0006_audit_integrity migration; do not delete/reseed the existing database. Startup also serializes migrations across workers.",
+    "Reload browser tabs after upgrade to load current versioned assets.",
+    "Old personal-record drafts remain owner-only JSON exports for manual recovery; they are not automatically attached to possibly reused IDs.",
+    "Development/report environments: pip26.2.2, pytest9.0.3 and Pillow13.0.0; production runtime requirements otherwise unchanged."
+  ],
+  "cleanup_evidence": "docker-test-cleanup.json",
+  "working_database_sha256": "91ad8fae65489acd94ec9dc71ac38d90b72a51c549bec97dc35a287600913683",
+  "not_verified": [
+    "HostedGitHubCI run (local equivalent checks were executed)",
+    "Public deployment/DNS/publicCA",
+    "Russian connection",
+    "PhysicalAndroid/iOS devices",
+    "Real interviews/real students",
+    "Future uptime or production capacity"
+  ]
+}

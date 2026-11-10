@@ -1,0 +1,169 @@
+{
+  "checked_at_utc": "2026-11-09T10:12:52.017219+00:00",
+  "status": "PASS",
+  "scope": "Actual local fictional DB, backed up first; original columns/rows compared after additive initialization. No deletion or reset.",
+  "backup": "<PROJECT_ROOT>\\backups\\atlas-before-3.2-20261109T101251Z.sqlite3",
+  "preserved": {
+    "users": {
+      "before": 3,
+      "after": 3,
+      "all_original_rows_preserved": true
+    },
+    "login_sessions": {
+      "before": 4,
+      "after": 4,
+      "all_original_rows_preserved": true
+    },
+    "lessons": {
+      "before": 25,
+      "after": 25,
+      "all_original_rows_preserved": true
+    },
+    "grades": {
+      "before": 10,
+      "after": 10,
+      "all_original_rows_preserved": true
+    },
+    "deadlines": {
+      "before": 10,
+      "after": 10,
+      "all_original_rows_preserved": true
+    },
+    "document_requests": {
+      "before": 4,
+      "after": 4,
+      "all_original_rows_preserved": true
+    },
+    "notifications": {
+      "before": 11,
+      "after": 11,
+      "all_original_rows_preserved": true
+    },
+    "lesson_changes": {
+      "before": 25,
+      "after": 25,
+      "all_original_rows_preserved": true
+    },
+    "request_events": {
+      "before": 6,
+      "after": 6,
+      "all_original_rows_preserved": true
+    },
+    "request_idempotency": {
+      "before": 1,
+      "after": 1,
+      "all_original_rows_preserved": true
+    },
+    "login_attempts": {
+      "before": 0,
+      "after": 0,
+      "all_original_rows_preserved": true
+    },
+    "learning_courses": {
+      "before": 10,
+      "after": 10,
+      "all_original_rows_preserved": true
+    },
+    "learning_submissions": {
+      "before": 0,
+      "after": 0,
+      "all_original_rows_preserved": true
+    },
+    "learning_notes": {
+      "before": 2,
+      "after": 2,
+      "all_original_rows_preserved": true
+    },
+    "learning_flashcards": {
+      "before": 4,
+      "after": 4,
+      "all_original_rows_preserved": true
+    },
+    "learning_quizzes": {
+      "before": 4,
+      "after": 4,
+      "all_original_rows_preserved": true
+    },
+    "learning_attendance": {
+      "before": 30,
+      "after": 30,
+      "all_original_rows_preserved": true
+    },
+    "learning_tasks": {
+      "before": 4,
+      "after": 4,
+      "all_original_rows_preserved": true
+    },
+    "learning_focus_sessions": {
+      "before": 2,
+      "after": 2,
+      "all_original_rows_preserved": true
+    },
+    "consultation_slots": {
+      "before": 6,
+      "after": 138,
+      "all_original_rows_preserved": true
+    },
+    "support_tickets": {
+      "before": 0,
+      "after": 0,
+      "all_original_rows_preserved": true
+    },
+    "campus_events": {
+      "before": 6,
+      "after": 28,
+      "all_original_rows_preserved": true
+    },
+    "library_books": {
+      "before": 8,
+      "after": 8,
+      "all_original_rows_preserved": true
+    },
+    "finance_entries": {
+      "before": 8,
+      "after": 8,
+      "all_original_rows_preserved": true
+    },
+    "student_preferences": {
+      "before": 2,
+      "after": 2,
+      "all_original_rows_preserved": true
+    },
+    "portfolio_items": {
+      "before": 0,
+      "after": 0,
+      "all_original_rows_preserved": true
+    },
+    "learning_course_modules": {
+      "before": 40,
+      "after": 40,
+      "all_original_rows_preserved": true
+    },
+    "learning_quiz_attempts": {
+      "before": 0,
+      "after": 0,
+      "all_original_rows_preserved": true
+    },
+    "consultation_bookings": {
+      "before": 0,
+      "after": 0,
+      "all_original_rows_preserved": true
+    },
+    "ticket_messages": {
+      "before": 0,
+      "after": 0,
+      "all_original_rows_preserved": true
+    },
+    "event_registrations": {
+      "before": 0,
+      "after": 0,
+      "all_original_rows_preserved": true
+    },
+    "library_loans": {
+      "before": 0,
+      "after": 0,
+      "all_original_rows_preserved": true
+    }
+  },
+  "database": "<PROJECT_ROOT>\\atlas.db"
+}

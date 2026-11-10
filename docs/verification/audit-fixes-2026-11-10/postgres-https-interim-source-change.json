@@ -1,0 +1,605 @@
+{
+  "started_at_utc": "2026-11-10T15:35:44.942643+00:00",
+  "scope": "Current local source built into a new Docker project: PostgreSQL, two web workers and Caddy HTTPS verified with explicit local CA. No public DNS/ACME, Russian connection or physical-device claim.",
+  "source_sha256": {
+    "app/__init__.py": "2c77512cf5c1b955c924160a6505b64d9467c7ac2ffc701a27f27d89b2512d68",
+    "app/audit_migration.py": "05d2ff4e9b7b0845017d1b095f6e265fb62019a684a7a8e5d5404b00c1eb365c",
+    "app/campus.py": "09777281266ce25ae2dfdc43f0bcb2f78d3f01342c10afeb5c274377839c636a",
+    "app/campus_db.py": "69a1367afd2722adc60c4b65d1547e7b33a22d934cac50971eefb6450ba085b5",
+    "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+    "app/db.py": "7362892b797cfb6ba0f1d230fc4f54728b488873f3d5ec4740c7b8fef8e8197d",
+    "app/improvement_db.py": "3f1040e73631a82046580d3eaad60c5cd4eeb5f6538efe3ff9a38488546838f1",
+    "app/improvements.py": "3b1e6763901ac14c8a489b096d75bfe9fa6bf87a83430317292b66c57e072750",
+    "app/learning.py": "cde960f4bc25e4b6bafd496a7a50c8da74ac5155515467ec65b47e29e2b37af5",
+    "app/learning_db.py": "3e220138d6e0e63041fd757f397dcc88e1da6c81c68cbdc38fa01295e0e591fd",
+    "app/main.py": "1be5b648de82553cee320b858e36199aed5823d03e1cee8a7a0d1ca5036b642c",
+    "app/receipt_codec.py": "69de9659b245e43d3e224a8abab3dfb6cb3be0d967bde31d3d526bbb56985abf",
+    "app/services.py": "8e259aeb6db6d5c065a249696f0952785b31925f5c998d9721e8fecab2c214a3",
+    "app/services_db.py": "e69f5a2cbd1c715ab14cbc2458ed62de441b6c07d397eac0332a59244f73dbc0",
+    "app/session_security.py": "b9e844c5616a0b5608b14512083bdaed3bf8ece10b18df0615a96218f6d124af",
+    "app/storage_guards.py": "46daabd69592fd102f67683c56f609b8840c336a347e6dd0863c6373e167adc4",
+    "app/version.py": "ce672f61a8b808754d3c523944e96009180deb33366b0327ab4e76fd0df28114",
+    "static/app.js": "8589c2c0b402c2b92f9ab8ba37d93e70c3db9d6c4c11a2d54eb305539cd74549",
+    "static/campus.css": "bc83e9a6d9497f7ad2bb7a4f0aeeda753927a2c2aac8aac8971ce7753c5fa09c",
+    "static/campus.js": "ffbe27c5c63632f17821777a934adea99ed514d3cb5cc03df78b82d6f3d7ceb4",
+    "static/favicon.svg": "949dad734f87fd471c4bd0a55dc70bef0311af9bc54290e7e6b31d906706d057",
+    "static/improvements.js": "feff01964682eb7c1b8178a72c332c78e1d420e1ce10dfe7269f9485854853cf",
+    "static/index.html": "ef0d239491f093068e11ef2840551d6ec7620b17b486e521c8dd851e47f79613",
+    "static/style.css": "b9b5ce2051fc63f0c714088f30df228825b470e8e8bc76672f4060bd8d5e134a",
+    "static/usability.css": "9e2d7d77a9e55a458ed9d40eed7fe7a81c3a72917957fd31c25f2de0e13e9527",
+    "compose.improvements.yaml": "6485fdb00f666214754e167a40bd85b8ce720598869705da714bfc473cedaae3",
+    "compose.test.yaml": "3d35c1c54d1204bfd2b900c6be4a8c635b432165fe979a68cb74f2f508282d77",
+    "compose.yaml": "80245486b44b0daed6567ea234bf3addcc0739cfad40f1adcd0fef2687d1e66d",
+    "Dockerfile": "4126959d440fe1c234cf4656eb1027ecfe384ca9b42130ce4357bbadac36af05",
+    "requirements.txt": "575e32efb45434c5a2a5a3b70358ca4142b37f2c550cec7b888bf034f9dbdbd9",
+    "requirements-runtime.lock": "be93e44ba3d17d0cb936b6dece4e197839ea6a938beb94db91dbe0d8c665a470",
+    "scripts/improvement_adaptation.py": "ff0f6b92d16101e92e56cc175791a0136a5b2d7a9955742bbdee53c08607e452",
+    "scripts/improvement_archive.py": "7d382f95efebef5b2b180a526af513c7b9c29c8112b899cf4b8e4bbc219f8751",
+    "scripts/improvement_crossbrowser.py": "1d1790c006be28012ec9a496f10a68f41472af89fa387aa51d8a7a1ddb7e5688",
+    "scripts/improvement_deployment.py": "336286b932e7c5c0ac02cf9021b8f7e9fa9a4084b595bd288c927e31fbad84e5",
+    "scripts/improvement_load.py": "c442e09795be3bbb60b24a91f131a279d31a5c258bd493dcf939639bc075f477",
+    "scripts/improvement_monitor.py": "d29af0ba12bdff1b8201867828d875d556e21366853c506f8c30028d94059e01",
+    "scripts/improvement_performance.py": "dba0ad1ae8107293bf5eb898623887e60961d69ae8001d2410107564b454fbaf",
+    "scripts/improvement_pg_coordination.py": "76b2a97c2734dfe7a5a6fbf5af793c11282bade59fae56cab0e0bfed6398353a",
+    "scripts/improvement_prepare_deploy.py": "0f330386ca204e4e4c2548ceff9ad14b112c35f6a5811c8e2a84683259e06744",
+    "scripts/improvement_runtime.py": "f6d9ef8eae7e076df4aa3668dbb0b873dc379a8b86a5769036a05a3550c9be29",
+    "scripts/improvement_sql.py": "16755a779409dc6f8ac8bf1dcd293da2b285cde6e766d16cb3ffcbf30cedab5b",
+    "scripts/improvement_ui_capture.py": "800332f4dff5acf577bb45854945a6d5d152fb202407e6013d66b5629c61690b"
+  },
+  "checks": [
+    "isolated Compose configuration valid",
+    "new stack built and healthy",
+    "actual 3.2.0 PostgreSQL schema/data upgrades additively: original column digests, five token models, raw drafts, exact receipt replay and repeat migration preserved",
+    "three actual local readiness samples with certificate verification; no future-uptime claim",
+    "TLS certificate verified against explicit local CA; Secure/HttpOnly/SameSite cookies",
+    "two real concurrent valid logins from distinct trusted test IPs preserve the global 20-session account cap",
+    "two students, IDOR/roles, idempotency, complete staff workflow and private document",
+    "PostgreSQL draft cap race: 39 existing + 10 concurrent saves yields one winner, owner isolation preserved",
+    "PostgreSQL same-key follow-up race appends one event and increments one version",
+    "learning modules, assignment submission, note, support thread/reply and portfolio persisted with owner checks",
+    "real concurrent last-place and last-copy requests across PostgreSQL/two workers yield one winner",
+    "PostgreSQL notes/tasks/flashcards/portfolio: 199 + two concurrent creates has one winner; all 201 legacy rows remain visible",
+    "real PostgreSQL UTC+3 expired sessions reject reads/writes without quota charge; UTC-3 unexpired sessions remain valid",
+    "stopping only this test DB yields live HTTP health200/readiness503; readiness recovers to200 with all row digests unchanged",
+    "all table row counts and sorted-row digests identical across DB/web restart",
+    "pg_dump/pg_restore into a new DB reproduces every table, including all extension entities",
+    "running image source hashes match current files; application PostgreSQL role remains unprivileged"
+  ],
+  "failures": [],
+  "project": "atlas-improvements-20261110153544-a613",
+  "origin": "https://localhost:19443",
+  "credentials_included": false,
+  "legacy_upgrade": {
+    "new_database": "atlas_upgrade_2ff3df42",
+    "source_release": "3.2.0 / schema0005",
+    "target_revision": "0006_audit_integrity",
+    "tables_with_original_columns_unchanged": 37,
+    "all_original_column_digests_equal": true,
+    "tokens_backfilled": {
+      "learning_notes": 3,
+      "learning_tasks": 5,
+      "learning_flashcards": 5,
+      "learning_focus_sessions": 3,
+      "portfolio_items": 1
+    },
+    "legacy_drafts_preserved_unbound": 5,
+    "idempotent_replay_exact": true,
+    "second_upgrade_unchanged": true
+  },
+  "health": {
+    "ok": true,
+    "service": "ATLAS Campus",
+    "version": "3.2.1",
+    "build": "58c6b442eb6c64d5"
+  },
+  "session_cap_race": {
+    "initial": 19,
+    "concurrent_logins": 2,
+    "different_test_client_ips": true,
+    "final": 20
+  },
+  "concurrency": {
+    "consultation": [
+      {
+        "status": 201,
+        "data": {
+          "id": 1,
+          "slot_id": 139,
+          "status": "active",
+          "created_at": "2026-11-10T15:40:12.987944+00:00",
+          "slot": {
+            "id": 139,
+            "teacher": "Вымышленный преподаватель",
+            "subject": "Гонка за одно место",
+            "start_at": "2026-11-14T15:40:08.875464+00:00",
+            "end_at": "2026-11-14T16:40:08.875464+00:00",
+            "room": "Т-101",
+            "capacity": 1,
+            "booked_count": 1,
+            "my_booking_id": 1
+          }
+        }
+      },
+      {
+        "status": 409,
+        "data": {
+          "detail": "Запись закрыта: встреча началась или нет мест"
+        }
+      }
+    ],
+    "event": [
+      {
+        "status": 409,
+        "data": {
+          "detail": "Регистрация закрыта: событие началось или нет мест"
+        }
+      },
+      {
+        "status": 201,
+        "data": {
+          "id": 1,
+          "event_id": 29,
+          "status": "active",
+          "created_at": "2026-11-10T15:40:17.127741+00:00",
+          "event": {
+            "id": 29,
+            "title": "Одно место на вымышленном событии",
+            "category": "academic",
+            "description": "Изолированная проверка конкуренции без реальных участников.",
+            "start_at": "2026-11-14T15:40:08.875464+00:00",
+            "end_at": "2026-11-14T16:40:08.875464+00:00",
+            "location": "Тестовый корпус",
+            "capacity": 1,
+            "registered_count": 1,
+            "my_registration_id": 1
+          }
+        }
+      }
+    ],
+    "library_book": [
+      {
+        "status": 409,
+        "data": {
+          "detail": "Все экземпляры выданы"
+        }
+      },
+      {
+        "status": 201,
+        "data": {
+          "id": 1,
+          "book_id": 9,
+          "status": "active",
+          "borrowed_at": "2026-11-10T15:40:19.512888+00:00",
+          "due_date": "2026-11-24",
+          "returned_at": null,
+          "book": {
+            "id": 9,
+            "title": "Один тестовый экземпляр",
+            "author": "Вымышленный автор",
+            "subject": "Приёмка",
+            "description": "Изолированная проверка.",
+            "total": 1,
+            "available": 0,
+            "my_loan_id": 1
+          }
+        }
+      }
+    ]
+  },
+  "personal_cap_races": {
+    "notes": {
+      "initial": 199,
+      "concurrent_creates": 2,
+      "winners": 1,
+      "after_race": 200,
+      "legacy_over_cap_rows": 201,
+      "all_saved_rows_visible": true
+    },
+    "tasks": {
+      "initial": 199,
+      "concurrent_creates": 2,
+      "winners": 1,
+      "after_race": 200,
+      "legacy_over_cap_rows": 201,
+      "all_saved_rows_visible": true
+    },
+    "flashcards": {
+      "initial": 199,
+      "concurrent_creates": 2,
+      "winners": 1,
+      "after_race": 200,
+      "legacy_over_cap_rows": 201,
+      "all_saved_rows_visible": true
+    },
+    "portfolio": {
+      "initial": 199,
+      "concurrent_creates": 2,
+      "winners": 1,
+      "after_race": 200,
+      "legacy_over_cap_rows": 201,
+      "all_saved_rows_visible": true
+    }
+  },
+  "session_timezone": {
+    "utc_plus_3_expired_read_status": 401,
+    "utc_plus_3_expired_write_status": 401,
+    "expired_session_quota_unchanged": true,
+    "utc_minus_3_unexpired_read_status": 200,
+    "utc_minus_3_unexpired_write_status": 200
+  },
+  "restart_persistence": {
+    "tables": 38,
+    "all_table_digests_equal": true
+  },
+  "backup_restore": {
+    "new_database": "atlas_restore_improvements_0f3a9a1e",
+    "source_database_overwritten": false,
+    "tables": 38,
+    "all_table_digests_equal": true,
+    "dump_sha256": "c7bfe00610ac44a27a8dae2556943d3d122434cfeaf1f8ffaaaadb43f1e9f4f3",
+    "source": {
+      "campus_events": {
+        "rows": 29,
+        "md5": "887cd8861f5dae903fbe23d1ab10fee5"
+      },
+      "consultation_bookings": {
+        "rows": 1,
+        "md5": "4269f1a500f6fc9ef1acdb231c2cf6ba"
+      },
+      "consultation_slots": {
+        "rows": 139,
+        "md5": "265f06071d6c5c55687df25ca104afdd"
+      },
+      "deadlines": {
+        "rows": 10,
+        "md5": "0272c9eb7cf9dd11e8587b035a18f187"
+      },
+      "document_requests": {
+        "rows": 5,
+        "md5": "65f5ba1f509114da67900794a95d241f"
+      },
+      "event_registrations": {
+        "rows": 1,
+        "md5": "8eab27b46e444e1c58a416e97b4fc26d"
+      },
+      "finance_entries": {
+        "rows": 8,
+        "md5": "40ed7f4253c20faa773db39e88db1c92"
+      },
+      "grades": {
+        "rows": 10,
+        "md5": "89adc89a00dff5141cc39f716bc786e2"
+      },
+      "learning_attendance": {
+        "rows": 30,
+        "md5": "0467dfe38917eda4257189610a13f5f9"
+      },
+      "learning_course_modules": {
+        "rows": 40,
+        "md5": "a1fc08b3e68ff6b3feb7ddc02f931723"
+      },
+      "learning_courses": {
+        "rows": 10,
+        "md5": "7f9e51117bac3bed1407ac23b01302a2"
+      },
+      "learning_flashcards": {
+        "rows": 203,
+        "md5": "1e2a358ef8840d8edbd5af4f38d2fc83"
+      },
+      "learning_focus_sessions": {
+        "rows": 2,
+        "md5": "16ebbede82170c3a70ae85b9d3ad860d"
+      },
+      "learning_notes": {
+        "rows": 202,
+        "md5": "b429512c3199401a339dee0994fcc9d1"
+      },
+      "learning_quiz_attempts": {
+        "rows": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "learning_quizzes": {
+        "rows": 4,
+        "md5": "589b0aed87c7e541aacf494591f7c392"
+      },
+      "learning_seeds": {
+        "rows": 2,
+        "md5": "a1997780b1f8c2881e707f00105f465c"
+      },
+      "learning_submissions": {
+        "rows": 1,
+        "md5": "4d8318f426484ea242802aa424ab977a"
+      },
+      "learning_tasks": {
+        "rows": 203,
+        "md5": "4a4426446882ffeae79207c1035982c1"
+      },
+      "lesson_changes": {
+        "rows": 25,
+        "md5": "381c120b57cbda3f0113ea53a98fd1a3"
+      },
+      "lessons": {
+        "rows": 25,
+        "md5": "c49976df7528d0c047beaf960e41217b"
+      },
+      "library_books": {
+        "rows": 9,
+        "md5": "d730eefb21823a4abeec2a18e4c2974b"
+      },
+      "library_loans": {
+        "rows": 1,
+        "md5": "fef2ed37e060e7d3d8a8ba42353efa28"
+      },
+      "login_attempts": {
+        "rows": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "login_sessions": {
+        "rows": 23,
+        "md5": "6ee9bfeea2361ae994b1d2eca3c992b3"
+      },
+      "notifications": {
+        "rows": 16,
+        "md5": "87af074b4e01f1e040dfb72006a5e651"
+      },
+      "personal_drafts": {
+        "rows": 41,
+        "md5": "23e9687afc05f5e431c1d280474e87f7"
+      },
+      "portfolio_items": {
+        "rows": 201,
+        "md5": "5538080fd398ff803318df59118a302c"
+      },
+      "request_events": {
+        "rows": 9,
+        "md5": "568efe861a7ebd473d5abf3a69aac65e"
+      },
+      "request_followup_receipts": {
+        "rows": 1,
+        "md5": "aab0894cbce1489a59630013d005a46f"
+      },
+      "request_idempotency": {
+        "rows": 1,
+        "md5": "c558ab1471bc4245e86a0e2911e5e519"
+      },
+      "schema_migrations": {
+        "rows": 5,
+        "md5": "3adcc2640dfdd1ccc947b72e57cd332a"
+      },
+      "service_idempotency": {
+        "rows": 12,
+        "md5": "698626d1b25f08fb2002820508c72248"
+      },
+      "student_preferences": {
+        "rows": 2,
+        "md5": "b562b0c440b5f33da73e424f43b6019e"
+      },
+      "support_tickets": {
+        "rows": 1,
+        "md5": "4c7c76396c5a2b72080d03318d909354"
+      },
+      "ticket_messages": {
+        "rows": 2,
+        "md5": "7700e829a4c2b877ca11e370372eb190"
+      },
+      "users": {
+        "rows": 3,
+        "md5": "7f342c1770157b8a0567e4648dd5fde8"
+      },
+      "write_quotas": {
+        "rows": 22,
+        "md5": "eda878d99fad84190ab027a3a964f86e"
+      }
+    },
+    "restored": {
+      "campus_events": {
+        "rows": 29,
+        "md5": "887cd8861f5dae903fbe23d1ab10fee5"
+      },
+      "consultation_bookings": {
+        "rows": 1,
+        "md5": "4269f1a500f6fc9ef1acdb231c2cf6ba"
+      },
+      "consultation_slots": {
+        "rows": 139,
+        "md5": "265f06071d6c5c55687df25ca104afdd"
+      },
+      "deadlines": {
+        "rows": 10,
+        "md5": "0272c9eb7cf9dd11e8587b035a18f187"
+      },
+      "document_requests": {
+        "rows": 5,
+        "md5": "65f5ba1f509114da67900794a95d241f"
+      },
+      "event_registrations": {
+        "rows": 1,
+        "md5": "8eab27b46e444e1c58a416e97b4fc26d"
+      },
+      "finance_entries": {
+        "rows": 8,
+        "md5": "40ed7f4253c20faa773db39e88db1c92"
+      },
+      "grades": {
+        "rows": 10,
+        "md5": "89adc89a00dff5141cc39f716bc786e2"
+      },
+      "learning_attendance": {
+        "rows": 30,
+        "md5": "0467dfe38917eda4257189610a13f5f9"
+      },
+      "learning_course_modules": {
+        "rows": 40,
+        "md5": "a1fc08b3e68ff6b3feb7ddc02f931723"
+      },
+      "learning_courses": {
+        "rows": 10,
+        "md5": "7f9e51117bac3bed1407ac23b01302a2"
+      },
+      "learning_flashcards": {
+        "rows": 203,
+        "md5": "1e2a358ef8840d8edbd5af4f38d2fc83"
+      },
+      "learning_focus_sessions": {
+        "rows": 2,
+        "md5": "16ebbede82170c3a70ae85b9d3ad860d"
+      },
+      "learning_notes": {
+        "rows": 202,
+        "md5": "b429512c3199401a339dee0994fcc9d1"
+      },
+      "learning_quiz_attempts": {
+        "rows": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "learning_quizzes": {
+        "rows": 4,
+        "md5": "589b0aed87c7e541aacf494591f7c392"
+      },
+      "learning_seeds": {
+        "rows": 2,
+        "md5": "a1997780b1f8c2881e707f00105f465c"
+      },
+      "learning_submissions": {
+        "rows": 1,
+        "md5": "4d8318f426484ea242802aa424ab977a"
+      },
+      "learning_tasks": {
+        "rows": 203,
+        "md5": "4a4426446882ffeae79207c1035982c1"
+      },
+      "lesson_changes": {
+        "rows": 25,
+        "md5": "381c120b57cbda3f0113ea53a98fd1a3"
+      },
+      "lessons": {
+        "rows": 25,
+        "md5": "c49976df7528d0c047beaf960e41217b"
+      },
+      "library_books": {
+        "rows": 9,
+        "md5": "d730eefb21823a4abeec2a18e4c2974b"
+      },
+      "library_loans": {
+        "rows": 1,
+        "md5": "fef2ed37e060e7d3d8a8ba42353efa28"
+      },
+      "login_attempts": {
+        "rows": 0,
+        "md5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "login_sessions": {
+        "rows": 23,
+        "md5": "6ee9bfeea2361ae994b1d2eca3c992b3"
+      },
+      "notifications": {
+        "rows": 16,
+        "md5": "87af074b4e01f1e040dfb72006a5e651"
+      },
+      "personal_drafts": {
+        "rows": 41,
+        "md5": "23e9687afc05f5e431c1d280474e87f7"
+      },
+      "portfolio_items": {
+        "rows": 201,
+        "md5": "5538080fd398ff803318df59118a302c"
+      },
+      "request_events": {
+        "rows": 9,
+        "md5": "568efe861a7ebd473d5abf3a69aac65e"
+      },
+      "request_followup_receipts": {
+        "rows": 1,
+        "md5": "aab0894cbce1489a59630013d005a46f"
+      },
+      "request_idempotency": {
+        "rows": 1,
+        "md5": "c558ab1471bc4245e86a0e2911e5e519"
+      },
+      "schema_migrations": {
+        "rows": 5,
+        "md5": "3adcc2640dfdd1ccc947b72e57cd332a"
+      },
+      "service_idempotency": {
+        "rows": 12,
+        "md5": "698626d1b25f08fb2002820508c72248"
+      },
+      "student_preferences": {
+        "rows": 2,
+        "md5": "b562b0c440b5f33da73e424f43b6019e"
+      },
+      "support_tickets": {
+        "rows": 1,
+        "md5": "4c7c76396c5a2b72080d03318d909354"
+      },
+      "ticket_messages": {
+        "rows": 2,
+        "md5": "7700e829a4c2b877ca11e370372eb190"
+      },
+      "users": {
+        "rows": 3,
+        "md5": "7f342c1770157b8a0567e4648dd5fde8"
+      },
+      "write_quotas": {
+        "rows": 22,
+        "md5": "eda878d99fad84190ab027a3a964f86e"
+      }
+    }
+  },
+  "image_sources_match": {
+    "app/__init__.py": true,
+    "app/audit_migration.py": true,
+    "app/campus.py": true,
+    "app/campus_db.py": true,
+    "app/config.py": true,
+    "app/db.py": true,
+    "app/improvement_db.py": true,
+    "app/improvements.py": true,
+    "app/learning.py": true,
+    "app/learning_db.py": true,
+    "app/main.py": true,
+    "app/receipt_codec.py": true,
+    "app/services.py": true,
+    "app/services_db.py": true,
+    "app/session_security.py": true,
+    "app/storage_guards.py": true,
+    "app/version.py": true,
+    "static/app.js": true,
+    "static/campus.css": true,
+    "static/campus.js": true,
+    "static/favicon.svg": true,
+    "static/improvements.js": true,
+    "static/index.html": true,
+    "static/style.css": true,
+    "static/usability.css": true
+  },
+  "postgres_version": "17.11",
+  "role_security": {
+    "role": "atlas_app",
+    "superuser": false,
+    "createdb": false,
+    "createrole": false
+  },
+  "not_verified": [
+    "public hosting",
+    "public CA/DNS",
+    "Russian connection",
+    "physical phone",
+    "future uptime to 28 November"
+  ],
+  "teardown": {
+    "containers_and_networks_stopped": true,
+    "only_unique_project": "atlas-improvements-20261110153544-a613",
+    "new_test_volumes_preserved": true
+  },
+  "finished_at_utc": "2026-11-10T15:43:13.479479+00:00",
+  "source_changed_during_run": [
+    "app/improvements.py",
+    "scripts/improvement_archive.py",
+    "scripts/improvement_deployment.py",
+    "static/app.js",
+    "static/campus.js",
+    "static/improvements.js"
+  ],
+  "status": "FAIL"
+}

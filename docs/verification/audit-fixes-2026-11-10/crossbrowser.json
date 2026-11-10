@@ -1,0 +1,1806 @@
+{
+  "started_at_utc": "2026-11-10T15:48:04.256267+00:00",
+  "scope": "Real Firefox/WebKit engines, isolated fictional database and real HTTP. Screen widths emulate layout; no physical-device/native-Safari claim.",
+  "source_sha256": {
+    "app/__init__.py": "2c77512cf5c1b955c924160a6505b64d9467c7ac2ffc701a27f27d89b2512d68",
+    "app/audit_migration.py": "05d2ff4e9b7b0845017d1b095f6e265fb62019a684a7a8e5d5404b00c1eb365c",
+    "app/campus.py": "09777281266ce25ae2dfdc43f0bcb2f78d3f01342c10afeb5c274377839c636a",
+    "app/campus_db.py": "69a1367afd2722adc60c4b65d1547e7b33a22d934cac50971eefb6450ba085b5",
+    "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+    "app/db.py": "7362892b797cfb6ba0f1d230fc4f54728b488873f3d5ec4740c7b8fef8e8197d",
+    "app/improvement_db.py": "3f1040e73631a82046580d3eaad60c5cd4eeb5f6538efe3ff9a38488546838f1",
+    "app/improvements.py": "59a2d623c2f6bb48cd887d590e6d77199dcde8a32a12cc5d09eb0b4609024426",
+    "app/learning.py": "cde960f4bc25e4b6bafd496a7a50c8da74ac5155515467ec65b47e29e2b37af5",
+    "app/learning_db.py": "3e220138d6e0e63041fd757f397dcc88e1da6c81c68cbdc38fa01295e0e591fd",
+    "app/main.py": "1be5b648de82553cee320b858e36199aed5823d03e1cee8a7a0d1ca5036b642c",
+    "app/receipt_codec.py": "69de9659b245e43d3e224a8abab3dfb6cb3be0d967bde31d3d526bbb56985abf",
+    "app/services.py": "8e259aeb6db6d5c065a249696f0952785b31925f5c998d9721e8fecab2c214a3",
+    "app/services_db.py": "e69f5a2cbd1c715ab14cbc2458ed62de441b6c07d397eac0332a59244f73dbc0",
+    "app/session_security.py": "b9e844c5616a0b5608b14512083bdaed3bf8ece10b18df0615a96218f6d124af",
+    "app/storage_guards.py": "46daabd69592fd102f67683c56f609b8840c336a347e6dd0863c6373e167adc4",
+    "app/version.py": "ce672f61a8b808754d3c523944e96009180deb33366b0327ab4e76fd0df28114",
+    "static/app.js": "e0f4ff64e35c97ee6a475e54ba12e63c30f7a9ca6b430f8c776b7751a0200781",
+    "static/campus.css": "bc83e9a6d9497f7ad2bb7a4f0aeeda753927a2c2aac8aac8971ce7753c5fa09c",
+    "static/campus.js": "0f24be95aa32d1f62c41d7fdd88dd04779388fe8297751f7c8cbcef87e0fc2cf",
+    "static/favicon.svg": "949dad734f87fd471c4bd0a55dc70bef0311af9bc54290e7e6b31d906706d057",
+    "static/improvements.js": "267fafed3811757faf3dc625592c96a1815784a97232e0faa28b3b2fcbfa9404",
+    "static/index.html": "ef0d239491f093068e11ef2840551d6ec7620b17b486e521c8dd851e47f79613",
+    "static/style.css": "b9b5ce2051fc63f0c714088f30df228825b470e8e8bc76672f4060bd8d5e134a",
+    "static/usability.css": "9e2d7d77a9e55a458ed9d40eed7fe7a81c3a72917957fd31c25f2de0e13e9527",
+    "compose.improvements.yaml": "6485fdb00f666214754e167a40bd85b8ce720598869705da714bfc473cedaae3",
+    "compose.test.yaml": "3d35c1c54d1204bfd2b900c6be4a8c635b432165fe979a68cb74f2f508282d77",
+    "compose.yaml": "80245486b44b0daed6567ea234bf3addcc0739cfad40f1adcd0fef2687d1e66d",
+    "Dockerfile": "4126959d440fe1c234cf4656eb1027ecfe384ca9b42130ce4357bbadac36af05",
+    "requirements.txt": "575e32efb45434c5a2a5a3b70358ca4142b37f2c550cec7b888bf034f9dbdbd9",
+    "requirements-runtime.lock": "be93e44ba3d17d0cb936b6dece4e197839ea6a938beb94db91dbe0d8c665a470",
+    "scripts/improvement_adaptation.py": "ff0f6b92d16101e92e56cc175791a0136a5b2d7a9955742bbdee53c08607e452",
+    "scripts/improvement_archive.py": "c92b576afa116d18f3f740bdaa8ae190a3e56357a5897a1ef65335cad2ab97f8",
+    "scripts/improvement_crossbrowser.py": "1d1790c006be28012ec9a496f10a68f41472af89fa387aa51d8a7a1ddb7e5688",
+    "scripts/improvement_deployment.py": "8bc1cd006a106d436376cef6e822646b65f88310d10a955fef5915a5751cf0da",
+    "scripts/improvement_load.py": "c442e09795be3bbb60b24a91f131a279d31a5c258bd493dcf939639bc075f477",
+    "scripts/improvement_monitor.py": "d29af0ba12bdff1b8201867828d875d556e21366853c506f8c30028d94059e01",
+    "scripts/improvement_performance.py": "dba0ad1ae8107293bf5eb898623887e60961d69ae8001d2410107564b454fbaf",
+    "scripts/improvement_pg_coordination.py": "76b2a97c2734dfe7a5a6fbf5af793c11282bade59fae56cab0e0bfed6398353a",
+    "scripts/improvement_prepare_deploy.py": "0f330386ca204e4e4c2548ceff9ad14b112c35f6a5811c8e2a84683259e06744",
+    "scripts/improvement_runtime.py": "f6d9ef8eae7e076df4aa3668dbb0b873dc379a8b86a5769036a05a3550c9be29",
+    "scripts/improvement_sql.py": "16755a779409dc6f8ac8bf1dcd293da2b285cde6e766d16cb3ffcbf30cedab5b",
+    "scripts/improvement_ui_capture.py": "800332f4dff5acf577bb45854945a6d5d152fb202407e6013d66b5629c61690b"
+  },
+  "checks": [
+    {
+      "engine": "firefox",
+      "workflow": "student UI submit → other student denied → staff UI review/processing/ready → student UI opens answer and downloads actual document",
+      "request_id": 4
+    },
+    {
+      "engine": "webkit",
+      "workflow": "student UI submit → other student denied → staff UI review/processing/ready → student UI opens answer and downloads actual document",
+      "request_id": 4
+    }
+  ],
+  "failures": [],
+  "engines": [
+    {
+      "name": "firefox",
+      "version": "142.0.1"
+    },
+    {
+      "name": "webkit",
+      "version": "26.0"
+    }
+  ],
+  "geometry": [
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "home",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Добрый вечер, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "schedule",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "grades",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "plan",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "requests",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "notifications",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "campus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "courses",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "assignments",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "exams",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "attendance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "calendar",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "tasks",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "notes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "flashcards",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "quizzes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "focus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "consultations",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "messages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "library",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "events",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "finance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "contacts",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "knowledge",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "portfolio",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "staff",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "staffdesk",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "staffmessages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "home",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Добрый вечер, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "schedule",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "grades",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "plan",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "requests",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "notifications",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "campus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "courses",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "assignments",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "exams",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "attendance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "calendar",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "tasks",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "notes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "flashcards",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "quizzes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "focus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "consultations",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "messages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "library",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "events",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "finance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "contacts",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "knowledge",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "portfolio",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "staff",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "staffdesk",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "staffmessages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "home",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Добрый вечер, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "schedule",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "grades",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "plan",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "requests",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "notifications",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "campus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "courses",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "assignments",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "exams",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "attendance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "calendar",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "tasks",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "notes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "flashcards",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "quizzes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "focus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "consultations",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "messages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "library",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "events",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "finance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "contacts",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "knowledge",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "portfolio",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "student",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "staff",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "staffdesk",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "staffmessages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "role": "staff",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "home",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Добрый вечер, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "schedule",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "grades",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "plan",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "requests",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "notifications",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "campus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "courses",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "assignments",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "exams",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "attendance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "calendar",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "tasks",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "notes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "flashcards",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "quizzes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "focus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "consultations",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "messages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "library",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "events",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "finance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "contacts",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "knowledge",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "portfolio",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "staff",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "staffdesk",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "staffmessages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "home",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Добрый вечер, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "schedule",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "grades",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "plan",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "requests",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "notifications",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "campus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "courses",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "assignments",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "exams",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "attendance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "calendar",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "tasks",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "notes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "flashcards",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "quizzes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "focus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "consultations",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "messages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "library",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "events",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "finance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "contacts",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "knowledge",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "portfolio",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "staff",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "staffdesk",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "staffmessages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "home",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Добрый вечер, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "schedule",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "grades",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "plan",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "requests",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "notifications",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "campus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "courses",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "assignments",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "exams",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "attendance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "calendar",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "tasks",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "notes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "flashcards",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "quizzes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "focus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "consultations",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "messages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "library",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "events",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "finance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "contacts",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "knowledge",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "portfolio",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "student",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "staff",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "staffdesk",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "staffmessages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "role": "staff",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    }
+  ],
+  "browser_errors": [],
+  "finished_at_utc": "2026-11-10T15:50:26.265432+00:00",
+  "source_changed_during_run": [],
+  "status": "PASS"
+}

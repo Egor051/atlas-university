@@ -1,0 +1,28 @@
+{
+  "url": "https://localhost:19443",
+  "scope": "Certificate-verified read-only readiness samples; not a proof of uninterrupted or future availability.",
+  "certificate_verification": true,
+  "samples": [
+    {
+      "at_utc": "2026-11-10T15:44:47.244823+00:00",
+      "status": 200,
+      "ok": true,
+      "latency_ms": 2030.12
+    },
+    {
+      "at_utc": "2026-11-10T15:44:50.275875+00:00",
+      "status": 200,
+      "ok": true,
+      "latency_ms": 2039.2
+    },
+    {
+      "at_utc": "2026-11-10T15:44:53.316170+00:00",
+      "status": 200,
+      "ok": true,
+      "latency_ms": 2042.88
+    }
+  ],
+  "successful_samples": 3,
+  "sample_success_percent": 100.0,
+  "status": "PASS"
+}

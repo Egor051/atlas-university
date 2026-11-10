@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-11-06T18:46:29Z",
+  "scope": "Actual local contest deployment. Full PostgreSQL/HTTPS workflow used locked runtime image 694747...; the final static-only rebuild has identical backend and dependency inventory and its served JavaScript was verified. Not public-hosting or real-user production certification.",
+  "result": "PASS_LOCAL_CONTEST_DEPLOYMENT",
+  "provenance": {
+    "git_commit": null,
+    "reason": "The supplied workspace is not a Git checkout.",
+    "tested_local_image": "atlas-campus:local-check",
+    "tested_image_id": "sha256:e0e46e110b180ebebd14193a695659263440f793cf5e1b4d660e604ca4142f77",
+    "app_version": "2.0.0",
+    "backend_files_sha256_in_tested_image": {
+      "app/main.py": "92f834202a5e7177c85d117605f89c1b6fbb04648cbc47d77c7f80b4cc776900",
+      "app/db.py": "5ec0ec86a620d634bc2095c1914ca7247f6cc2b0c0d99f78bd6d2135538a4e63",
+      "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50"
+    },
+    "working_tree_backend_matches_tested_image_at_recorded_at": true,
+    "full_api_smoke_image_id": "sha256:694747cdc99c8ef6297455db14855ec7b82e7cc20b00754515dd9e3eb69cdb99",
+    "previous_snapshot": "docs/verification/history/deployment-report-2026-11-06-125225.json",
+    "source_sha256": {
+      "app/main.py": "92f834202a5e7177c85d117605f89c1b6fbb04648cbc47d77c7f80b4cc776900",
+      "app/db.py": "5ec0ec86a620d634bc2095c1914ca7247f6cc2b0c0d99f78bd6d2135538a4e63",
+      "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+      "static/app.js": "960eac42a98158a6fabbe1c9f55c2506eac4326454657d1eceacca63f5b9a338",
+      "static/style.css": "25e2dcbd83bbdf504a7843d86b5619d6736332b6588038ef95f48eb0e93ad436",
+      "static/index.html": "6a64576cbc2bffd54ee090fe9940436e276863b59ed1cfe4c41b660e3a67d791",
+      "requirements.txt": "575e32efb45434c5a2a5a3b70358ca4142b37f2c550cec7b888bf034f9dbdbd9",
+      "requirements-runtime.lock": "be93e44ba3d17d0cb936b6dece4e197839ea6a938beb94db91dbe0d8c665a470"
+    },
+    "dockerfile_sha256": "4126959d440fe1c234cf4656eb1027ecfe384ca9b42130ce4357bbadac36af05"
+  },
+  "environment": {
+    "host": "Windows, Docker Desktop with Linux/amd64 containers",
+    "docker_engine": "29.9.2",
+    "docker_compose": "5.6.1",
+    "python": "3.13.18",
+    "postgresql": "17.11",
+    "caddy": "2.11.9",
+    "app_env": "production",
+    "demo_mode": true,
+    "web_workers": 2,
+    "local_origin": "https://localhost:18443",
+    "mocked_api_responses": false,
+    "fastapi": "0.133.0",
+    "starlette": "1.3.1",
+    "linux_runtime_packages_locked": 21
+  },
+  "pinned_base_images": {
+    "python": "python:3.13-slim@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc",
+    "postgresql": "postgres:17-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac",
+    "caddy": "caddy:2-alpine@sha256:78bd35025c7ba85961dd149ae670315129954e77abe2383ac47c89106b35ade9"
+  },
+  "checks": {
+    "normal_docker_build": "PASS; Docker installs requirements.txt with requirements-runtime.lock constraints. Final static rebuild reused the unchanged audited runtime layer.",
+    "compose_config": "PASS",
+    "production_caddyfile_validate": "PASS",
+    "all_three_service_healthchecks": "PASS",
+    "tls": "PASS; certificate verified with the explicit local Caddy test CA; TLS verification was not disabled.",
+    "live_smoke_command": "python scripts/check-deployment.py --url https://localhost:18443 --ca <local-test-ca>",
+    "live_smoke": [
+      "live/readiness",
+      "Secure/HttpOnly/SameSite session cookies",
+      "two student accounts with different data",
+      "IDOR rejected",
+      "idempotent submission returns the same request",
+      "staff status workflow",
+      "stale expected_version returns 409",
+      "downloadable fictional document",
+      "personal notifications",
+      "server pagination, totals and filters",
+      "PostgreSQL read-only GET transactions",
+      "student/staff role separation",
+      "ICS calendar",
+      "persisted deadline completion"
+    ],
+    "final_created_request_id": 8,
+    "final_status": "ready",
+    "applied_schema_versions": [
+      "0002_workflow",
+      "0003_listing_indexes"
+    ],
+    "concurrent_fresh_database_initialization": {
+      "database": "atlas_fresh_security",
+      "independent_seed_processes": 2,
+      "exit_codes": [
+        0,
+        0
+      ],
+      "users_after_both_processes": 3,
+      "result": "PASS"
+    },
+    "restart_persistence": {
+      "services_restarted": [
+        "db",
+        "web"
+      ],
+      "request_id": 8,
+      "status_after_restart": "ready",
+      "result": "PASS"
+    },
+    "backup_and_isolated_restore": {
+      "backup_file": "backups/atlas-20261106T183207Z.dump",
+      "backup_sha256": "380c891f451b35f4aa3eb7a536605efccb78fdc1e3aff00f70d497ded58163d8",
+      "restored_database": "atlas_restore_20261106_security",
+      "source_requests": 8,
+      "restored_requests": 8,
+      "source_request_events": 23,
+      "restored_request_events": 23,
+      "original_database_overwritten": false,
+      "result": "PASS"
+    },
+    "container_security": {
+      "application_database_role": "atlas_app",
+      "application_role_superuser": false,
+      "application_role_createdb": false,
+      "application_role_createrole": false,
+      "web_user": "atlas",
+      "web_readonly_rootfs": true,
+      "web_cap_drop": [
+        "ALL"
+      ],
+      "web_public_port": false,
+      "database_public_port": false,
+      "trusted_proxy_ip": "172.30.60.10",
+      "result": "PASS"
+    },
+    "windows_launcher": "PASS; final launcher evidence is docs/verification/local-launch-report.json. Original fictional users and three original requests were preserved.",
+    "source_packaging": "PASS; runtime files present, forbidden entries 0; final archive must be regenerated after all source changes.",
+    "final_static_rebuild": {
+      "result": "PASS",
+      "backend_unchanged": true,
+      "audited_runtime_inventory_unchanged": true,
+      "served_javascript_sha256": "960eac42a98158a6fabbe1c9f55c2506eac4326454657d1eceacca63f5b9a338",
+      "tls_certificate_verified": true,
+      "readiness": true
+    },
+    "dependency_advisory_gate": {
+      "result": "PASS",
+      "evidence": "docs/verification/dependency-report.json",
+      "services": [
+        "pypi",
+        "osv"
+      ],
+      "packages_scanned": 22,
+      "application_runtime_packages": 21,
+      "known_advisory_ids": 0,
+      "ignored_ids": 0,
+      "skipped_packages": 0,
+      "pip_check": "PASS",
+      "runtime_lock_matches": true,
+      "scanner_and_test_packages_in_production_image": false
+    }
+  },
+  "teardown": {
+    "isolated_stack": "atlas-release-check",
+    "containers_and_networks_stopped_and_removed": true,
+    "test_volumes_preserved": true,
+    "unrelated_containers_untouched": true
+  },
+  "not_verified": [
+    "public hosting and DNS",
+    "public ACME certificate",
+    "access from a Russian connection without VPN",
+    "physical mobile device",
+    "uptime through 2026-11-28",
+    "load/HA acceptance",
+    "remote GitHub Actions execution"
+  ],
+  "credentials_included": false
+}

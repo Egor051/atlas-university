@@ -1,0 +1,581 @@
+{
+  "version": "3.2.1",
+  "scope": "Unified findings from both read-only audits; no duplicate IDs",
+  "baseline": {
+    "source_snapshot": "<TEMP_WORKSPACE>/before.zip",
+    "pytest": "180 passed, 2 warnings, 129.52 seconds, browser tests enabled",
+    "database_sha256": "91ad8fae65489acd94ec9dc71ac38d90b72a51c549bec97dc35a287600913683"
+  },
+  "findings": [
+    {
+      "id": "B01",
+      "severity": "HIGH",
+      "problem": "Отправка прежнего сеанса под новым аккаунтом",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Владелец, эпоха и жизненный цикл проверяются после каждого ожидания; устаревшая подготовка прерывает отправку.",
+      "tests": [
+        "test_draft_lifecycle_protocol[late-owner]",
+        "test_draft_lifecycle_protocol[logout-queued]"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B02",
+      "severity": "HIGH",
+      "problem": "Квадратичный рост квитанций истории",
+      "owner": "backend",
+      "status": "FIXED",
+      "fix": "Квитанция хранит неизменный снимок родителя и границу истории вместо повторения сообщений; старые ответы восстанавливаются точно, вся история доступна страницами.",
+      "tests": [
+        "test_compact_followup_receipts_are_linear_and_replay_historical_page",
+        "test_compact_receipts_preserve_exact_legacy_pages_and_all_history_access"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/extension-browser.json"
+      ]
+    },
+    {
+      "id": "B03",
+      "severity": "MEDIUM",
+      "problem": "Закрытие формы оставляет pending",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Форма блокируется до первого ожидания, pending и управление восстанавливаются в finally, закрытие во время отправки запрещено.",
+      "tests": [
+        "test_request_locks_before_draft_await_and_cannot_close"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B04",
+      "severity": "MEDIUM",
+      "problem": "Отправка без сохранённой идентичности",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Первичное чтение черновика и подтверждённое сохранение ключа обязательны до POST; сбой чтения/PUT прерывает отправку, потерянный ответ не создаёт дубль.",
+      "tests": [
+        "test_failed_durable_draft_stops_primary_post_and_preserves_input",
+        "test_note_lost_response_reload_reuses_durable_key",
+        "test_failed_initial_read_then_edited_retry_preserves_committed_submission_key"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B05",
+      "severity": "MEDIUM",
+      "problem": "Лимит черновика меньше конспекта",
+      "owner": "backend",
+      "status": "FIXED",
+      "fix": "Лимит значения черновика согласован с конспектом: 12000 символов; превышение по-прежнему отклоняется.",
+      "tests": [
+        "test_full_size_note_draft_and_portfolio_replay",
+        "test_valid_twelve_thousand_character_note_draft_survives_reload"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B06",
+      "severity": "MEDIUM",
+      "problem": "Повтор портфолио создаёт дубль",
+      "owner": "backend",
+      "status": "FIXED",
+      "fix": "Создание портфолио резервирует квитанцию и запись в одной транзакции; повтор возвращает тот же результат.",
+      "tests": [
+        "test_full_size_note_draft_and_portfolio_replay"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B07",
+      "severity": "MEDIUM",
+      "problem": "Конкурентное превышение количества записей",
+      "owner": "backend",
+      "status": "FIXED",
+      "fix": "Проверка количества и вставка сериализуются по владельцу; старые записи сверх 200 сохраняются и остаются видимыми.",
+      "tests": [
+        "test_owner_cap_is_atomic_across_concurrent_creates",
+        "scripts/improvement_deployment.py: personal_cap_races"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/postgres-https.json"
+      ]
+    },
+    {
+      "id": "B08",
+      "severity": "MEDIUM",
+      "problem": "Флажок задачи перезаписывает поля",
+      "owner": "backend/frontend",
+      "status": "FIXED",
+      "fix": "Отдельный endpoint toggle изменяет только is_done; клиент не пересылает устаревшие поля задачи.",
+      "tests": [
+        "test_partial_task_toggle_preserves_edits_and_aged_date",
+        "scripts/extension_browser_check.py: stale client edit + checkbox + persisted fields"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/extension-browser.json"
+      ]
+    },
+    {
+      "id": "B09",
+      "severity": "MEDIUM",
+      "problem": "Поздний ответ дедлайна меняет новый кеш",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Незавершённая запись дедлайна сохраняется вне сменяемого кеша; обновление раздела не разрешает пересекающуюся запись и не принимает старый результат как новый.",
+      "tests": [
+        "test_deadline_refresh_keeps_write_locked_until_response_settles"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B10",
+      "severity": "MEDIUM",
+      "problem": "Пустая последняя страница после изменения total",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Все сервисные загрузчики используют общий пересчёт offset при уменьшении total, включая темы сотрудника и студента.",
+      "tests": [
+        "test_last_filtered_ticket_reloads_previous_page_after_close"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B11",
+      "severity": "MEDIUM",
+      "problem": "Неверный timezone срока сессии",
+      "owner": "core/backend",
+      "status": "FIXED",
+      "fix": "Aware timestamps переводятся в UTC, naive SQLite считаются UTC; сравнение срока, квот и ISO-ответы используют моменты времени.",
+      "tests": [
+        "test_b11_expiry_compares_instants_not_wall_clock",
+        "test_b11_datetime_payload_is_canonical_utc",
+        "scripts/improvement_deployment.py: session_timezone"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/postgres-https.json"
+      ]
+    },
+    {
+      "id": "B12",
+      "severity": "MEDIUM",
+      "problem": "Обход create-квоты записью ID",
+      "owner": "backend",
+      "status": "FIXED",
+      "fix": "Маршрут write-квоты сопоставляется после канонизации целого ID; +ID, ведущие нули и пробелы не обходят создание сообщения.",
+      "tests": [
+        "test_noncanonical_integer_message_path_cannot_bypass_create_quota",
+        "test_canonical_create_quota_and_actor_affinity_before_charging"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B13",
+      "severity": "MEDIUM",
+      "problem": "Неполный исходный ZIP",
+      "owner": "ops",
+      "status": "FIXED",
+      "fix": "В обязательный комплект добавлен compose.improvements.yaml и проверка его связей; исходники исключают БД, секреты, кеши и зависимости.",
+      "tests": [
+        "test_b13_source_zip_preserves_postgres_tls_entrypoint"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/ops-pytest.xml"
+      ]
+    },
+    {
+      "id": "B14",
+      "severity": "MEDIUM",
+      "problem": "Общий путь параллельных backup",
+      "owner": "ops",
+      "status": "FIXED",
+      "fix": "Уникальные временные пути и имена копий, блокировка конкурирующего писателя и атомарная публикация исключают перезапись и ложную проверку.",
+      "tests": [
+        "test_b14_backup_file_protocol_without_a_database",
+        "scripts/improvement_deployment.py: backup_restore"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/backup-file-protocol.json",
+        "verification/audit-fixes-2026-11-10/postgres-https.json"
+      ]
+    },
+    {
+      "id": "B15",
+      "severity": "LOW",
+      "problem": "Переполнение минимальной даты",
+      "owner": "backend",
+      "status": "FIXED",
+      "fix": "Минимальная и максимальная даты фильтра преобразуются без переполнения календаря.",
+      "tests": [
+        "test_staff_replay_survives_start_time_and_boundary_dates"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B16",
+      "severity": "LOW",
+      "problem": "Временная валидация до replay",
+      "owner": "core/backend",
+      "status": "FIXED",
+      "fix": "Проверка актуальности даты выполняется после поиска подтверждённого повтора; новый просроченный запрос всё ещё запрещён.",
+      "tests": [
+        "test_b16_retake_replay_survives_moscow_midnight",
+        "test_staff_replay_survives_start_time_and_boundary_dates"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B17",
+      "severity": "LOW",
+      "problem": "Старение задачи запрещает изменение",
+      "owner": "backend",
+      "status": "FIXED",
+      "fix": "Изменение существующей задачи с прежней датой разрешено после её старения; новая дата валидируется, отметка имеет отдельный endpoint.",
+      "tests": [
+        "test_partial_task_toggle_preserves_edits_and_aged_date"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B18",
+      "severity": "LOW",
+      "problem": "Строковая сортировка времени календаря",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Календарь сортируется по каноническому времени, подпись для человека в сортировке не участвует.",
+      "tests": [
+        "test_calendar_orders_lesson_and_localized_consultation_by_canonical_time"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B19",
+      "severity": "LOW",
+      "problem": "UTC-дата создания в списке",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Дата создания в списке и карточке вычисляется в Europe/Moscow из одного timestamp.",
+      "tests": [
+        "test_request_list_uses_moscow_creation_day_and_rejected_contrast"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B20",
+      "severity": "LOW",
+      "problem": "Сводка активных пропускает needs_info",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Сводка активных заявок учитывает needs_info вместе с submitted/review/processing.",
+      "tests": [
+        "test_staff_summary_counts_needs_info_and_all_consultation_pages"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B21",
+      "severity": "LOW",
+      "problem": "Размер страницы вместо total слотов",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Сводка консультаций использует серверный total вместо длины текущей страницы.",
+      "tests": [
+        "test_staff_summary_counts_needs_info_and_all_consultation_pages"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B22",
+      "severity": "LOW",
+      "problem": "UTC-дата срока старой заявки",
+      "owner": "backend",
+      "status": "FIXED",
+      "fix": "Аддитивная 0006 корректирует только сроки, совпадающие с прежним вычислением по UTC, на расчёт по московской дате.",
+      "tests": [
+        "test_0006_upgrade_preserves_records_unbound_drafts_and_compacts_legacy_receipts"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/workspace-copy-migration.json",
+        "verification/audit-fixes-2026-11-10/postgres-https.json"
+      ]
+    },
+    {
+      "id": "B23",
+      "severity": "LOW",
+      "problem": "Readiness обходит обработку соединения",
+      "owner": "core",
+      "status": "FIXED",
+      "fix": "Создание соединения и SELECT readiness находятся внутри обработки отказа; недоступная БД даёт 503, health остаётся доступным.",
+      "tests": [
+        "test_b23_ready_catches_connection_creation_failure",
+        "scripts/improvement_deployment.py: database outage and recovery"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/postgres-https.json"
+      ]
+    },
+    {
+      "id": "B24",
+      "severity": "LOW",
+      "problem": "Конкурентный максимум сессий PostgreSQL",
+      "owner": "core",
+      "status": "FIXED",
+      "fix": "Удаление лишних сессий и новый вход сериализуются по строке пользователя PostgreSQL независимо от IP.",
+      "tests": [
+        "scripts/improvement_deployment.py: session_cap_race"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/postgres-https.json"
+      ]
+    },
+    {
+      "id": "B25",
+      "severity": "MEDIUM",
+      "problem": "Уточнение после терминального решения",
+      "owner": "backend",
+      "status": "FIXED",
+      "fix": "Ожидаемая версия должна совпасть с прочитанной; SQL дополнительно проверяет владельца, версию и нетерминальный текущий статус.",
+      "tests": [
+        "test_predicted_followup_version_cannot_bypass_terminal_state"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B26",
+      "severity": "MEDIUM",
+      "problem": "Поздний restore меняет ключ отправки",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Restore завершается до захвата отправки; сохранённая идентичность отделена от применения полей, ключ остаётся неизменным во время await.",
+      "tests": [
+        "test_draft_lifecycle_protocol[restore-before-submit]",
+        "test_draft_lifecycle_protocol[edited-before-restore]",
+        "test_failed_initial_read_then_edited_retry_preserves_committed_submission_key"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B27",
+      "severity": "HIGH",
+      "problem": "SQLite ID reuse и чужая запись/черновик",
+      "owner": "backend/frontend",
+      "status": "FIXED",
+      "fix": "Пять семейств личных записей получили постоянный record_token; SQL проверяет ID/владельца/токен, формы и черновики связаны с токеном. Старые черновики сохранены без опасной перепривязки.",
+      "tests": [
+        "test_sqlite_aba_inflight_mutation_cannot_cross_owners",
+        "test_same_owner_reuse_rejects_old_token_and_draft_identity",
+        "test_0006_upgrade_preserves_records_unbound_drafts_and_compacts_legacy_receipts"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/workspace-copy-migration.json",
+        "verification/audit-fixes-2026-11-10/postgres-https.json"
+      ]
+    },
+    {
+      "id": "B28",
+      "severity": "MEDIUM",
+      "problem": "Очистка удаляет следующий черновик",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "DELETE черновика идёт в общей очереди с PUT и проверяет ревизию; таймер отменяется, блокировка отправки держится до очистки.",
+      "tests": [
+        "test_draft_lifecycle_protocol[delete-serialized]",
+        "test_request_locks_before_draft_await_and_cannot_close"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "B29",
+      "severity": "MEDIUM",
+      "problem": "Аккаунт другой вкладки не согласован",
+      "owner": "core/frontend",
+      "status": "FIXED",
+      "fix": "Клиент отправляет захваченный X-ATLAS-User, сервер отклоняет несовпадение до записи/квоты; межвкладочная проверка и скачивания используют ту же защиту.",
+      "tests": [
+        "test_b29_actor_header_blocks_cross_account_reads_writes_and_logout",
+        "test_cross_tab_cookie_change_cannot_save_old_account_form",
+        "test_downloads_are_affinity_guarded_and_legacy_drafts_are_discoverable"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "P01",
+      "severity": "MEDIUM",
+      "problem": "Память параллельных Argon2",
+      "owner": "core/ops",
+      "status": "FIXED",
+      "fix": "Общий для PostgreSQL-процессов допуск ограничивает Argon2 двумя проверками; перегрузка возвращает 429/Retry-After, блокировки освобождаются транзакцией.",
+      "tests": [
+        "test_p01_pg_admission_has_bounded_shared_slots_and_overload_retry",
+        "test_p01_local_admission_releases_after_verifier_exception",
+        "p01-before.json / p01-after.json: real two-worker measurement"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/p01-before.json",
+        "verification/audit-fixes-2026-11-10/p01-after.json"
+      ]
+    },
+    {
+      "id": "P02",
+      "severity": "LOW",
+      "problem": "Контраст rejected",
+      "owner": "frontend",
+      "status": "FIXED",
+      "fix": "Текст отклонённой заявки затемнён; вычисленный браузером контраст не меньше 4.5:1.",
+      "tests": [
+        "test_request_list_uses_moscow_creation_day_and_rejected_contrast"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml"
+      ]
+    },
+    {
+      "id": "P03",
+      "severity": "LOW",
+      "problem": "Зависимости текущего PDF",
+      "owner": "ops",
+      "status": "FIXED",
+      "fix": "pypdf, ReportLab и Pillow объявлены отдельно с маршрутом установки; генератор проверен изолированно, все страницы отрендерены.",
+      "tests": [
+        "test_p03_current_report_dependencies_are_declared_and_importable",
+        "pdf-generator-check.json"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/pdf-generator-check.json"
+      ]
+    },
+    {
+      "id": "P04",
+      "severity": "LOW",
+      "problem": "REVIEW завершается exit 0",
+      "owner": "ops",
+      "status": "FIXED",
+      "fix": "REVIEW, неполный или подменённый инвентарь, ошибка сканера/установки завершаются ненулевым кодом; импорт не запускает аудит.",
+      "tests": [
+        "test_p04_audit_exit_matches_actual_scanner_result",
+        "test_p04_import_has_no_scan_or_report_side_effects"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/linux-runtime/runtime-audit.json"
+      ]
+    },
+    {
+      "id": "P05",
+      "severity": "LOW",
+      "problem": "20 относительных ссылок исторического отчёта",
+      "owner": "ops",
+      "status": "FIXED",
+      "fix": "Исправлены уровни всех 20 относительных ссылок перенесённого исторического документа; проверяется существование целей.",
+      "tests": [
+        "test_p05_historical_document_links_resolve"
+      ],
+      "evidence": [
+        "verification/audit-fixes-2026-11-10/pytest-results.xml",
+        "verification/audit-fixes-2026-11-10/ops-pytest.xml"
+      ]
+    }
+  ],
+  "checked_at_utc": "2026-11-10T16:02:47.821026+00:00",
+  "outcome": {
+    "FIXED": 34,
+    "NOT FIXED": 0,
+    "NOT REPRODUCED": 0
+  },
+  "additional_findings": [
+    {
+      "id": "N01",
+      "problem": "Свежие advisory в pytest/Pillow/pip окружения проверки",
+      "fix": "pytest9.0.3/Pillow13.0.0/pip26.2.2; закреплён bootstrap новых окружений",
+      "status": "FIXED",
+      "evidence": "verification/audit-fixes-2026-11-10/development-security-audit.json"
+    },
+    {
+      "id": "N02",
+      "problem": "Регрессия фокуса после разблокировки формы",
+      "fix": "Фокус применяется после восстановления доступности полей, без изменения исходного теста",
+      "status": "FIXED",
+      "tests": [
+        "test_server_validation_points_to_field_without_losing_input",
+        "test_request_server_field_error_focuses_after_controls_are_unlocked",
+        "test_followup_server_field_error_focuses_after_controls_are_unlocked"
+      ]
+    },
+    {
+      "id": "N03",
+      "problem": "Переполнение ID token-bound черновика",
+      "fix": "Диапазон проверяется до SQL, неверный ID даёт422",
+      "status": "FIXED",
+      "tests": [
+        "test_bound_draft_rejects_out_of_range_identity_without_database_overflow"
+      ]
+    }
+  ],
+  "working_database": {
+    "changed": false,
+    "sha256": "91ad8fae65489acd94ec9dc71ac38d90b72a51c549bec97dc35a287600913683"
+  },
+  "checks": {
+    "pytest": {
+      "passed": 270,
+      "failed": 0,
+      "skipped": 0,
+      "warnings": 2,
+      "seconds": 194.16
+    },
+    "javascript_syntax": "PASS: all3JS via npm run check",
+    "python_syntax": "PASS: AST of65Pythonfiles",
+    "production_changed": false,
+    "public_deployment_verified": false
+  }
+}

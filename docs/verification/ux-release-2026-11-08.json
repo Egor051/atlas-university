@@ -1,0 +1,1090 @@
+{
+  "version": "3.1.0",
+  "verified_at": "2026-11-08T01:02:28.741185+03:00",
+  "status": "PASS",
+  "scope": "Real local HTTP/Chromium with isolated fictional SQLite. No public hosting, TLS, physical device or Russian connectivity claim.",
+  "source_sha256": {
+    "app/__init__.py": "2c77512cf5c1b955c924160a6505b64d9467c7ac2ffc701a27f27d89b2512d68",
+    "app/campus.py": "f01658488c81c7c8474ba13e32560ff8231628f5b13ad29bd885123072a498d7",
+    "app/campus_db.py": "6979b034fd999fe8c9602a84dfd3c7243171db0651031cfaf524b33254168517",
+    "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+    "app/db.py": "d36e34b55e78d62b1da0f3078a03bceee3247ec171eab8c8f61d02418fb669ed",
+    "app/learning.py": "05f18fc666bbd7f1abecd4ae04cfff3d25103bea767c0eceee6a3d3de921f31a",
+    "app/learning_db.py": "4211ed7b7c01637327a0f16c2eaabe64bea3376766d835985fb9eda41d770331",
+    "app/main.py": "1897c8af2ba5df1d64d170f71aee6406207fd6ab6b0d34f764d8fad41a6dd487",
+    "app/services.py": "765743146551d57bb2b703c1eb7490e15f28c8ec580b05f181cae468ddc2c404",
+    "app/services_db.py": "0ed223d5cb3fb919cb1c53be0c132884e8e22dd95270426d10d4ec71d8610078",
+    "static/app.js": "533fc8181976d6327ad800fd2526e76b466a58a0ef7e3400d9b74e899adc319d",
+    "static/campus.css": "d72873bbd1e835295a67ffd1ef2210b4b3fabcef39c8dbfea6f5066d28eade34",
+    "static/campus.js": "b942707a067338c8eaf19bea32749a1849496a7bd55a44151c75ed9a951b6511",
+    "static/favicon.svg": "949dad734f87fd471c4bd0a55dc70bef0311af9bc54290e7e6b31d906706d057",
+    "static/index.html": "e12347c8647668b3547e8bc933fe17f56068161bee918a0aed180f227a8d5ce7",
+    "static/style.css": "26440cc4553d78ed7fa071ae4aa8cb3bd8dc8c53d957fb888604b1b1dfdd2a52",
+    "static/usability.css": "ab31e48833d41775269cf9b0d9a03298ceedf001dddcb5b6e4474957727610b7"
+  },
+  "pytest": {
+    "passed": 141,
+    "failed": 0,
+    "skipped": 0,
+    "real_browser_tests": 23
+  },
+  "ui": {
+    "pages": 32,
+    "widths": [
+      360,
+      390,
+      768,
+      1440
+    ],
+    "geometry_checks": 128,
+    "horizontal_overflow": 0,
+    "axe_states": 128,
+    "axe_violations": 0,
+    "before_screenshots": 132,
+    "after_screenshots": 132
+  },
+  "extension": {
+    "scenarios": 8,
+    "checks": 136,
+    "geometry_checks": 132,
+    "axe_states": 133,
+    "violating_nodes": 0,
+    "source_changed_during_run": []
+  },
+  "comparison": [
+    {
+      "role": "student",
+      "width": 360,
+      "page": "home",
+      "before_content_height": 2288,
+      "after_content_height": 1199,
+      "reduction_percent": 47.6
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "schedule",
+      "before_content_height": 2437,
+      "after_content_height": 625,
+      "reduction_percent": 74.4
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "grades",
+      "before_content_height": 1984,
+      "after_content_height": 1465,
+      "reduction_percent": 26.2
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "plan",
+      "before_content_height": 1053,
+      "after_content_height": 902,
+      "reduction_percent": 14.3
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "requests",
+      "before_content_height": 1932,
+      "after_content_height": 860,
+      "reduction_percent": 55.5
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "notifications",
+      "before_content_height": 1093,
+      "after_content_height": 1015,
+      "reduction_percent": 7.1
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "profile",
+      "before_content_height": 1205,
+      "after_content_height": 744,
+      "reduction_percent": 38.3
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "campus",
+      "before_content_height": 3338,
+      "after_content_height": 883,
+      "reduction_percent": 73.5
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "courses",
+      "before_content_height": 2330,
+      "after_content_height": 961,
+      "reduction_percent": 58.8
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "assignments",
+      "before_content_height": 2470,
+      "after_content_height": 1146,
+      "reduction_percent": 53.6
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "exams",
+      "before_content_height": 2604,
+      "after_content_height": 1723,
+      "reduction_percent": 33.8
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "attendance",
+      "before_content_height": 2700,
+      "after_content_height": 2265,
+      "reduction_percent": 16.1
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "calendar",
+      "before_content_height": 2418,
+      "after_content_height": 496,
+      "reduction_percent": 79.5
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "tasks",
+      "before_content_height": 965,
+      "after_content_height": 666,
+      "reduction_percent": 31.0
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "notes",
+      "before_content_height": 653,
+      "after_content_height": 466,
+      "reduction_percent": 28.6
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "flashcards",
+      "before_content_height": 1012,
+      "after_content_height": 801,
+      "reduction_percent": 20.8
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "quizzes",
+      "before_content_height": 1031,
+      "after_content_height": 663,
+      "reduction_percent": 35.7
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "focus",
+      "before_content_height": 1443,
+      "after_content_height": 968,
+      "reduction_percent": 32.9
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "consultations",
+      "before_content_height": 2265,
+      "after_content_height": 1609,
+      "reduction_percent": 29.0
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "messages",
+      "before_content_height": 575,
+      "after_content_height": 487,
+      "reduction_percent": 15.3
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "library",
+      "before_content_height": 2929,
+      "after_content_height": 2187,
+      "reduction_percent": 25.3
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "events",
+      "before_content_height": 2442,
+      "after_content_height": 1954,
+      "reduction_percent": 20.0
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "finance",
+      "before_content_height": 1456,
+      "after_content_height": 1153,
+      "reduction_percent": 20.8
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "contacts",
+      "before_content_height": 3553,
+      "after_content_height": 2150,
+      "reduction_percent": 39.5
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "knowledge",
+      "before_content_height": 1840,
+      "after_content_height": 1530,
+      "reduction_percent": 16.8
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "portfolio",
+      "before_content_height": 700,
+      "after_content_height": 655,
+      "reduction_percent": 6.4
+    },
+    {
+      "role": "student",
+      "width": 360,
+      "page": "settings",
+      "before_content_height": 999,
+      "after_content_height": 995,
+      "reduction_percent": 0.4
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "home",
+      "before_content_height": 2228,
+      "after_content_height": 1108,
+      "reduction_percent": 50.3
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "schedule",
+      "before_content_height": 2422,
+      "after_content_height": 625,
+      "reduction_percent": 74.2
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "grades",
+      "before_content_height": 1951,
+      "after_content_height": 1423,
+      "reduction_percent": 27.1
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "plan",
+      "before_content_height": 1053,
+      "after_content_height": 876,
+      "reduction_percent": 16.8
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "requests",
+      "before_content_height": 1900,
+      "after_content_height": 838,
+      "reduction_percent": 55.9
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "notifications",
+      "before_content_height": 1052,
+      "after_content_height": 995,
+      "reduction_percent": 5.4
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "profile",
+      "before_content_height": 1205,
+      "after_content_height": 725,
+      "reduction_percent": 39.8
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "campus",
+      "before_content_height": 3287,
+      "after_content_height": 883,
+      "reduction_percent": 73.1
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "courses",
+      "before_content_height": 2286,
+      "after_content_height": 940,
+      "reduction_percent": 58.9
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "assignments",
+      "before_content_height": 2470,
+      "after_content_height": 1111,
+      "reduction_percent": 55.0
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "exams",
+      "before_content_height": 2604,
+      "after_content_height": 1723,
+      "reduction_percent": 33.8
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "attendance",
+      "before_content_height": 2682,
+      "after_content_height": 1995,
+      "reduction_percent": 25.6
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "calendar",
+      "before_content_height": 2377,
+      "after_content_height": 496,
+      "reduction_percent": 79.1
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "tasks",
+      "before_content_height": 965,
+      "after_content_height": 627,
+      "reduction_percent": 35.0
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "notes",
+      "before_content_height": 630,
+      "after_content_height": 448,
+      "reduction_percent": 28.9
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "flashcards",
+      "before_content_height": 1012,
+      "after_content_height": 801,
+      "reduction_percent": 20.8
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "quizzes",
+      "before_content_height": 1031,
+      "after_content_height": 643,
+      "reduction_percent": 37.6
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "focus",
+      "before_content_height": 1390,
+      "after_content_height": 952,
+      "reduction_percent": 31.5
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "consultations",
+      "before_content_height": 2265,
+      "after_content_height": 1609,
+      "reduction_percent": 29.0
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "messages",
+      "before_content_height": 575,
+      "after_content_height": 487,
+      "reduction_percent": 15.3
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "library",
+      "before_content_height": 2878,
+      "after_content_height": 2115,
+      "reduction_percent": 26.5
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "events",
+      "before_content_height": 2395,
+      "after_content_height": 1909,
+      "reduction_percent": 20.3
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "finance",
+      "before_content_height": 1440,
+      "after_content_height": 1099,
+      "reduction_percent": 23.7
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "contacts",
+      "before_content_height": 3454,
+      "after_content_height": 2042,
+      "reduction_percent": 40.9
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "knowledge",
+      "before_content_height": 1731,
+      "after_content_height": 1444,
+      "reduction_percent": 16.6
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "portfolio",
+      "before_content_height": 684,
+      "after_content_height": 635,
+      "reduction_percent": 7.2
+    },
+    {
+      "role": "student",
+      "width": 390,
+      "page": "settings",
+      "before_content_height": 967,
+      "after_content_height": 976,
+      "reduction_percent": -0.9
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "home",
+      "before_content_height": 1751,
+      "after_content_height": 889,
+      "reduction_percent": 49.2
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "schedule",
+      "before_content_height": 1562,
+      "after_content_height": 1409,
+      "reduction_percent": 9.8
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "grades",
+      "before_content_height": 1336,
+      "after_content_height": 1052,
+      "reduction_percent": 21.3
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "plan",
+      "before_content_height": 1034,
+      "after_content_height": 797,
+      "reduction_percent": 22.9
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "requests",
+      "before_content_height": 1562,
+      "after_content_height": 623,
+      "reduction_percent": 60.1
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "notifications",
+      "before_content_height": 854,
+      "after_content_height": 731,
+      "reduction_percent": 14.4
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "profile",
+      "before_content_height": 772,
+      "after_content_height": 683,
+      "reduction_percent": 11.5
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "campus",
+      "before_content_height": 2189,
+      "after_content_height": 815,
+      "reduction_percent": 62.8
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "courses",
+      "before_content_height": 1417,
+      "after_content_height": 878,
+      "reduction_percent": 38.0
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "assignments",
+      "before_content_height": 1491,
+      "after_content_height": 753,
+      "reduction_percent": 49.5
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "exams",
+      "before_content_height": 1791,
+      "after_content_height": 1164,
+      "reduction_percent": 35.0
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "attendance",
+      "before_content_height": 2091,
+      "after_content_height": 1460,
+      "reduction_percent": 30.2
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "calendar",
+      "before_content_height": 1488,
+      "after_content_height": 1133,
+      "reduction_percent": 23.9
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "tasks",
+      "before_content_height": 590,
+      "after_content_height": 397,
+      "reduction_percent": 32.7
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "notes",
+      "before_content_height": 547,
+      "after_content_height": 320,
+      "reduction_percent": 41.5
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "flashcards",
+      "before_content_height": 605,
+      "after_content_height": 525,
+      "reduction_percent": 13.2
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "quizzes",
+      "before_content_height": 790,
+      "after_content_height": 467,
+      "reduction_percent": 40.9
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "focus",
+      "before_content_height": 1210,
+      "after_content_height": 672,
+      "reduction_percent": 44.5
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "consultations",
+      "before_content_height": 1390,
+      "after_content_height": 938,
+      "reduction_percent": 32.5
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "messages",
+      "before_content_height": 476,
+      "after_content_height": 344,
+      "reduction_percent": 27.7
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "library",
+      "before_content_height": 1735,
+      "after_content_height": 1254,
+      "reduction_percent": 27.7
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "events",
+      "before_content_height": 1329,
+      "after_content_height": 1143,
+      "reduction_percent": 14.0
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "finance",
+      "before_content_height": 992,
+      "after_content_height": 749,
+      "reduction_percent": 24.5
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "contacts",
+      "before_content_height": 2089,
+      "after_content_height": 1666,
+      "reduction_percent": 20.2
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "knowledge",
+      "before_content_height": 1818,
+      "after_content_height": 1446,
+      "reduction_percent": 20.5
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "portfolio",
+      "before_content_height": 622,
+      "after_content_height": 555,
+      "reduction_percent": 10.8
+    },
+    {
+      "role": "student",
+      "width": 768,
+      "page": "settings",
+      "before_content_height": 915,
+      "after_content_height": 849,
+      "reduction_percent": 7.2
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "home",
+      "before_content_height": 1207,
+      "after_content_height": 749,
+      "reduction_percent": 37.9
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "schedule",
+      "before_content_height": 1104,
+      "after_content_height": 1011,
+      "reduction_percent": 8.4
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "grades",
+      "before_content_height": 1279,
+      "after_content_height": 1018,
+      "reduction_percent": 20.4
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "plan",
+      "before_content_height": 1011,
+      "after_content_height": 791,
+      "reduction_percent": 21.8
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "requests",
+      "before_content_height": 1120,
+      "after_content_height": 637,
+      "reduction_percent": 43.1
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "notifications",
+      "before_content_height": 874,
+      "after_content_height": 745,
+      "reduction_percent": 14.8
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "profile",
+      "before_content_height": 792,
+      "after_content_height": 697,
+      "reduction_percent": 12.0
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "campus",
+      "before_content_height": 1876,
+      "after_content_height": 742,
+      "reduction_percent": 60.4
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "courses",
+      "before_content_height": 1111,
+      "after_content_height": 892,
+      "reduction_percent": 19.7
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "assignments",
+      "before_content_height": 1110,
+      "after_content_height": 767,
+      "reduction_percent": 30.9
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "exams",
+      "before_content_height": 1277,
+      "after_content_height": 1158,
+      "reduction_percent": 9.3
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "attendance",
+      "before_content_height": 2110,
+      "after_content_height": 1457,
+      "reduction_percent": 30.9
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "calendar",
+      "before_content_height": 694,
+      "after_content_height": 1015,
+      "reduction_percent": -46.3
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "tasks",
+      "before_content_height": 591,
+      "after_content_height": 411,
+      "reduction_percent": 30.5
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "notes",
+      "before_content_height": 568,
+      "after_content_height": 315,
+      "reduction_percent": 44.5
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "flashcards",
+      "before_content_height": 613,
+      "after_content_height": 488,
+      "reduction_percent": 20.4
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "quizzes",
+      "before_content_height": 816,
+      "after_content_height": 457,
+      "reduction_percent": 44.0
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "focus",
+      "before_content_height": 1256,
+      "after_content_height": 668,
+      "reduction_percent": 46.8
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "consultations",
+      "before_content_height": 1135,
+      "after_content_height": 952,
+      "reduction_percent": 16.1
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "messages",
+      "before_content_height": 497,
+      "after_content_height": 358,
+      "reduction_percent": 28.0
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "library",
+      "before_content_height": 1502,
+      "after_content_height": 1195,
+      "reduction_percent": 20.4
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "events",
+      "before_content_height": 1024,
+      "after_content_height": 1046,
+      "reduction_percent": -2.1
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "finance",
+      "before_content_height": 1010,
+      "after_content_height": 763,
+      "reduction_percent": 24.5
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "contacts",
+      "before_content_height": 1398,
+      "after_content_height": 1661,
+      "reduction_percent": -18.8
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "knowledge",
+      "before_content_height": 1818,
+      "after_content_height": 1460,
+      "reduction_percent": 19.7
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "portfolio",
+      "before_content_height": 642,
+      "after_content_height": 550,
+      "reduction_percent": 14.3
+    },
+    {
+      "role": "student",
+      "width": 1440,
+      "page": "settings",
+      "before_content_height": 909,
+      "after_content_height": 825,
+      "reduction_percent": 9.2
+    },
+    {
+      "role": "staff",
+      "width": 360,
+      "page": "staff",
+      "before_content_height": 864,
+      "after_content_height": 803,
+      "reduction_percent": 7.1
+    },
+    {
+      "role": "staff",
+      "width": 360,
+      "page": "staffdesk",
+      "before_content_height": 1503,
+      "after_content_height": 1333,
+      "reduction_percent": 11.3
+    },
+    {
+      "role": "staff",
+      "width": 360,
+      "page": "staffmessages",
+      "before_content_height": 501,
+      "after_content_height": 391,
+      "reduction_percent": 22.0
+    },
+    {
+      "role": "staff",
+      "width": 360,
+      "page": "profile",
+      "before_content_height": 1205,
+      "after_content_height": 608,
+      "reduction_percent": 49.5
+    },
+    {
+      "role": "staff",
+      "width": 360,
+      "page": "settings",
+      "before_content_height": 520,
+      "after_content_height": 458,
+      "reduction_percent": 11.9
+    },
+    {
+      "role": "staff",
+      "width": 390,
+      "page": "staff",
+      "before_content_height": 864,
+      "after_content_height": 785,
+      "reduction_percent": 9.1
+    },
+    {
+      "role": "staff",
+      "width": 390,
+      "page": "staffdesk",
+      "before_content_height": 1487,
+      "after_content_height": 1279,
+      "reduction_percent": 14.0
+    },
+    {
+      "role": "staff",
+      "width": 390,
+      "page": "staffmessages",
+      "before_content_height": 501,
+      "after_content_height": 391,
+      "reduction_percent": 22.0
+    },
+    {
+      "role": "staff",
+      "width": 390,
+      "page": "profile",
+      "before_content_height": 1205,
+      "after_content_height": 589,
+      "reduction_percent": 51.1
+    },
+    {
+      "role": "staff",
+      "width": 390,
+      "page": "settings",
+      "before_content_height": 504,
+      "after_content_height": 458,
+      "reduction_percent": 9.1
+    },
+    {
+      "role": "staff",
+      "width": 768,
+      "page": "staff",
+      "before_content_height": 611,
+      "after_content_height": 591,
+      "reduction_percent": 3.3
+    },
+    {
+      "role": "staff",
+      "width": 768,
+      "page": "staffdesk",
+      "before_content_height": 1063,
+      "after_content_height": 894,
+      "reduction_percent": 15.9
+    },
+    {
+      "role": "staff",
+      "width": 768,
+      "page": "staffmessages",
+      "before_content_height": 459,
+      "after_content_height": 344,
+      "reduction_percent": 25.1
+    },
+    {
+      "role": "staff",
+      "width": 768,
+      "page": "profile",
+      "before_content_height": 772,
+      "after_content_height": 547,
+      "reduction_percent": 29.1
+    },
+    {
+      "role": "staff",
+      "width": 768,
+      "page": "settings",
+      "before_content_height": 464,
+      "after_content_height": 381,
+      "reduction_percent": 17.9
+    },
+    {
+      "role": "staff",
+      "width": 1440,
+      "page": "staff",
+      "before_content_height": 637,
+      "after_content_height": 548,
+      "reduction_percent": 14.0
+    },
+    {
+      "role": "staff",
+      "width": 1440,
+      "page": "staffdesk",
+      "before_content_height": 1023,
+      "after_content_height": 836,
+      "reduction_percent": 18.3
+    },
+    {
+      "role": "staff",
+      "width": 1440,
+      "page": "staffmessages",
+      "before_content_height": 479,
+      "after_content_height": 358,
+      "reduction_percent": 25.3
+    },
+    {
+      "role": "staff",
+      "width": 1440,
+      "page": "profile",
+      "before_content_height": 792,
+      "after_content_height": 561,
+      "reduction_percent": 29.2
+    },
+    {
+      "role": "staff",
+      "width": 1440,
+      "page": "settings",
+      "before_content_height": 468,
+      "after_content_height": 376,
+      "reduction_percent": 19.7
+    }
+  ],
+  "evidence": [
+    "test-report.json",
+    "pytest-results.xml",
+    "ux-pytest-2026-11-08.txt",
+    "ux-before-2026-11-08.json",
+    "ux-after-2026-11-08.json",
+    "extension-browser-report.json",
+    "browser-report.json",
+    "accessibility-report.json"
+  ]
+}

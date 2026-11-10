@@ -1,0 +1,3050 @@
+{
+  "verified_at": "2026-11-08T00:55:44.927580+03:00",
+  "scope": "Real local Chromium and temporary isolated SQLite database; no mocked successful responses. Not a physical-device, public-hosting or Russian-connectivity check.",
+  "status": "PASS",
+  "checks": [
+    "Course module toggles through UI and persists after reload",
+    "Assignment UI submit, revision, withdrawal and persisted text",
+    "Personal task UI create, complete, edit, reload and delete",
+    "Note UI create, live search, safe text, edit and persisted content",
+    "Flashcard UI create, hidden answer, reveal and scheduled review",
+    "Quiz UI genuine answers, server score, explanations and saved history",
+    "Portfolio UI create and genuine own HTML export",
+    "Focus timer UI start, pause, reset, persisted manual log, weekly goal and delete",
+    "student home at 360px: load, concept, geometry, axe, screenshot",
+    "student schedule at 360px: load, concept, geometry, axe, screenshot",
+    "student grades at 360px: load, concept, geometry, axe, screenshot",
+    "student plan at 360px: load, concept, geometry, axe, screenshot",
+    "student requests at 360px: load, concept, geometry, axe, screenshot",
+    "student notifications at 360px: load, concept, geometry, axe, screenshot",
+    "student profile at 360px: load, concept, geometry, axe, screenshot",
+    "student campus at 360px: load, concept, geometry, axe, screenshot",
+    "student courses at 360px: load, concept, geometry, axe, screenshot",
+    "student assignments at 360px: load, concept, geometry, axe, screenshot",
+    "student exams at 360px: load, concept, geometry, axe, screenshot",
+    "student attendance at 360px: load, concept, geometry, axe, screenshot",
+    "student calendar at 360px: load, concept, geometry, axe, screenshot",
+    "student tasks at 360px: load, concept, geometry, axe, screenshot",
+    "student notes at 360px: load, concept, geometry, axe, screenshot",
+    "student flashcards at 360px: load, concept, geometry, axe, screenshot",
+    "student quizzes at 360px: load, concept, geometry, axe, screenshot",
+    "student focus at 360px: load, concept, geometry, axe, screenshot",
+    "student consultations at 360px: load, concept, geometry, axe, screenshot",
+    "student messages at 360px: load, concept, geometry, axe, screenshot",
+    "student library at 360px: load, concept, geometry, axe, screenshot",
+    "student events at 360px: load, concept, geometry, axe, screenshot",
+    "student finance at 360px: load, concept, geometry, axe, screenshot",
+    "student contacts at 360px: load, concept, geometry, axe, screenshot",
+    "student knowledge at 360px: load, concept, geometry, axe, screenshot",
+    "student portfolio at 360px: load, concept, geometry, axe, screenshot",
+    "student settings at 360px: load, concept, geometry, axe, screenshot",
+    "staff staff at 360px: load, concept, geometry, axe, screenshot",
+    "staff staffdesk at 360px: load, concept, geometry, axe, screenshot",
+    "staff staffmessages at 360px: load, concept, geometry, axe, screenshot",
+    "staff settings at 360px: load, concept, geometry, axe, screenshot",
+    "staff profile at 360px: load, concept, geometry, axe, screenshot",
+    "student home at 390px: load, concept, geometry, axe, screenshot",
+    "student schedule at 390px: load, concept, geometry, axe, screenshot",
+    "student grades at 390px: load, concept, geometry, axe, screenshot",
+    "student plan at 390px: load, concept, geometry, axe, screenshot",
+    "student requests at 390px: load, concept, geometry, axe, screenshot",
+    "student notifications at 390px: load, concept, geometry, axe, screenshot",
+    "student profile at 390px: load, concept, geometry, axe, screenshot",
+    "student campus at 390px: load, concept, geometry, axe, screenshot",
+    "student courses at 390px: load, concept, geometry, axe, screenshot",
+    "student assignments at 390px: load, concept, geometry, axe, screenshot",
+    "student exams at 390px: load, concept, geometry, axe, screenshot",
+    "student attendance at 390px: load, concept, geometry, axe, screenshot",
+    "student calendar at 390px: load, concept, geometry, axe, screenshot",
+    "student tasks at 390px: load, concept, geometry, axe, screenshot",
+    "student notes at 390px: load, concept, geometry, axe, screenshot",
+    "student flashcards at 390px: load, concept, geometry, axe, screenshot",
+    "student quizzes at 390px: load, concept, geometry, axe, screenshot",
+    "student focus at 390px: load, concept, geometry, axe, screenshot",
+    "student consultations at 390px: load, concept, geometry, axe, screenshot",
+    "student messages at 390px: load, concept, geometry, axe, screenshot",
+    "student library at 390px: load, concept, geometry, axe, screenshot",
+    "student events at 390px: load, concept, geometry, axe, screenshot",
+    "student finance at 390px: load, concept, geometry, axe, screenshot",
+    "student contacts at 390px: load, concept, geometry, axe, screenshot",
+    "student knowledge at 390px: load, concept, geometry, axe, screenshot",
+    "student portfolio at 390px: load, concept, geometry, axe, screenshot",
+    "student settings at 390px: load, concept, geometry, axe, screenshot",
+    "staff staff at 390px: load, concept, geometry, axe, screenshot",
+    "staff staffdesk at 390px: load, concept, geometry, axe, screenshot",
+    "staff staffmessages at 390px: load, concept, geometry, axe, screenshot",
+    "staff settings at 390px: load, concept, geometry, axe, screenshot",
+    "staff profile at 390px: load, concept, geometry, axe, screenshot",
+    "student home at 768px: load, concept, geometry, axe, screenshot",
+    "student schedule at 768px: load, concept, geometry, axe, screenshot",
+    "student grades at 768px: load, concept, geometry, axe, screenshot",
+    "student plan at 768px: load, concept, geometry, axe, screenshot",
+    "student requests at 768px: load, concept, geometry, axe, screenshot",
+    "student notifications at 768px: load, concept, geometry, axe, screenshot",
+    "student profile at 768px: load, concept, geometry, axe, screenshot",
+    "student campus at 768px: load, concept, geometry, axe, screenshot",
+    "student courses at 768px: load, concept, geometry, axe, screenshot",
+    "student assignments at 768px: load, concept, geometry, axe, screenshot",
+    "student exams at 768px: load, concept, geometry, axe, screenshot",
+    "student attendance at 768px: load, concept, geometry, axe, screenshot",
+    "student calendar at 768px: load, concept, geometry, axe, screenshot",
+    "student tasks at 768px: load, concept, geometry, axe, screenshot",
+    "student notes at 768px: load, concept, geometry, axe, screenshot",
+    "student flashcards at 768px: load, concept, geometry, axe, screenshot",
+    "student quizzes at 768px: load, concept, geometry, axe, screenshot",
+    "student focus at 768px: load, concept, geometry, axe, screenshot",
+    "student consultations at 768px: load, concept, geometry, axe, screenshot",
+    "student messages at 768px: load, concept, geometry, axe, screenshot",
+    "student library at 768px: load, concept, geometry, axe, screenshot",
+    "student events at 768px: load, concept, geometry, axe, screenshot",
+    "student finance at 768px: load, concept, geometry, axe, screenshot",
+    "student contacts at 768px: load, concept, geometry, axe, screenshot",
+    "student knowledge at 768px: load, concept, geometry, axe, screenshot",
+    "student portfolio at 768px: load, concept, geometry, axe, screenshot",
+    "student settings at 768px: load, concept, geometry, axe, screenshot",
+    "staff staff at 768px: load, concept, geometry, axe, screenshot",
+    "staff staffdesk at 768px: load, concept, geometry, axe, screenshot",
+    "staff staffmessages at 768px: load, concept, geometry, axe, screenshot",
+    "staff settings at 768px: load, concept, geometry, axe, screenshot",
+    "staff profile at 768px: load, concept, geometry, axe, screenshot",
+    "student home at 1440px: load, concept, geometry, axe, screenshot",
+    "student schedule at 1440px: load, concept, geometry, axe, screenshot",
+    "student grades at 1440px: load, concept, geometry, axe, screenshot",
+    "student plan at 1440px: load, concept, geometry, axe, screenshot",
+    "student requests at 1440px: load, concept, geometry, axe, screenshot",
+    "student notifications at 1440px: load, concept, geometry, axe, screenshot",
+    "student profile at 1440px: load, concept, geometry, axe, screenshot",
+    "student campus at 1440px: load, concept, geometry, axe, screenshot",
+    "student courses at 1440px: load, concept, geometry, axe, screenshot",
+    "student assignments at 1440px: load, concept, geometry, axe, screenshot",
+    "student exams at 1440px: load, concept, geometry, axe, screenshot",
+    "student attendance at 1440px: load, concept, geometry, axe, screenshot",
+    "student calendar at 1440px: load, concept, geometry, axe, screenshot",
+    "student tasks at 1440px: load, concept, geometry, axe, screenshot",
+    "student notes at 1440px: load, concept, geometry, axe, screenshot",
+    "student flashcards at 1440px: load, concept, geometry, axe, screenshot",
+    "student quizzes at 1440px: load, concept, geometry, axe, screenshot",
+    "student focus at 1440px: load, concept, geometry, axe, screenshot",
+    "student consultations at 1440px: load, concept, geometry, axe, screenshot",
+    "student messages at 1440px: load, concept, geometry, axe, screenshot",
+    "student library at 1440px: load, concept, geometry, axe, screenshot",
+    "student events at 1440px: load, concept, geometry, axe, screenshot",
+    "student finance at 1440px: load, concept, geometry, axe, screenshot",
+    "student contacts at 1440px: load, concept, geometry, axe, screenshot",
+    "student knowledge at 1440px: load, concept, geometry, axe, screenshot",
+    "student portfolio at 1440px: load, concept, geometry, axe, screenshot",
+    "student settings at 1440px: load, concept, geometry, axe, screenshot",
+    "staff staff at 1440px: load, concept, geometry, axe, screenshot",
+    "staff staffdesk at 1440px: load, concept, geometry, axe, screenshot",
+    "staff staffmessages at 1440px: load, concept, geometry, axe, screenshot",
+    "staff settings at 1440px: load, concept, geometry, axe, screenshot",
+    "staff profile at 1440px: load, concept, geometry, axe, screenshot"
+  ],
+  "failures": [],
+  "layout_checks": [
+    {
+      "screen": "course-modules-modal-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "note-editor-modal-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "flashcard-reveal-modal-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "quiz-form-modal-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-home",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-schedule",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-grades",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-plan",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-requests",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-notifications",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-campus",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-courses",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-assignments",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-exams",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-attendance",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-calendar",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-tasks",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-notes",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-flashcards",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-quizzes",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-focus",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-consultations",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-messages",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-library",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-events",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-finance",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-contacts",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-knowledge",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-portfolio",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-staff",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-staffdesk",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-staffmessages",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-staff-settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-360-staff-profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-home",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-schedule",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-grades",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-plan",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-requests",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-notifications",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-campus",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-courses",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-assignments",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-exams",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-attendance",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-calendar",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-tasks",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-notes",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-flashcards",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-quizzes",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-focus",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-consultations",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-messages",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-library",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-events",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-finance",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-contacts",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-knowledge",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-portfolio",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-staff",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-staffdesk",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-staffmessages",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-staff-settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-390-staff-profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-home",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-schedule",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-grades",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-plan",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-requests",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-notifications",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-profile",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-campus",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-courses",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-assignments",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-exams",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-attendance",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-calendar",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-tasks",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-notes",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-flashcards",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-quizzes",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-focus",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-consultations",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-messages",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-library",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-events",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-finance",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-contacts",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-knowledge",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-portfolio",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-settings",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-staff",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-staffdesk",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-staffmessages",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-staff-settings",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-768-staff-profile",
+      "width": 768,
+      "scrollWidth": 768,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-home",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-schedule",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-grades",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-plan",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-requests",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-notifications",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-campus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-courses",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-assignments",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-exams",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-attendance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-calendar",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-tasks",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-notes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-flashcards",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-quizzes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-focus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-consultations",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-messages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-library",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-events",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-finance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-contacts",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-knowledge",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-portfolio",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-staff",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-staffdesk",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-staffmessages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-staff-settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    },
+    {
+      "screen": "extension-1440-staff-profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overhanging": []
+    }
+  ],
+  "screenshots": [
+    "screenshots/extension-390-course-modules-modal.png",
+    "screenshots/extension-390-note-editor-modal.png",
+    "screenshots/extension-390-quiz-results-modal.png",
+    "screenshots/extension-360-home.png",
+    "screenshots/extension-360-schedule.png",
+    "screenshots/extension-360-grades.png",
+    "screenshots/extension-360-plan.png",
+    "screenshots/extension-360-requests.png",
+    "screenshots/extension-360-notifications.png",
+    "screenshots/extension-360-profile.png",
+    "screenshots/extension-360-campus.png",
+    "screenshots/extension-360-courses.png",
+    "screenshots/extension-360-assignments.png",
+    "screenshots/extension-360-exams.png",
+    "screenshots/extension-360-attendance.png",
+    "screenshots/extension-360-calendar.png",
+    "screenshots/extension-360-tasks.png",
+    "screenshots/extension-360-notes.png",
+    "screenshots/extension-360-flashcards.png",
+    "screenshots/extension-360-quizzes.png",
+    "screenshots/extension-360-focus.png",
+    "screenshots/extension-360-consultations.png",
+    "screenshots/extension-360-messages.png",
+    "screenshots/extension-360-library.png",
+    "screenshots/extension-360-events.png",
+    "screenshots/extension-360-finance.png",
+    "screenshots/extension-360-contacts.png",
+    "screenshots/extension-360-knowledge.png",
+    "screenshots/extension-360-portfolio.png",
+    "screenshots/extension-360-settings.png",
+    "screenshots/extension-360-staff.png",
+    "screenshots/extension-360-staffdesk.png",
+    "screenshots/extension-360-staffmessages.png",
+    "screenshots/extension-360-staff-settings.png",
+    "screenshots/extension-360-staff-profile.png",
+    "screenshots/extension-390-home.png",
+    "screenshots/extension-390-schedule.png",
+    "screenshots/extension-390-grades.png",
+    "screenshots/extension-390-plan.png",
+    "screenshots/extension-390-requests.png",
+    "screenshots/extension-390-notifications.png",
+    "screenshots/extension-390-profile.png",
+    "screenshots/extension-390-campus.png",
+    "screenshots/extension-390-courses.png",
+    "screenshots/extension-390-assignments.png",
+    "screenshots/extension-390-exams.png",
+    "screenshots/extension-390-attendance.png",
+    "screenshots/extension-390-calendar.png",
+    "screenshots/extension-390-tasks.png",
+    "screenshots/extension-390-notes.png",
+    "screenshots/extension-390-flashcards.png",
+    "screenshots/extension-390-quizzes.png",
+    "screenshots/extension-390-focus.png",
+    "screenshots/extension-390-consultations.png",
+    "screenshots/extension-390-messages.png",
+    "screenshots/extension-390-library.png",
+    "screenshots/extension-390-events.png",
+    "screenshots/extension-390-finance.png",
+    "screenshots/extension-390-contacts.png",
+    "screenshots/extension-390-knowledge.png",
+    "screenshots/extension-390-portfolio.png",
+    "screenshots/extension-390-settings.png",
+    "screenshots/extension-390-staff.png",
+    "screenshots/extension-390-staffdesk.png",
+    "screenshots/extension-390-staffmessages.png",
+    "screenshots/extension-390-staff-settings.png",
+    "screenshots/extension-390-staff-profile.png",
+    "screenshots/extension-768-home.png",
+    "screenshots/extension-768-schedule.png",
+    "screenshots/extension-768-grades.png",
+    "screenshots/extension-768-plan.png",
+    "screenshots/extension-768-requests.png",
+    "screenshots/extension-768-notifications.png",
+    "screenshots/extension-768-profile.png",
+    "screenshots/extension-768-campus.png",
+    "screenshots/extension-768-courses.png",
+    "screenshots/extension-768-assignments.png",
+    "screenshots/extension-768-exams.png",
+    "screenshots/extension-768-attendance.png",
+    "screenshots/extension-768-calendar.png",
+    "screenshots/extension-768-tasks.png",
+    "screenshots/extension-768-notes.png",
+    "screenshots/extension-768-flashcards.png",
+    "screenshots/extension-768-quizzes.png",
+    "screenshots/extension-768-focus.png",
+    "screenshots/extension-768-consultations.png",
+    "screenshots/extension-768-messages.png",
+    "screenshots/extension-768-library.png",
+    "screenshots/extension-768-events.png",
+    "screenshots/extension-768-finance.png",
+    "screenshots/extension-768-contacts.png",
+    "screenshots/extension-768-knowledge.png",
+    "screenshots/extension-768-portfolio.png",
+    "screenshots/extension-768-settings.png",
+    "screenshots/extension-768-staff.png",
+    "screenshots/extension-768-staffdesk.png",
+    "screenshots/extension-768-staffmessages.png",
+    "screenshots/extension-768-staff-settings.png",
+    "screenshots/extension-768-staff-profile.png",
+    "screenshots/extension-1440-home.png",
+    "screenshots/extension-1440-schedule.png",
+    "screenshots/extension-1440-grades.png",
+    "screenshots/extension-1440-plan.png",
+    "screenshots/extension-1440-requests.png",
+    "screenshots/extension-1440-notifications.png",
+    "screenshots/extension-1440-profile.png",
+    "screenshots/extension-1440-campus.png",
+    "screenshots/extension-1440-courses.png",
+    "screenshots/extension-1440-assignments.png",
+    "screenshots/extension-1440-exams.png",
+    "screenshots/extension-1440-attendance.png",
+    "screenshots/extension-1440-calendar.png",
+    "screenshots/extension-1440-tasks.png",
+    "screenshots/extension-1440-notes.png",
+    "screenshots/extension-1440-flashcards.png",
+    "screenshots/extension-1440-quizzes.png",
+    "screenshots/extension-1440-focus.png",
+    "screenshots/extension-1440-consultations.png",
+    "screenshots/extension-1440-messages.png",
+    "screenshots/extension-1440-library.png",
+    "screenshots/extension-1440-events.png",
+    "screenshots/extension-1440-finance.png",
+    "screenshots/extension-1440-contacts.png",
+    "screenshots/extension-1440-knowledge.png",
+    "screenshots/extension-1440-portfolio.png",
+    "screenshots/extension-1440-settings.png",
+    "screenshots/extension-1440-staff.png",
+    "screenshots/extension-1440-staffdesk.png",
+    "screenshots/extension-1440-staffmessages.png",
+    "screenshots/extension-1440-staff-settings.png",
+    "screenshots/extension-1440-staff-profile.png"
+  ],
+  "axe_tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa"
+  ],
+  "axe_screens": [
+    {
+      "screen": "course-modules-modal-390",
+      "violations": [],
+      "incomplete": [],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "note-editor-modal-390",
+      "violations": [],
+      "incomplete": [],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "flashcard-reveal-modal-390",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 2
+        }
+      ],
+      "passes": 18,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "quiz-form-modal-390",
+      "violations": [],
+      "incomplete": [],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "quiz-results-modal-390",
+      "violations": [],
+      "incomplete": [],
+      "passes": 19,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-home",
+      "violations": [],
+      "incomplete": [],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-schedule",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        }
+      ],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-grades",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-plan",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-requests",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-notifications",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-profile",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 3
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-campus",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-courses",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-assignments",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 4
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-exams",
+      "violations": [],
+      "incomplete": [],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-attendance",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-calendar",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 2
+        },
+        {
+          "id": "label-content-name-mismatch",
+          "help": "Elements must have their visible text as part of their accessible name",
+          "count": 2
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-tasks",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-notes",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-flashcards",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-quizzes",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-focus",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-consultations",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-messages",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-library",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 3
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-events",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 2
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-finance",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-contacts",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-knowledge",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 2
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-portfolio",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-settings",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-staff",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-staffdesk",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-staffmessages",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-staff-settings",
+      "violations": [],
+      "incomplete": [],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-360-staff-profile",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-home",
+      "violations": [],
+      "incomplete": [],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-schedule",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        }
+      ],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-grades",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-plan",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-requests",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-notifications",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-profile",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-campus",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-courses",
+      "violations": [],
+      "incomplete": [],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-assignments",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-exams",
+      "violations": [],
+      "incomplete": [],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-attendance",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-calendar",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 2
+        },
+        {
+          "id": "label-content-name-mismatch",
+          "help": "Elements must have their visible text as part of their accessible name",
+          "count": 2
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-tasks",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-notes",
+      "violations": [],
+      "incomplete": [],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-flashcards",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-quizzes",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-focus",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-consultations",
+      "violations": [],
+      "incomplete": [],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-messages",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-library",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-events",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 4
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-finance",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-contacts",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-knowledge",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 4
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-portfolio",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-settings",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-staff",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-staffdesk",
+      "violations": [],
+      "incomplete": [],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-staffmessages",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-staff-settings",
+      "violations": [],
+      "incomplete": [],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-390-staff-profile",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-home",
+      "violations": [],
+      "incomplete": [],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-schedule",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-grades",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-plan",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-requests",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        }
+      ],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-notifications",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-profile",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-campus",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-courses",
+      "violations": [],
+      "incomplete": [],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-assignments",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-exams",
+      "violations": [],
+      "incomplete": [],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-attendance",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-calendar",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 3
+        },
+        {
+          "id": "label-content-name-mismatch",
+          "help": "Elements must have their visible text as part of their accessible name",
+          "count": 2
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-tasks",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-notes",
+      "violations": [],
+      "incomplete": [],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-flashcards",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-quizzes",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-focus",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-consultations",
+      "violations": [],
+      "incomplete": [],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-messages",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-library",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 3
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-events",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-finance",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-contacts",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-knowledge",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-portfolio",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-settings",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-staff",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-staffdesk",
+      "violations": [],
+      "incomplete": [],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-staffmessages",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-staff-settings",
+      "violations": [],
+      "incomplete": [],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-768-staff-profile",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-home",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-schedule",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-grades",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-plan",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-requests",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 21,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-notifications",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-profile",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-campus",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-courses",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-assignments",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-exams",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-attendance",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-calendar",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 3
+        },
+        {
+          "id": "label-content-name-mismatch",
+          "help": "Elements must have their visible text as part of their accessible name",
+          "count": 2
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-tasks",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-notes",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-flashcards",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-quizzes",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-focus",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-consultations",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-messages",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-library",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-events",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-finance",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-contacts",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-knowledge",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-portfolio",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-settings",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 24,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-staff",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-staffdesk",
+      "violations": [],
+      "incomplete": [],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-staffmessages",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 22,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-staff-settings",
+      "violations": [],
+      "incomplete": [],
+      "passes": 20,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "extension-1440-staff-profile",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    }
+  ],
+  "violating_nodes": 0,
+  "page_errors": [],
+  "csp_errors": [],
+  "unexpected_api_errors": [],
+  "source_sha256": {
+    "static/app.js": "533fc8181976d6327ad800fd2526e76b466a58a0ef7e3400d9b74e899adc319d",
+    "static/campus.css": "d72873bbd1e835295a67ffd1ef2210b4b3fabcef39c8dbfea6f5066d28eade34",
+    "static/campus.js": "b942707a067338c8eaf19bea32749a1849496a7bd55a44151c75ed9a951b6511",
+    "static/favicon.svg": "949dad734f87fd471c4bd0a55dc70bef0311af9bc54290e7e6b31d906706d057",
+    "static/index.html": "e12347c8647668b3547e8bc933fe17f56068161bee918a0aed180f227a8d5ce7",
+    "static/style.css": "26440cc4553d78ed7fa071ae4aa8cb3bd8dc8c53d957fb888604b1b1dfdd2a52",
+    "static/usability.css": "f6989cf1c48ad5b60222a5ddf7c1499e6c402a4374dd0e6d27744c6fa9777c84",
+    "app/__init__.py": "2c77512cf5c1b955c924160a6505b64d9467c7ac2ffc701a27f27d89b2512d68",
+    "app/campus.py": "f01658488c81c7c8474ba13e32560ff8231628f5b13ad29bd885123072a498d7",
+    "app/campus_db.py": "6979b034fd999fe8c9602a84dfd3c7243171db0651031cfaf524b33254168517",
+    "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+    "app/db.py": "d36e34b55e78d62b1da0f3078a03bceee3247ec171eab8c8f61d02418fb669ed",
+    "app/learning.py": "05f18fc666bbd7f1abecd4ae04cfff3d25103bea767c0eceee6a3d3de921f31a",
+    "app/learning_db.py": "4211ed7b7c01637327a0f16c2eaabe64bea3376766d835985fb9eda41d770331",
+    "app/main.py": "1897c8af2ba5df1d64d170f71aee6406207fd6ab6b0d34f764d8fad41a6dd487",
+    "app/services.py": "765743146551d57bb2b703c1eb7490e15f28c8ec580b05f181cae468ddc2c404",
+    "app/services_db.py": "0ed223d5cb3fb919cb1c53be0c132884e8e22dd95270426d10d4ec71d8610078"
+  },
+  "source_changed_during_run": []
+}

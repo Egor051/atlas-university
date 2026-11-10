@@ -1,0 +1,124 @@
+{
+  "checked_at_utc": "2026-11-10T15:46:42.951058+00:00",
+  "scope": "Actual Windows local application/test/report environment; scanner installed separately. Linux production runtime is separately inventoried in linux-runtime/runtime-audit.json.",
+  "packages": 38,
+  "services": {
+    "pypi": {
+      "exit_code": 0,
+      "packages_returned": 38,
+      "inventory_matches": true,
+      "skipped": [],
+      "advisories": 0
+    },
+    "osv": {
+      "exit_code": 0,
+      "packages_returned": 38,
+      "inventory_matches": true,
+      "skipped": [],
+      "advisories": 0
+    }
+  },
+  "affected_before": {
+    "pillow": {
+      "version": "11.3.0",
+      "advisory_ids": [
+        "CVE-2026-112390",
+        "CVE-2026-112391",
+        "CVE-2026-112393",
+        "CVE-2026-112395",
+        "CVE-2026-112399",
+        "CVE-2026-112400",
+        "CVE-2026-112401",
+        "CVE-2026-112404",
+        "CVE-2026-112406",
+        "CVE-2026-112891",
+        "CVE-2026-112892",
+        "CVE-2026-112893",
+        "CVE-2026-112894",
+        "CVE-2026-112895",
+        "CVE-2026-112897",
+        "CVE-2026-112898",
+        "CVE-2026-112899",
+        "CVE-2026-112900",
+        "CVE-2026-112902",
+        "CVE-2026-96638",
+        "CVE-2026-96640",
+        "CVE-2026-96778",
+        "GHSA-78g4-xqwv-q3g8",
+        "PYSEC-2026-165",
+        "PYSEC-2026-2249",
+        "PYSEC-2026-2250",
+        "PYSEC-2026-2251",
+        "PYSEC-2026-2252",
+        "PYSEC-2026-2253",
+        "PYSEC-2026-2254",
+        "PYSEC-2026-2255",
+        "PYSEC-2026-2256",
+        "PYSEC-2026-2257",
+        "PYSEC-2026-2874",
+        "PYSEC-2026-3451",
+        "PYSEC-2026-3453",
+        "PYSEC-2026-3454",
+        "PYSEC-2026-3493",
+        "PYSEC-2026-3494",
+        "PYSEC-2026-3495",
+        "PYSEC-2026-3496",
+        "PYSEC-2026-4326",
+        "PYSEC-2026-4327",
+        "PYSEC-2026-4328",
+        "PYSEC-2026-4329",
+        "PYSEC-2026-4330",
+        "PYSEC-2026-4331",
+        "PYSEC-2026-4332",
+        "PYSEC-2026-4334",
+        "PYSEC-2026-4335",
+        "PYSEC-2026-4336",
+        "PYSEC-2026-4337",
+        "PYSEC-2026-4338",
+        "PYSEC-2026-4339",
+        "PYSEC-2026-4340",
+        "PYSEC-2026-4341",
+        "PYSEC-2026-4342",
+        "PYSEC-2026-4343"
+      ],
+      "records_by_service": {
+        "pypi": 73,
+        "osv": 93
+      }
+    },
+    "pip": {
+      "version": "26.0.1",
+      "advisory_ids": [
+        "PYSEC-2026-196",
+        "PYSEC-2026-2875",
+        "PYSEC-2026-2876",
+        "PYSEC-2026-3721"
+      ],
+      "records_by_service": {
+        "pypi": 8,
+        "osv": 8
+      }
+    },
+    "pytest": {
+      "version": "9.0.2",
+      "advisory_ids": [
+        "PYSEC-2026-1845"
+      ],
+      "records_by_service": {
+        "pypi": 2,
+        "osv": 2
+      }
+    }
+  },
+  "status": "PASS",
+  "patched_versions": {
+    "Pillow": "13.0.0",
+    "pip": "26.2.2",
+    "pytest": "9.0.3"
+  },
+  "npm": {
+    "exit_code": 0,
+    "advisories": 0,
+    "report": "npm-audit.json"
+  }
+}

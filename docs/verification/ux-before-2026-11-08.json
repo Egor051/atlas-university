@@ -1,0 +1,1295 @@
+{
+  "phase": "before",
+  "created_at": "2026-11-07T21:22:01.427423+00:00",
+  "source_sha256": {
+    "static/app.js": "1df0d2984b711a0bc7216f3f10c079f56b32fd72a0bcc87048110b5e7f4fc9e7",
+    "static/campus.js": "b4b0886bdd9d592c7986b5982303b7faacb113fad0b802262f58dd350047e594",
+    "static/style.css": "25e2dcbd83bbdf504a7843d86b5619d6736332b6588038ef95f48eb0e93ad436",
+    "static/campus.css": "d72873bbd1e835295a67ffd1ef2210b4b3fabcef39c8dbfea6f5066d28eade34"
+  },
+  "scope": "Real local Chromium, isolated fictional SQLite; no public hosting or physical device check.",
+  "geometry": [
+    {
+      "role": "student",
+      "page": "home",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2516,
+      "contentHeight": 2288,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "schedule",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2665,
+      "contentHeight": 2437,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "grades",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2212,
+      "contentHeight": 1984,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "plan",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1280,
+      "contentHeight": 1053,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "requests",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2159,
+      "contentHeight": 1932,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "notifications",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1321,
+      "contentHeight": 1093,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "profile",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1433,
+      "contentHeight": 1205,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "campus",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 3565,
+      "contentHeight": 3338,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "courses",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2558,
+      "contentHeight": 2330,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "assignments",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2698,
+      "contentHeight": 2470,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "exams",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2832,
+      "contentHeight": 2604,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "attendance",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2928,
+      "contentHeight": 2700,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "calendar",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2646,
+      "contentHeight": 2418,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "tasks",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1192,
+      "contentHeight": 965,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "notes",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 880,
+      "contentHeight": 653,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "flashcards",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1239,
+      "contentHeight": 1012,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "quizzes",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1258,
+      "contentHeight": 1031,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "focus",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1670,
+      "contentHeight": 1443,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "consultations",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2493,
+      "contentHeight": 2265,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "messages",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 802,
+      "contentHeight": 575,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "library",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 3156,
+      "contentHeight": 2929,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "events",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2670,
+      "contentHeight": 2442,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "finance",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1683,
+      "contentHeight": 1456,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "contacts",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 3781,
+      "contentHeight": 3553,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "knowledge",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 2067,
+      "contentHeight": 1840,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "portfolio",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 928,
+      "contentHeight": 700,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "settings",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1226,
+      "contentHeight": 999,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "home",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2455,
+      "contentHeight": 2228,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "schedule",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2650,
+      "contentHeight": 2422,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "grades",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2178,
+      "contentHeight": 1951,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "plan",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1280,
+      "contentHeight": 1053,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "requests",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2127,
+      "contentHeight": 1900,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "notifications",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1280,
+      "contentHeight": 1052,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "profile",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1433,
+      "contentHeight": 1205,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "campus",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 3514,
+      "contentHeight": 3287,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "courses",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2514,
+      "contentHeight": 2286,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "assignments",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2698,
+      "contentHeight": 2470,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "exams",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2832,
+      "contentHeight": 2604,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "attendance",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2910,
+      "contentHeight": 2682,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "calendar",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2605,
+      "contentHeight": 2377,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "tasks",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1192,
+      "contentHeight": 965,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "notes",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 858,
+      "contentHeight": 630,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "flashcards",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1239,
+      "contentHeight": 1012,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "quizzes",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1258,
+      "contentHeight": 1031,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "focus",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1618,
+      "contentHeight": 1390,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "consultations",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2493,
+      "contentHeight": 2265,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "messages",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 844,
+      "contentHeight": 575,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "library",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 3106,
+      "contentHeight": 2878,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "events",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 2623,
+      "contentHeight": 2395,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "finance",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1667,
+      "contentHeight": 1440,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "contacts",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 3682,
+      "contentHeight": 3454,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "knowledge",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1959,
+      "contentHeight": 1731,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "portfolio",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 912,
+      "contentHeight": 684,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "settings",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1194,
+      "contentHeight": 967,
+      "textSize": "11px"
+    },
+    {
+      "role": "student",
+      "page": "home",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1969,
+      "contentHeight": 1751,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "schedule",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1780,
+      "contentHeight": 1562,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "grades",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1553,
+      "contentHeight": 1336,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "plan",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1252,
+      "contentHeight": 1034,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "requests",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1780,
+      "contentHeight": 1562,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "notifications",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1071,
+      "contentHeight": 854,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "profile",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 772,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "campus",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 2407,
+      "contentHeight": 2189,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "courses",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1634,
+      "contentHeight": 1417,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "assignments",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1708,
+      "contentHeight": 1491,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "exams",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 2009,
+      "contentHeight": 1791,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "attendance",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 2308,
+      "contentHeight": 2091,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "calendar",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1705,
+      "contentHeight": 1488,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "tasks",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 590,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "notes",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 547,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "flashcards",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 605,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "quizzes",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 790,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "focus",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1428,
+      "contentHeight": 1210,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "consultations",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1607,
+      "contentHeight": 1390,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "messages",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 476,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "library",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1953,
+      "contentHeight": 1735,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "events",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1546,
+      "contentHeight": 1329,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "finance",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1209,
+      "contentHeight": 992,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "contacts",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 2306,
+      "contentHeight": 2089,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "knowledge",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 2035,
+      "contentHeight": 1818,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "portfolio",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 622,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "settings",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1132,
+      "contentHeight": 915,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "home",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1362,
+      "contentHeight": 1207,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "schedule",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1260,
+      "contentHeight": 1104,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "grades",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1434,
+      "contentHeight": 1279,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "plan",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1166,
+      "contentHeight": 1011,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "requests",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1275,
+      "contentHeight": 1120,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "notifications",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1030,
+      "contentHeight": 874,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "profile",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 792,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "campus",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 2032,
+      "contentHeight": 1876,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "courses",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1267,
+      "contentHeight": 1111,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "assignments",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1266,
+      "contentHeight": 1110,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "exams",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1433,
+      "contentHeight": 1277,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "attendance",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 2265,
+      "contentHeight": 2110,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "calendar",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 694,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "tasks",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 591,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "notes",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 568,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "flashcards",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 613,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "quizzes",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 816,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "focus",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1411,
+      "contentHeight": 1256,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "consultations",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1290,
+      "contentHeight": 1135,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "messages",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 497,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "library",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1657,
+      "contentHeight": 1502,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "events",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1179,
+      "contentHeight": 1024,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "finance",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1165,
+      "contentHeight": 1010,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "contacts",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1553,
+      "contentHeight": 1398,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "knowledge",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1974,
+      "contentHeight": 1818,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "portfolio",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 642,
+      "textSize": "12px"
+    },
+    {
+      "role": "student",
+      "page": "settings",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1065,
+      "contentHeight": 909,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "staff",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1092,
+      "contentHeight": 864,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "staffdesk",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1731,
+      "contentHeight": 1503,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "staffmessages",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 800,
+      "contentHeight": 501,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "profile",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 1433,
+      "contentHeight": 1205,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "settings",
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "scrollHeight": 800,
+      "contentHeight": 520,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "staff",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1092,
+      "contentHeight": 864,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "staffdesk",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1715,
+      "contentHeight": 1487,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "staffmessages",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 844,
+      "contentHeight": 501,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "profile",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 1433,
+      "contentHeight": 1205,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "settings",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "scrollHeight": 844,
+      "contentHeight": 504,
+      "textSize": "11px"
+    },
+    {
+      "role": "staff",
+      "page": "staff",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 611,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "staffdesk",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1280,
+      "contentHeight": 1063,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "staffmessages",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 459,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "profile",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 772,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "settings",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "scrollHeight": 1024,
+      "contentHeight": 464,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "staff",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 637,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "staffdesk",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1178,
+      "contentHeight": 1023,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "staffmessages",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 479,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "profile",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 792,
+      "textSize": "12px"
+    },
+    {
+      "role": "staff",
+      "page": "settings",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "scrollHeight": 1000,
+      "contentHeight": 468,
+      "textSize": "12px"
+    }
+  ],
+  "errors": [],
+  "accessibility": []
+}

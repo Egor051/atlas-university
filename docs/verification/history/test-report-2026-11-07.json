@@ -1,0 +1,43 @@
+{
+  "recorded_from": "Actual complete pytest stdout and pytest-results.xml; hostname removed",
+  "date": "2026-11-07",
+  "version": "3.0.0",
+  "command": "ATLAS_RUN_BROWSER_TESTS=1 python -m pytest -q tests/ --junitxml=docs/verification/pytest-results.xml",
+  "passed": 122,
+  "failed": 0,
+  "skipped": 0,
+  "warning_count": 2,
+  "warnings": [
+    "Starlette TestClient httpx deprecation",
+    "Starlette/AnyIO deprecated BlockingPortal alias"
+  ],
+  "duration_seconds": 35.549,
+  "runtime_versions": {
+    "fastapi": "0.133.0",
+    "starlette": "1.3.1",
+    "SQLAlchemy": "2.0.50",
+    "uvicorn": "0.48.0",
+    "pydantic": "2.13.5",
+    "psycopg": "3.3.2"
+  },
+  "scope": "Core and extended API, IDOR, CSRF, concurrency, process persistence, CLI migrations and nine real Chromium security/service regressions",
+  "source_sha256": {
+    "app/__init__.py": "2c77512cf5c1b955c924160a6505b64d9467c7ac2ffc701a27f27d89b2512d68",
+    "app/campus.py": "67e53a11b2d7330189c06d682483741dd97e88ef3d1cceba8175b6fceee3765c",
+    "app/campus_db.py": "6979b034fd999fe8c9602a84dfd3c7243171db0651031cfaf524b33254168517",
+    "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+    "app/db.py": "d36e34b55e78d62b1da0f3078a03bceee3247ec171eab8c8f61d02418fb669ed",
+    "app/learning.py": "05f18fc666bbd7f1abecd4ae04cfff3d25103bea767c0eceee6a3d3de921f31a",
+    "app/learning_db.py": "4211ed7b7c01637327a0f16c2eaabe64bea3376766d835985fb9eda41d770331",
+    "app/main.py": "96ef216aac083c70be744c9161e6572172d74fe47e31d6da0c844fcb0b17fc3f",
+    "app/services.py": "765743146551d57bb2b703c1eb7490e15f28c8ec580b05f181cae468ddc2c404",
+    "app/services_db.py": "0ed223d5cb3fb919cb1c53be0c132884e8e22dd95270426d10d4ec71d8610078",
+    "static/app.js": "1df0d2984b711a0bc7216f3f10c079f56b32fd72a0bcc87048110b5e7f4fc9e7",
+    "static/campus.css": "d72873bbd1e835295a67ffd1ef2210b4b3fabcef39c8dbfea6f5066d28eade34",
+    "static/campus.js": "b4b0886bdd9d592c7986b5982303b7faacb113fad0b802262f58dd350047e594",
+    "static/favicon.svg": "949dad734f87fd471c4bd0a55dc70bef0311af9bc54290e7e6b31d906706d057",
+    "static/index.html": "e098e91910089e1d3da722afdd1d898cf5d458c754fc2e5929ad7c96d8a81847",
+    "static/style.css": "25e2dcbd83bbdf504a7843d86b5619d6736332b6588038ef95f48eb0e93ad436"
+  },
+  "status": "PASS"
+}

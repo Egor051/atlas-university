@@ -1,0 +1,457 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-11-06T18:46:29Z",
+  "advisory_queries_completed_at_utc": "2026-11-06T18:30:40Z",
+  "result": "PASS_KNOWN_ADVISORY_GATE",
+  "scanner": {
+    "name": "pip-audit",
+    "version": "2.10.1",
+    "source": "https://github.com/pypa/pip-audit",
+    "installed_in": "isolated temporary virtual environment outside the project",
+    "installed_in_application_venv": false,
+    "installed_in_production_image": false,
+    "services": [
+      "pypi",
+      "osv"
+    ],
+    "automatic_fix": false,
+    "ignore_vuln": [],
+    "no_deps": true,
+    "disable_pip": true,
+    "input_is_complete_flat_inventory": true,
+    "note": "All installed application and transitive packages were explicitly supplied; no-deps disables re-resolution rather than excluding transitive inventory."
+  },
+  "scope": {
+    "platform": "Linux/amd64 production image",
+    "application_runtime_packages": 21,
+    "bundled_build_tools_scanned": 1,
+    "total_packages_scanned": 22,
+    "input_file": "docs/verification/dependency-input.txt",
+    "input_sha256": "edb8a59245a1d338906db596bfb2604ac4d754c781e6a05372cc85bb8fd5ed36",
+    "excludes": [
+      "operating-system/distribution components",
+      "development, browser, PDF and scanner environments",
+      "unknown or unpublished vulnerabilities"
+    ]
+  },
+  "before": {
+    "result": "FAIL",
+    "image_id": "sha256:371b12761989aad09b5b74a46b2ad02da8712fff57b51a44284093e670b71601",
+    "requirements_sha256": "3ab6bfbc54427920ebc2decaa6c1eedd1d68f422878ee836ee328beef2161d3c",
+    "input_sha256": "00772d1a08ccfcb1752fa16c632f5aad9bc613f99f0d3865ad58cc422e0ca31f",
+    "packages": [
+      {
+        "name": "annotated-doc",
+        "version": "0.0.5"
+      },
+      {
+        "name": "annotated-types",
+        "version": "0.8.0"
+      },
+      {
+        "name": "anyio",
+        "version": "4.16.0"
+      },
+      {
+        "name": "argon2-cffi",
+        "version": "25.1.0"
+      },
+      {
+        "name": "argon2-cffi-bindings",
+        "version": "26.1.0"
+      },
+      {
+        "name": "cffi",
+        "version": "2.1.1"
+      },
+      {
+        "name": "click",
+        "version": "8.5.0"
+      },
+      {
+        "name": "fastapi",
+        "version": "0.128.2"
+      },
+      {
+        "name": "greenlet",
+        "version": "3.5.6"
+      },
+      {
+        "name": "h11",
+        "version": "0.16.0"
+      },
+      {
+        "name": "idna",
+        "version": "3.20"
+      },
+      {
+        "name": "pip",
+        "version": "26.2.2"
+      },
+      {
+        "name": "psycopg",
+        "version": "3.3.2"
+      },
+      {
+        "name": "psycopg-binary",
+        "version": "3.3.2"
+      },
+      {
+        "name": "pycparser",
+        "version": "3.12"
+      },
+      {
+        "name": "pydantic",
+        "version": "2.13.5"
+      },
+      {
+        "name": "pydantic_core",
+        "version": "2.46.5"
+      },
+      {
+        "name": "SQLAlchemy",
+        "version": "2.0.50"
+      },
+      {
+        "name": "starlette",
+        "version": "0.50.0"
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "typing-inspection",
+        "version": "0.4.5"
+      },
+      {
+        "name": "uvicorn",
+        "version": "0.48.0"
+      }
+    ],
+    "services": {
+      "pypi": {
+        "exit_code": 1,
+        "packages": 22,
+        "raw_vulnerability_records": 10,
+        "unique_advisory_ids": 5,
+        "skipped_packages": 0,
+        "raw_report_sha256": "d760f5af5fbdf5e9af13f7f62b96aa4f7d7ff50182906eb7bdd9bd083e727834"
+      },
+      "osv": {
+        "exit_code": 1,
+        "packages": 22,
+        "raw_vulnerability_records": 10,
+        "unique_advisory_ids": 5,
+        "skipped_packages": 0,
+        "raw_report_sha256": "11d6e82752a5dd1578e6a9e1db4bf833d35232d7f4f913e9137eeb104eda45b4"
+      }
+    },
+    "duplicate_note": "Each service emitted ten records covering five unique PYSEC IDs; duplicate records are not counted as additional vulnerabilities.",
+    "findings": [
+      {
+        "id": "PYSEC-2026-161",
+        "aliases": [
+          "CVE-2026-48710",
+          "GHSA-86qp-5c8j-p5mr",
+          "X41-2026-002"
+        ],
+        "fix_versions": [
+          "1.0.1"
+        ],
+        "source": "https://github.com/Kludex/starlette/security/advisories/GHSA-86qp-5c8j-p5mr",
+        "package": "starlette",
+        "affected_installed_version": "0.50.0",
+        "remediated_installed_version": "1.3.1",
+        "disposition": "fixed by dependency upgrade; no ignore or risk acceptance"
+      },
+      {
+        "id": "PYSEC-2026-2280",
+        "aliases": [
+          "CVE-2026-48817",
+          "GHSA-x746-7m8f-x49c"
+        ],
+        "fix_versions": [
+          "1.1.0"
+        ],
+        "source": "https://github.com/Kludex/starlette/security/advisories/GHSA-x746-7m8f-x49c",
+        "package": "starlette",
+        "affected_installed_version": "0.50.0",
+        "remediated_installed_version": "1.3.1",
+        "disposition": "fixed by dependency upgrade; no ignore or risk acceptance"
+      },
+      {
+        "id": "PYSEC-2026-2281",
+        "aliases": [
+          "CVE-2026-48818",
+          "GHSA-wqp7-x3pw-xc5r"
+        ],
+        "fix_versions": [
+          "1.1.0"
+        ],
+        "source": "https://github.com/Kludex/starlette/security/advisories/GHSA-wqp7-x3pw-xc5r",
+        "package": "starlette",
+        "affected_installed_version": "0.50.0",
+        "remediated_installed_version": "1.3.1",
+        "disposition": "fixed by dependency upgrade; no ignore or risk acceptance"
+      },
+      {
+        "id": "PYSEC-2026-248",
+        "aliases": [
+          "CVE-2026-54282",
+          "GHSA-jp82-jpqv-5vv3"
+        ],
+        "fix_versions": [
+          "1.3.0"
+        ],
+        "source": "https://github.com/Kludex/starlette/security/advisories/GHSA-jp82-jpqv-5vv3",
+        "package": "starlette",
+        "affected_installed_version": "0.50.0",
+        "remediated_installed_version": "1.3.1",
+        "disposition": "fixed by dependency upgrade; no ignore or risk acceptance"
+      },
+      {
+        "id": "PYSEC-2026-249",
+        "aliases": [
+          "CVE-2026-54283",
+          "GHSA-82w8-qh3p-5jfq"
+        ],
+        "fix_versions": [
+          "1.3.1"
+        ],
+        "source": "https://github.com/Kludex/starlette/security/advisories/GHSA-82w8-qh3p-5jfq",
+        "package": "starlette",
+        "affected_installed_version": "0.50.0",
+        "remediated_installed_version": "1.3.1",
+        "disposition": "fixed by dependency upgrade; no ignore or risk acceptance"
+      }
+    ]
+  },
+  "remediation": {
+    "manual_requirement_changes": [
+      {
+        "package": "fastapi",
+        "before": "0.128.2",
+        "after": "0.133.0",
+        "reason": "The original version excludes Starlette 1.x; 0.133.0 explicitly adds support for Starlette 1.0+.",
+        "primary_source": "https://fastapi.tiangolo.com/release-notes/#01330"
+      },
+      {
+        "package": "starlette",
+        "before": "0.50.0",
+        "after": "1.3.1",
+        "reason": "Explicitly pin the minimum release fixing all five identified advisories.",
+        "primary_source": "https://starlette.dev/release-notes/#131-june-12-2026"
+      }
+    ],
+    "other_existing_direct_pins_changed": false,
+    "backend_python_files_changed": false,
+    "test_assertions_weakened": false,
+    "incidental_clean_build_resolution": {
+      "package": "click",
+      "before": "8.5.0",
+      "after": "8.5.1",
+      "manually_bumped": false,
+      "subsequently_audited": true,
+      "subsequently_locked": true
+    },
+    "linux_runtime_lock": "requirements-runtime.lock",
+    "linux_runtime_lock_sha256": "be93e44ba3d17d0cb936b6dece4e197839ea6a938beb94db91dbe0d8c665a470",
+    "docker_install": "pip install --no-cache-dir -r requirements.txt -c requirements-runtime.lock",
+    "windows_local_setup_uses_linux_constraints": false,
+    "lock_contains_wheel_hashes": false
+  },
+  "after": {
+    "result": "PASS",
+    "final_image_id": "sha256:e0e46e110b180ebebd14193a695659263440f793cf5e1b4d660e604ca4142f77",
+    "advisory_input_image_id": "sha256:694747cdc99c8ef6297455db14855ec7b82e7cc20b00754515dd9e3eb69cdb99",
+    "final_static_only_rebuild_did_not_change_runtime_packages": true,
+    "requirements_sha256": "575e32efb45434c5a2a5a3b70358ca4142b37f2c550cec7b888bf034f9dbdbd9",
+    "dockerfile_sha256": "4126959d440fe1c234cf4656eb1027ecfe384ca9b42130ce4357bbadac36af05",
+    "runtime_lock_sha256": "be93e44ba3d17d0cb936b6dece4e197839ea6a938beb94db91dbe0d8c665a470",
+    "packages": [
+      {
+        "name": "annotated-doc",
+        "version": "0.0.5",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "annotated-types",
+        "version": "0.8.0",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "anyio",
+        "version": "4.16.0",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "argon2-cffi",
+        "version": "25.1.0",
+        "category": "application runtime",
+        "declared_directly": true
+      },
+      {
+        "name": "argon2-cffi-bindings",
+        "version": "26.1.0",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "cffi",
+        "version": "2.1.1",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "click",
+        "version": "8.5.1",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "fastapi",
+        "version": "0.133.0",
+        "category": "application runtime",
+        "declared_directly": true
+      },
+      {
+        "name": "greenlet",
+        "version": "3.5.6",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "h11",
+        "version": "0.16.0",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "idna",
+        "version": "3.20",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "pip",
+        "version": "26.2.2",
+        "category": "bundled build tool",
+        "declared_directly": false
+      },
+      {
+        "name": "psycopg",
+        "version": "3.3.2",
+        "category": "application runtime",
+        "declared_directly": true
+      },
+      {
+        "name": "psycopg-binary",
+        "version": "3.3.2",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "pycparser",
+        "version": "3.12",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "pydantic",
+        "version": "2.13.5",
+        "category": "application runtime",
+        "declared_directly": true
+      },
+      {
+        "name": "pydantic_core",
+        "version": "2.46.5",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "SQLAlchemy",
+        "version": "2.0.50",
+        "category": "application runtime",
+        "declared_directly": true
+      },
+      {
+        "name": "starlette",
+        "version": "1.3.1",
+        "category": "application runtime",
+        "declared_directly": true
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "typing-inspection",
+        "version": "0.4.5",
+        "category": "application runtime",
+        "declared_directly": false
+      },
+      {
+        "name": "uvicorn",
+        "version": "0.48.0",
+        "category": "application runtime",
+        "declared_directly": true
+      }
+    ],
+    "services": {
+      "pypi": {
+        "exit_code": 0,
+        "packages": 22,
+        "raw_vulnerability_records": 0,
+        "unique_advisory_ids": 0,
+        "skipped_packages": 0,
+        "raw_report_sha256": "e684ee26421b867916cc500a088bd0e839adc6b36c7dbd73a64e58c9e1f27569"
+      },
+      "osv": {
+        "exit_code": 0,
+        "packages": 22,
+        "raw_vulnerability_records": 0,
+        "unique_advisory_ids": 0,
+        "skipped_packages": 0,
+        "raw_report_sha256": "e684ee26421b867916cc500a088bd0e839adc6b36c7dbd73a64e58c9e1f27569"
+      }
+    },
+    "pip_check": "PASS",
+    "pip_freeze_matches_linux_runtime_lock": true,
+    "scanner_and_test_packages_absent_from_production_image": true,
+    "known_unremediated_advisory_ids": [],
+    "accepted_advisory_risks": []
+  },
+  "regression_evidence": {
+    "api_security_migrations_and_browser_faults": "docs/verification/test-report.json",
+    "functional_browser": "docs/verification/browser-report.json",
+    "accessibility": "docs/verification/accessibility-report.json",
+    "windows_launcher": "docs/verification/local-launch-report.json",
+    "postgres_https_persistence_and_backup": "docs/verification/deployment-report.json",
+    "source_sha256": {
+      "app/main.py": "92f834202a5e7177c85d117605f89c1b6fbb04648cbc47d77c7f80b4cc776900",
+      "app/db.py": "5ec0ec86a620d634bc2095c1914ca7247f6cc2b0c0d99f78bd6d2135538a4e63",
+      "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+      "static/app.js": "960eac42a98158a6fabbe1c9f55c2506eac4326454657d1eceacca63f5b9a338"
+    }
+  },
+  "ci": {
+    "triggers": [
+      "push",
+      "pull_request"
+    ],
+    "separate_runtime_and_scanner_environments": true,
+    "runtime_resolved_with_linux_constraints": true,
+    "services": [
+      "pypi",
+      "osv"
+    ],
+    "remote_execution_verified": false
+  },
+  "credentials_included": false
+}

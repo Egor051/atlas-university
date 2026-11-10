@@ -1,0 +1,313 @@
+{
+  "verified_at": "2026-11-08T00:51:38.097610+03:00",
+  "scope": "Real local HTTP + Chromium + isolated fictional SQLite; not a public-site or physical-device test",
+  "api_mocks": false,
+  "fault_injection": "one request aborted; empty fictional fixtures deleted in temporary database",
+  "checks": [
+    "Login through the real form and authenticated dashboard",
+    "All seven student sections at 360/390/768/1440: no horizontal scroll",
+    "Day/week navigation, keyboard focus, real private ICS download",
+    "Task completion persists after reload; undo works",
+    "Request form, session draft, focus trap, Escape return, saved request history",
+    "Second student has a separate profile, grades, requests and cannot open first student result",
+    "Staff searches requests, follows allowed transitions and sends a real response/notification",
+    "Student sees all four history events and downloads their fictional completed document",
+    "Notification links to exact request; individual read refreshes unread filter; read-all clears count",
+    "Real request failure shows a recoverable error and Retry succeeds",
+    "Genuine empty database states render meaningful grades, plan and notification messages",
+    "Logout invalidates the server session",
+    "No uncaught browser JavaScript errors and no CSP violations"
+  ],
+  "layout_checks": [
+    {
+      "screen": "login-1440",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "bad": []
+    },
+    {
+      "screen": "login-768",
+      "width": 768,
+      "scrollWidth": 768,
+      "bad": []
+    },
+    {
+      "screen": "login-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    },
+    {
+      "screen": "login-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "home-1440",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "bad": []
+    },
+    {
+      "screen": "schedule-1440",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "bad": []
+    },
+    {
+      "screen": "grades-1440",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "bad": []
+    },
+    {
+      "screen": "plan-1440",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "bad": []
+    },
+    {
+      "screen": "requests-1440",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "bad": []
+    },
+    {
+      "screen": "notifications-1440",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "bad": []
+    },
+    {
+      "screen": "profile-1440",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "bad": []
+    },
+    {
+      "screen": "home-768",
+      "width": 768,
+      "scrollWidth": 768,
+      "bad": []
+    },
+    {
+      "screen": "schedule-768",
+      "width": 768,
+      "scrollWidth": 768,
+      "bad": []
+    },
+    {
+      "screen": "grades-768",
+      "width": 768,
+      "scrollWidth": 768,
+      "bad": []
+    },
+    {
+      "screen": "plan-768",
+      "width": 768,
+      "scrollWidth": 768,
+      "bad": []
+    },
+    {
+      "screen": "requests-768",
+      "width": 768,
+      "scrollWidth": 768,
+      "bad": []
+    },
+    {
+      "screen": "notifications-768",
+      "width": 768,
+      "scrollWidth": 768,
+      "bad": []
+    },
+    {
+      "screen": "profile-768",
+      "width": 768,
+      "scrollWidth": 768,
+      "bad": []
+    },
+    {
+      "screen": "home-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    },
+    {
+      "screen": "schedule-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    },
+    {
+      "screen": "grades-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    },
+    {
+      "screen": "plan-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    },
+    {
+      "screen": "requests-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    },
+    {
+      "screen": "notifications-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    },
+    {
+      "screen": "profile-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    },
+    {
+      "screen": "home-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "schedule-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "grades-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "plan-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "requests-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "notifications-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "profile-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "request-form-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "request-timeline-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "staff-1440",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "bad": []
+    },
+    {
+      "screen": "staff-768",
+      "width": 768,
+      "scrollWidth": 768,
+      "bad": []
+    },
+    {
+      "screen": "staff-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    },
+    {
+      "screen": "staff-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "error-state-360",
+      "width": 360,
+      "scrollWidth": 360,
+      "bad": []
+    },
+    {
+      "screen": "empty-plan-390",
+      "width": 390,
+      "scrollWidth": 390,
+      "bad": []
+    }
+  ],
+  "screenshots": [
+    "screenshots/desktop-login.png",
+    "screenshots/mobile-login.png",
+    "screenshots/desktop-dashboard.png",
+    "screenshots/desktop-schedule.png",
+    "screenshots/desktop-grades.png",
+    "screenshots/desktop-plan.png",
+    "screenshots/desktop-requests.png",
+    "screenshots/desktop-notifications.png",
+    "screenshots/desktop-profile.png",
+    "screenshots/tablet-dashboard.png",
+    "screenshots/tablet-schedule.png",
+    "screenshots/tablet-grades.png",
+    "screenshots/tablet-plan.png",
+    "screenshots/tablet-requests.png",
+    "screenshots/tablet-notifications.png",
+    "screenshots/tablet-profile.png",
+    "screenshots/mobile-dashboard.png",
+    "screenshots/mobile-dashboard-viewport.png",
+    "screenshots/mobile-schedule.png",
+    "screenshots/mobile-grades.png",
+    "screenshots/mobile-plan.png",
+    "screenshots/mobile-requests.png",
+    "screenshots/mobile-notifications.png",
+    "screenshots/mobile-profile.png",
+    "screenshots/minimum-dashboard.png",
+    "screenshots/minimum-schedule.png",
+    "screenshots/minimum-grades.png",
+    "screenshots/minimum-plan.png",
+    "screenshots/minimum-requests.png",
+    "screenshots/minimum-notifications.png",
+    "screenshots/minimum-profile.png",
+    "screenshots/mobile-schedule-day.png",
+    "screenshots/mobile-plan-done.png",
+    "screenshots/mobile-request-form.png",
+    "screenshots/mobile-request-timeline.png",
+    "screenshots/desktop-staff-result.png",
+    "screenshots/desktop-staff.png",
+    "screenshots/tablet-staff.png",
+    "screenshots/mobile-staff.png",
+    "screenshots/minimum-staff.png",
+    "screenshots/mobile-document-ready.png",
+    "screenshots/mobile-error-state.png",
+    "screenshots/mobile-empty-grades.png",
+    "screenshots/mobile-empty-plan.png",
+    "screenshots/mobile-empty-notifications.png"
+  ],
+  "javascript_errors": [],
+  "csp_errors": [],
+  "status": "PASS"
+}

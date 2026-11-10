@@ -1,0 +1,27 @@
+# Self-signed local HTTPS test; do not use this configuration on the public VPS.
+{
+	auto_https disable_redirects
+	skip_install_trust
+}
+https://localhost {
+	tls internal
+	encode zstd gzip
+	request_body {
+		max_size 64KB
+	}
+	# Only this loopback-bound test stack accepts synthetic client addresses.
+	# Production Caddyfile never reads this header.
+	@probe_client header X-Atlas-Test-IP *
+	handle @probe_client {
+		reverse_proxy web:8000 {
+			header_up X-Forwarded-For {http.request.header.X-Atlas-Test-IP}
+		}
+	}
+	handle {
+		reverse_proxy web:8000
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}

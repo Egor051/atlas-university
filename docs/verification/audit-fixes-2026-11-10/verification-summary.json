@@ -1,0 +1,40 @@
+{
+  "version": "3.2.1",
+  "build": "8aadcff3f102161c",
+  "status": "PASS",
+  "pytest": {
+    "passed": 270,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 2,
+    "seconds": 194.16
+  },
+  "original_findings": {
+    "FIXED": 34,
+    "NOT FIXED": 0,
+    "NOT REPRODUCED": 0
+  },
+  "syntax": {
+    "javascript_files": 3,
+    "python_files": 65,
+    "status": "PASS"
+  },
+  "reports": {
+    "core-browser.json": "PASS",
+    "core-browser-provenance.json": "PASS",
+    "extension-browser.json": "PASS",
+    "extension-browser-provenance.json": "PASS",
+    "crossbrowser.json": "PASS",
+    "sql-growth.json": "PASS",
+    "load.json": "PASS",
+    "performance.json": "PASS",
+    "postgres-https.json": "PASS",
+    "workspace-copy-migration.json": "PASS",
+    "development-security-audit.json": "PASS",
+    "linux-runtime/runtime-audit.json": "PASS",
+    "pdf-generator-check.json": "PASS",
+    "docker-test-cleanup.json": "PASS"
+  },
+  "database_sha256": "91ad8fae65489acd94ec9dc71ac38d90b72a51c549bec97dc35a287600913683",
+  "production_changed": false
+}

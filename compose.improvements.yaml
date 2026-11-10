@@ -1,0 +1,26 @@
+# Isolated release verification. Always pass an explicit unique -p project name.
+# No default/public bindings or production volumes are reused.
+services:
+  web:
+    image: atlas-campus:improvements-check
+    environment:
+      PUBLIC_ORIGIN: https://localhost:19443
+      ALLOWED_HOSTS: localhost
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--proxy-headers", "--forwarded-allow-ips", "172.30.88.10", "--limit-concurrency", "100", "--timeout-keep-alive", "5"]
+  caddy:
+    ports: !override
+      - "127.0.0.1:19443:443"
+    environment:
+      DOMAIN: localhost
+    volumes: !override
+      - ./deploy/Caddyfile.test:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      proxy:
+        ipv4_address: 172.30.88.10
+networks:
+  proxy:
+    ipam:
+      config: !override
+        - subnet: 172.30.88.0/24
