@@ -278,7 +278,10 @@ def run():
                 read_id=first_unread.get_attribute('data-id')
                 first_unread.click()
                 expect(page.locator(f'[data-action="open-notice"][data-id="{read_id}"]')).to_have_count(0)
-                page.locator('[data-action="read-all"]').click()
+                with page.expect_response(lambda r:r.url==base+'/api/notifications/read-all' and r.request.method=='POST') as read_all:
+                    page.locator('[data-action="read-all"]').click()
+                assert read_all.value.status == 200, read_all.value.text()
+                expect(page.get_by_text('Все уведомления прочитаны.',exact=True)).to_be_visible()
                 expect(page.locator('[data-action="read-all"]')).to_be_disabled()
                 assert a.request.get(base+'/api/notifications?paginated=true').json()['unread_count']==0
                 passed('Notification links to exact request; individual read refreshes unread filter; read-all clears count')

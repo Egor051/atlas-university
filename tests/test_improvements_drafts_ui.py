@@ -70,6 +70,9 @@ def test_server_validation_points_to_field_without_losing_input(frontend_page):
     page,base=frontend_page;enter(page,base);visit(page,base,'assignments')
     page.locator('[data-c-action="assignment"]').first.click()
     form=page.locator('[data-c-form="assignment"]')
+    # The prior scenario leaves a saved draft; finish restoring it before typing.
+    expect(form).to_have_attribute('data-draft-bound','true')
+    form.evaluate('form => form._atlasDraft.restore')
     form.locator('[name="text"]').fill('Вымышленный ответ для проверки ошибки ссылки.')
     form.locator('[name="url"]').fill('http://example.test/work')
     form.locator('button[type=submit]').click()
