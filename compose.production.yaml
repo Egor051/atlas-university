@@ -1,0 +1,20 @@
+# VPS-only additions. Keep this file separate from isolated local test stacks.
+x-logging: &bounded-logs
+  driver: local
+  options:
+    max-size: "10m"
+    max-file: "5"
+services:
+  web:
+    image: atlas-campus-web:${ATLAS_RELEASE_SHA:?set_release_commit}
+    build:
+      context: .
+      labels:
+        org.opencontainers.image.source: https://github.com/Egor051/atlas-university
+        org.opencontainers.image.revision: ${ATLAS_RELEASE_SHA:?set_release_commit}
+        org.opencontainers.image.version: "3.2.1"
+    logging: *bounded-logs
+  db:
+    logging: *bounded-logs
+  caddy:
+    logging: *bounded-logs

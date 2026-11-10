@@ -1,0 +1,11 @@
+[Unit]
+Description=Back up ATLAS PostgreSQL every six hours
+
+[Timer]
+OnCalendar=*-*-* 00,06,12,18:15:00 UTC
+RandomizedDelaySec=300
+Persistent=true
+Unit=atlas-backup.service
+
+[Install]
+WantedBy=timers.target

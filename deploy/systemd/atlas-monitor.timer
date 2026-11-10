@@ -1,0 +1,10 @@
+[Unit]
+Description=Check ATLAS readiness every minute
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=60s
+Unit=atlas-monitor.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=Verified ATLAS PostgreSQL backup
+Requires=atlas-campus.service
+After=atlas-campus.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/atlas-campus
+EnvironmentFile=/etc/atlas-campus/compose.env
+Environment=ATLAS_BACKUP_DIR=/var/backups/atlas-campus
+ExecStart=/bin/sh /opt/atlas-campus/scripts/backup.sh
+UMask=0077
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=180

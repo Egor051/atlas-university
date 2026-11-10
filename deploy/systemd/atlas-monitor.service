@@ -1,0 +1,11 @@
+[Unit]
+Description=ATLAS HTTPS readiness and container recovery
+After=atlas-campus.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/atlas-campus
+EnvironmentFile=/etc/atlas-campus/compose.env
+ExecStart=/usr/bin/python3 /opt/atlas-campus/scripts/production_monitor.py --url https://atlas-university.ru
+UMask=0077
+TimeoutStartSec=180

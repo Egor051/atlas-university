@@ -1,5 +1,80 @@
 # Перенос ATLAS Campus на сервер
 
+## Управляемое развёртывание на подготовленном VPS
+
+Дополнение 11 ноября 2026. Для Ubuntu с установленным Docker Engine/Compose и
+checkout в `/opt/atlas-campus` добавлены `compose.production.yaml` и
+`deploy/install-production.sh`. Перед обновлением сохраните проверенный дамп и
+предыдущий образ. Скрипт запускается от root из чистого проверенного checkout:
+
+```sh
+cd /opt/atlas-campus
+sudo python3 scripts/improvement_prepare_deploy.py --domain atlas-university.ru
+sudo bash deploy/install-production.sh
+```
+
+Первую команду выполняют только при отсутствии `.env`: существующий приватный
+файл не перезаписывается. Установка не удаляет БД или тома, применяет миграцию,
+проверяет Caddyfile, фиксирует commit в имени и OCI-метке образа. Домен без `www`
+используется как canonical origin; `www` получает собственный сертификат и
+перенаправляет на основной HTTPS-адрес с сохранением пути и query.
+
+Настройки Compose хранятся в `/etc/atlas-campus/compose.env` (0600), пароли —
+в `/opt/atlas-campus/.env` (0600). Для ручных команд администратора:
+
+```sh
+sudo -i
+cd /opt/atlas-campus
+set -a; . /etc/atlas-campus/compose.env; set +a
+docker compose ps
+systemctl list-timers 'atlas-*'
+```
+
+`atlas-campus.service` запускает сохранённые образы после загрузки ОС.
+`atlas-backup.timer` каждые шесть часов запускает штатный проверяемый `pg_dump`.
+`atlas-monitor.timer` раз в минуту проверяет HTTPS readiness; три неудачные
+выборки допускают перезапуск только отказавших сервисов этого проекта, не чаще
+одного цикла восстановления в десять минут. Удаления БД в восстановлении нет.
+JSON хранится в `/var/lib/atlas-ops/status.json`, история — в
+`/var/log/atlas-ops/monitor.jsonl`, журналы ограничены и ротируются.
+
+Внешняя проверка GitHub `Public HTTPS readiness` запланирована каждые 15 минут.
+Расписание GitHub может задерживаться; непрерывность и получение уведомлений
+владельцем требуют отдельного наблюдения. Сам факт существования этих файлов
+ещё не подтверждает установку: фактические результаты публикуются в приёмке.
+
+### Публичная приёмка
+
+```sh
+python scripts/production_acceptance.py --url https://atlas-university.ru --write-demo --report public-api.json
+python scripts/production_browser.py --url https://atlas-university.ru --write-demo --report public-browser.json --screenshots screenshots/public
+```
+
+Без `--write-demo` эти сценарии не меняют доменные записи. Вход создаёт обычные
+демосеансы; отрицательные проверки записи обязаны получить отказ.
+API-приёмка создаёт одну помеченную заявку и отдельный черновик, браузерная —
+одну заявку на движок. Оба сценария используют реальные ответы и проверяют TLS.
+Идентификатор, имя черновика и hash документа из отчёта API передаются повторно
+через `--request-id`, `--draft-name`, `--expected-document-sha` после restart и
+reboot. Существующие заявки и черновики не удаляются.
+
+### Копия вне VPS
+
+`deploy/atlas-backup-export.sh` установлен как root-owned
+`/usr/local/sbin/atlas-backup-export`. Он формирует свежий dump штатным скриптом,
+проверяет checksum и передаёт через SSH архив только с БД и checksum. Секретный
+`.env` сохраняется отдельно в закрытом хранилище администратора.
+
+```powershell
+.venv/Scripts/python.exe scripts/production_backup_pull.py --host atlasadmin@51.250.86.74 --key "$env:USERPROFILE/.ssh/atlas_ed25519" --destination "$env:USERPROFILE/.atlas-campus-backups"
+```
+
+Каталог назначения должен быть доступен только владельцу и SYSTEM. Проверка
+подлинности SSH-host обязательна. Локальная задача работает только пока
+компьютер доступен; для независимой ежедневной выгрузки требуется отдельное
+постоянное защищённое хранилище. Срок оплаты VPS, получение уведомлений,
+физические телефоны и доступ из РФ не заменяются установкой таймеров.
+
 Дата: 6 ноября 2026. Приложение остаётся неофициальным конкурсным концептом с вымышленными данными. Публикация на домене и доступность из России — отдельная приёмка после установки. Этот документ не утверждает, что публичный сайт уже существует.
 
 ## Локально на Windows

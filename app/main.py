@@ -107,7 +107,6 @@ class SecurityHeaders(BaseHTTPMiddleware):
             # versioned assets, including the session-affinity protection.
             response.headers['Cache-Control'] = 'no-cache'
         return response
-app.add_middleware(SecurityHeaders)
 
 
 @app.exception_handler(RequestValidationError)
@@ -695,3 +694,6 @@ app.include_router(campus_router())
 from .improvements import create_router as improvements_router, install_quota
 app.include_router(improvements_router())
 install_quota(app)
+# Install last so headers also cover early quota, CSRF and actor-affinity
+# rejections. Starlette wraps newly added middleware around the existing stack.
+app.add_middleware(SecurityHeaders)

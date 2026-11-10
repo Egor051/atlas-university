@@ -1,0 +1,19 @@
+[Unit]
+Description=ATLAS Campus contest demonstration
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/atlas-campus
+EnvironmentFile=/etc/atlas-campus/compose.env
+ExecStart=/usr/bin/docker compose up -d --no-build --wait --wait-timeout 180
+ExecReload=/usr/bin/docker compose up -d --no-build --wait --wait-timeout 180
+ExecStop=/usr/bin/docker compose stop --timeout 30
+TimeoutStartSec=240
+TimeoutStopSec=100
+
+[Install]
+WantedBy=multi-user.target
