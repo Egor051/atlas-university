@@ -1,0 +1,17 @@
+{
+  "at_utc": "2026-11-10T22:12:25.833971+00:00",
+  "url": "https://atlas-university.ru",
+  "scope": "Bounded real public HTTPS reads; 150 ms pause/client; no domain writes. Not destructive load or a capacity guarantee.",
+  "clients": 4,
+  "requests": 160,
+  "duration_seconds": 7.86,
+  "requests_per_second": 20.37,
+  "p50_ms": 38.3,
+  "p95_ms": 72.91,
+  "p99_ms": 87.87,
+  "status_counts": {
+    "200": 160
+  },
+  "unexpected_responses": [],
+  "status": "PASS"
+}

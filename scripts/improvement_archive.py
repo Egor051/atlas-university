@@ -21,8 +21,10 @@ from improvement_runtime import ROOT,DEFAULT_REPORTS,isolated_server,report_star
 
 
 DEPLOYMENT_FILES = (
-    'Dockerfile', 'compose.yaml', 'compose.test.yaml', 'compose.improvements.yaml',
+    'Dockerfile', 'compose.yaml', 'compose.test.yaml', 'compose.improvements.yaml', 'compose.production.yaml',
     'deploy/init-db.sh', 'deploy/Caddyfile', 'deploy/Caddyfile.test',
+    'deploy/install-production.sh', 'deploy/systemd/atlas-campus.service',
+    'deploy/systemd/atlas-backup.timer', 'deploy/systemd/atlas-monitor.timer',
     'scripts/improvement_deployment.py', 'scripts/improvement_runtime.py',
 )
 
@@ -56,7 +58,9 @@ def main():
                     filename=Path(info.filename).name
                     assert not filename.startswith('.env') or filename=='.env.example'
                     assert not any(p in ['.venv','node_modules'] for p in relative.parts)
-                    assert Path(info.filename).suffix.lower() not in ['.db','.db-wal','.db-shm','.sqlite','.sqlite3','.sqlite-wal','.sqlite-shm','.sqlite3-wal','.sqlite3-shm']
+                    assert Path(info.filename).suffix.lower() not in ['.db','.db-wal','.db-shm','.sqlite','.sqlite3','.sqlite-wal','.sqlite-shm','.sqlite3-wal','.sqlite3-shm','.dump','.pem','.key','.p12','.pfx','.dpapi']
+                    assert filename not in {'id_rsa','id_ed25519','prepared-drive-links.json'}
+                    assert not (filename.lower().startswith(('credentials','secrets')) and filename.lower().endswith('.json'))
                 z.extractall(checkout)
             candidates=[checkout,*[p.parent for p in checkout.rglob('requirements.txt')]]
             candidates=[p for p in candidates if (p/'app/main.py').is_file() and (p/'static/index.html').is_file()]

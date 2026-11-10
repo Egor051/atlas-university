@@ -1,0 +1,380 @@
+{
+  "started_at_utc": "2026-11-10T22:18:51.747556+00:00",
+  "scope": "Chromium laboratory measurement on actual public HTTPS. Synthetic interactions and emulated network/CPU; no field INP, real user or physical-device claim.",
+  "source_sha256": {
+    "app/__init__.py": "2c77512cf5c1b955c924160a6505b64d9467c7ac2ffc701a27f27d89b2512d68",
+    "app/audit_migration.py": "05d2ff4e9b7b0845017d1b095f6e265fb62019a684a7a8e5d5404b00c1eb365c",
+    "app/campus.py": "09777281266ce25ae2dfdc43f0bcb2f78d3f01342c10afeb5c274377839c636a",
+    "app/campus_db.py": "69a1367afd2722adc60c4b65d1547e7b33a22d934cac50971eefb6450ba085b5",
+    "app/config.py": "c8f02331e5ed362b7aedad1d561d600dff9ec6ac8d0d7400cd27b687c0cf3b50",
+    "app/db.py": "7362892b797cfb6ba0f1d230fc4f54728b488873f3d5ec4740c7b8fef8e8197d",
+    "app/improvement_db.py": "3f1040e73631a82046580d3eaad60c5cd4eeb5f6538efe3ff9a38488546838f1",
+    "app/improvements.py": "59a2d623c2f6bb48cd887d590e6d77199dcde8a32a12cc5d09eb0b4609024426",
+    "app/learning.py": "cde960f4bc25e4b6bafd496a7a50c8da74ac5155515467ec65b47e29e2b37af5",
+    "app/learning_db.py": "3e220138d6e0e63041fd757f397dcc88e1da6c81c68cbdc38fa01295e0e591fd",
+    "app/main.py": "742f203d92a90d94061dff364b45c361da44b7a5169ad6da40ec5b8e6f4e5bf7",
+    "app/receipt_codec.py": "69de9659b245e43d3e224a8abab3dfb6cb3be0d967bde31d3d526bbb56985abf",
+    "app/services.py": "8e259aeb6db6d5c065a249696f0952785b31925f5c998d9721e8fecab2c214a3",
+    "app/services_db.py": "e69f5a2cbd1c715ab14cbc2458ed62de441b6c07d397eac0332a59244f73dbc0",
+    "app/session_security.py": "b9e844c5616a0b5608b14512083bdaed3bf8ece10b18df0615a96218f6d124af",
+    "app/storage_guards.py": "46daabd69592fd102f67683c56f609b8840c336a347e6dd0863c6373e167adc4",
+    "app/version.py": "ce672f61a8b808754d3c523944e96009180deb33366b0327ab4e76fd0df28114",
+    "static/app.js": "e0f4ff64e35c97ee6a475e54ba12e63c30f7a9ca6b430f8c776b7751a0200781",
+    "static/campus.css": "bc83e9a6d9497f7ad2bb7a4f0aeeda753927a2c2aac8aac8971ce7753c5fa09c",
+    "static/campus.js": "0f24be95aa32d1f62c41d7fdd88dd04779388fe8297751f7c8cbcef87e0fc2cf",
+    "static/favicon.svg": "949dad734f87fd471c4bd0a55dc70bef0311af9bc54290e7e6b31d906706d057",
+    "static/improvements.js": "267fafed3811757faf3dc625592c96a1815784a97232e0faa28b3b2fcbfa9404",
+    "static/index.html": "ef0d239491f093068e11ef2840551d6ec7620b17b486e521c8dd851e47f79613",
+    "static/style.css": "b9b5ce2051fc63f0c714088f30df228825b470e8e8bc76672f4060bd8d5e134a",
+    "static/usability.css": "9e2d7d77a9e55a458ed9d40eed7fe7a81c3a72917957fd31c25f2de0e13e9527",
+    "compose.improvements.yaml": "6485fdb00f666214754e167a40bd85b8ce720598869705da714bfc473cedaae3",
+    "compose.production.yaml": "d5cb52d94588fe4d83956fbfbfa33c4636474e055ba20f3f525502892d3da294",
+    "compose.test.yaml": "3d35c1c54d1204bfd2b900c6be4a8c635b432165fe979a68cb74f2f508282d77",
+    "compose.yaml": "80245486b44b0daed6567ea234bf3addcc0739cfad40f1adcd0fef2687d1e66d",
+    "Dockerfile": "4126959d440fe1c234cf4656eb1027ecfe384ca9b42130ce4357bbadac36af05",
+    "requirements.txt": "575e32efb45434c5a2a5a3b70358ca4142b37f2c550cec7b888bf034f9dbdbd9",
+    "requirements-runtime.lock": "be93e44ba3d17d0cb936b6dece4e197839ea6a938beb94db91dbe0d8c665a470",
+    "scripts/improvement_adaptation.py": "ff0f6b92d16101e92e56cc175791a0136a5b2d7a9955742bbdee53c08607e452",
+    "scripts/improvement_archive.py": "c92b576afa116d18f3f740bdaa8ae190a3e56357a5897a1ef65335cad2ab97f8",
+    "scripts/improvement_crossbrowser.py": "1d1790c006be28012ec9a496f10a68f41472af89fa387aa51d8a7a1ddb7e5688",
+    "scripts/improvement_deployment.py": "8bc1cd006a106d436376cef6e822646b65f88310d10a955fef5915a5751cf0da",
+    "scripts/improvement_load.py": "c442e09795be3bbb60b24a91f131a279d31a5c258bd493dcf939639bc075f477",
+    "scripts/improvement_monitor.py": "d29af0ba12bdff1b8201867828d875d556e21366853c506f8c30028d94059e01",
+    "scripts/improvement_performance.py": "a84be472d4197ab1e88e00db6d06f6e7de5752ebb41ba6163e03d58a85d20612",
+    "scripts/improvement_pg_coordination.py": "76b2a97c2734dfe7a5a6fbf5af793c11282bade59fae56cab0e0bfed6398353a",
+    "scripts/improvement_prepare_deploy.py": "0f330386ca204e4e4c2548ceff9ad14b112c35f6a5811c8e2a84683259e06744",
+    "scripts/improvement_runtime.py": "f6d9ef8eae7e076df4aa3668dbb0b873dc379a8b86a5769036a05a3550c9be29",
+    "scripts/improvement_sql.py": "16755a779409dc6f8ac8bf1dcd293da2b285cde6e766d16cb3ffcbf30cedab5b",
+    "scripts/improvement_ui_capture.py": "800332f4dff5acf577bb45854945a6d5d152fb202407e6013d66b5629c61690b"
+  },
+  "checks": [
+    "fresh browser contexts",
+    "browser cache disabled",
+    "declared CPU/network profile",
+    "real API responses",
+    "cold login LCP and document CLS",
+    "measured action completion",
+    "EventTiming reported only as lab evidence"
+  ],
+  "failures": [],
+  "origin": "https://atlas-university.ru",
+  "environment": {
+    "os": "Windows-11-10.0.26300-SP0",
+    "python": "3.13.13",
+    "browser": "Playwright Chromium",
+    "browser_version": "141.0.7390.37"
+  },
+  "profiles": {
+    "desktop": {
+      "viewport": "1440x1000",
+      "cpu_slowdown": 1,
+      "network": "unthrottled public WAN"
+    },
+    "mobile_lab": {
+      "viewport": "390x844",
+      "cpu_slowdown": 4,
+      "latency_ms": 150,
+      "download_bits_per_second": 1600000,
+      "upload_bits_per_second": 750000,
+      "cache_disabled": true
+    }
+  },
+  "budgets": {
+    "cold_login_lcp_p75_ms": 2500,
+    "cls_p75": 0.1,
+    "authenticated_home_ready_p75_ms": 4000,
+    "action_completion_p75_ms": 1500,
+    "lab_event_timing_reference_ms": 200
+  },
+  "samples": [
+    {
+      "profile": "desktop",
+      "run": 1,
+      "cold_login_ready_ms": 723.48,
+      "cold_login_lcp_ms": 216,
+      "cls": 0,
+      "authenticated_home_ready_ms": 227.88,
+      "actions": [
+        {
+          "target": "grades",
+          "completion_ms": 135.96
+        },
+        {
+          "target": "schedule",
+          "completion_ms": 76.58
+        },
+        {
+          "target": "requests",
+          "completion_ms": 62.13
+        }
+      ],
+      "lab_event_timing_max_ms": 16,
+      "lab_event_timing_event_count": 12,
+      "first_load_transfer_bytes": 91095
+    },
+    {
+      "profile": "desktop",
+      "run": 2,
+      "cold_login_ready_ms": 701.31,
+      "cold_login_lcp_ms": 204,
+      "cls": 0,
+      "authenticated_home_ready_ms": 245.35,
+      "actions": [
+        {
+          "target": "grades",
+          "completion_ms": 138.77
+        },
+        {
+          "target": "schedule",
+          "completion_ms": 90.46
+        },
+        {
+          "target": "requests",
+          "completion_ms": 86.46
+        }
+      ],
+      "lab_event_timing_max_ms": 16,
+      "lab_event_timing_event_count": 12,
+      "first_load_transfer_bytes": 91095
+    },
+    {
+      "profile": "desktop",
+      "run": 3,
+      "cold_login_ready_ms": 710.8,
+      "cold_login_lcp_ms": 208,
+      "cls": 0,
+      "authenticated_home_ready_ms": 256.58,
+      "actions": [
+        {
+          "target": "grades",
+          "completion_ms": 139.01
+        },
+        {
+          "target": "schedule",
+          "completion_ms": 57.85
+        },
+        {
+          "target": "requests",
+          "completion_ms": 78.01
+        }
+      ],
+      "lab_event_timing_max_ms": 16,
+      "lab_event_timing_event_count": 12,
+      "first_load_transfer_bytes": 91095
+    },
+    {
+      "profile": "mobile_lab",
+      "run": 1,
+      "cold_login_ready_ms": 1806.14,
+      "cold_login_lcp_ms": 1288,
+      "cls": 0.06279620853080568,
+      "authenticated_home_ready_ms": 905.25,
+      "actions": [
+        {
+          "target": "grades",
+          "completion_ms": 275.23
+        },
+        {
+          "target": "schedule",
+          "completion_ms": 278.25
+        },
+        {
+          "target": "requests",
+          "completion_ms": 281.47
+        }
+      ],
+      "lab_event_timing_max_ms": 24,
+      "lab_event_timing_event_count": 12,
+      "first_load_transfer_bytes": 91095
+    },
+    {
+      "profile": "mobile_lab",
+      "run": 2,
+      "cold_login_ready_ms": 1832.84,
+      "cold_login_lcp_ms": 1316,
+      "cls": 0.06279620853080568,
+      "authenticated_home_ready_ms": 936.05,
+      "actions": [
+        {
+          "target": "grades",
+          "completion_ms": 278.47
+        },
+        {
+          "target": "schedule",
+          "completion_ms": 300.25
+        },
+        {
+          "target": "requests",
+          "completion_ms": 271.79
+        }
+      ],
+      "lab_event_timing_max_ms": 32,
+      "lab_event_timing_event_count": 12,
+      "first_load_transfer_bytes": 91095
+    },
+    {
+      "profile": "mobile_lab",
+      "run": 3,
+      "cold_login_ready_ms": 1815.94,
+      "cold_login_lcp_ms": 1308,
+      "cls": 0.06279620853080568,
+      "authenticated_home_ready_ms": 959.81,
+      "actions": [
+        {
+          "target": "grades",
+          "completion_ms": 272.84
+        },
+        {
+          "target": "schedule",
+          "completion_ms": 278.19
+        },
+        {
+          "target": "requests",
+          "completion_ms": 283.95
+        }
+      ],
+      "lab_event_timing_max_ms": 24,
+      "lab_event_timing_event_count": 12,
+      "first_load_transfer_bytes": 91095
+    }
+  ],
+  "resource_manifest": [
+    {
+      "profile": "desktop",
+      "resources": [
+        {
+          "name": "/static/style.css",
+          "transferSize": 15608,
+          "encodedBodySize": 15308,
+          "duration": 21.700000002980232
+        },
+        {
+          "name": "/static/campus.css",
+          "transferSize": 4202,
+          "encodedBodySize": 3902,
+          "duration": 15.700000002980232
+        },
+        {
+          "name": "/static/usability.css",
+          "transferSize": 7818,
+          "encodedBodySize": 7518,
+          "duration": 21.899999998509884
+        },
+        {
+          "name": "/static/improvements.js",
+          "transferSize": 4516,
+          "encodedBodySize": 4216,
+          "duration": 21.19999999552965
+        },
+        {
+          "name": "/static/campus.js",
+          "transferSize": 28360,
+          "encodedBodySize": 28060,
+          "duration": 31.69999999552965
+        },
+        {
+          "name": "/static/app.js",
+          "transferSize": 29812,
+          "encodedBodySize": 29512,
+          "duration": 28.5
+        },
+        {
+          "name": "/api/config",
+          "transferSize": 405,
+          "encodedBodySize": 105,
+          "duration": 49.100000001490116
+        },
+        {
+          "name": "/api/me",
+          "transferSize": 374,
+          "encodedBodySize": 74,
+          "duration": 51.100000001490116
+        }
+      ]
+    },
+    {
+      "profile": "mobile_lab",
+      "resources": [
+        {
+          "name": "/static/style.css",
+          "transferSize": 15608,
+          "encodedBodySize": 15308,
+          "duration": 490.20000000298023
+        },
+        {
+          "name": "/static/campus.css",
+          "transferSize": 4202,
+          "encodedBodySize": 3902,
+          "duration": 270.70000000298023
+        },
+        {
+          "name": "/static/usability.css",
+          "transferSize": 7818,
+          "encodedBodySize": 7518,
+          "duration": 379.29999999701977
+        },
+        {
+          "name": "/static/campus.js",
+          "transferSize": 28360,
+          "encodedBodySize": 28060,
+          "duration": 628.2999999970198
+        },
+        {
+          "name": "/static/improvements.js",
+          "transferSize": 4516,
+          "encodedBodySize": 4216,
+          "duration": 301.3999999985099
+        },
+        {
+          "name": "/static/app.js",
+          "transferSize": 29812,
+          "encodedBodySize": 29512,
+          "duration": 628
+        },
+        {
+          "name": "/api/config",
+          "transferSize": 405,
+          "encodedBodySize": 105,
+          "duration": 171.39999999850988
+        },
+        {
+          "name": "/api/me",
+          "transferSize": 374,
+          "encodedBodySize": 74,
+          "duration": 168.20000000298023
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "profile": "desktop",
+      "cold_login_lcp_p75_ms": 216,
+      "cold_login_ready_p75_ms": 723.48,
+      "cls_p75": 0,
+      "authenticated_home_ready_p75_ms": 256.58,
+      "action_completion_p75_ms": 135.96,
+      "lab_event_timing_max_p75_ms": 16,
+      "max_first_load_transfer_bytes": 91095
+    },
+    {
+      "profile": "mobile_lab",
+      "cold_login_lcp_p75_ms": 1316,
+      "cold_login_ready_p75_ms": 1832.84,
+      "cls_p75": 0.06,
+      "authenticated_home_ready_p75_ms": 959.81,
+      "action_completion_p75_ms": 281.47,
+      "lab_event_timing_max_p75_ms": 32,
+      "max_first_load_transfer_bytes": 91095
+    }
+  ],
+  "limitations": [
+    "Five observations per profile by default, not a representative user population.",
+    "LCP describes the cold login document; authenticated-home readiness is measured separately.",
+    "EventTiming on synthetic interactions is not a field INP value.",
+    "A few public WAN samples are not a server capacity guarantee or Russian connectivity proof."
+  ],
+  "finished_at_utc": "2026-11-10T22:19:07.297044+00:00",
+  "source_changed_during_run": [],
+  "status": "PASS"
+}

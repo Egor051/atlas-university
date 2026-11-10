@@ -1,0 +1,10 @@
+{
+  "engine": "webkit",
+  "version": "26.0",
+  "playwright_version": "1.56.0",
+  "url": "https://atlas-university.ru",
+  "csp_before_capture": 0,
+  "csp_after_original_capture": 1,
+  "csp_after_no_style_capture": 2,
+  "finding": "Both Playwright WebKit screenshot configurations append empty inline body {} CSS to sync animations (driver/lib/server/screenshotter.js). No style-src console error occurred before capture; CSP remains enforced."
+}

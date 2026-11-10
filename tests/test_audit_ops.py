@@ -113,6 +113,9 @@ def test_b13_source_zip_preserves_postgres_tls_entrypoint(tmp_path):
         subprocess.run(['attrib', '+H', str(env_example)], check=True, capture_output=True, text=True)
     (checkout/'.env').write_text('FICTIONAL_PRIVATE_ENV=must-not-be-packaged\n')
     (checkout/'.env.production').write_text('FICTIONAL_PRIVATE_ENV=must-not-be-packaged\n')
+    (checkout/'docs').mkdir()
+    for name in ('prepared-drive-links.json', 'credentials-fixture.json', 'private-fixture.key', 'private-fixture.dpapi'):
+        (checkout/'docs'/name).write_text('FICTIONAL_PRIVATE_FIXTURE=must-not-be-packaged\n')
     result = subprocess.run([shell, '-NoProfile', '-File', str(checkout/'scripts/package.ps1'),
                              '-OutputDirectory', str(tmp_path/'dist')], capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, result.stdout+result.stderr
@@ -121,7 +124,10 @@ def test_b13_source_zip_preserves_postgres_tls_entrypoint(tmp_path):
     with zipfile.ZipFile(bundle) as archive:
         archive.extractall(extracted)
         assert 'compose.improvements.yaml' in archive.namelist()
+        assert 'compose.production.yaml' in archive.namelist()
+        assert 'deploy/systemd/atlas-campus.service' in archive.namelist()
         assert 'atlas.db' not in archive.namelist()
+        assert not any(name.startswith('docs/') for name in archive.namelist())
         assert archive.read('.env.example') == (ROOT/'.env.example').read_bytes()
         assert not any(Path(name).name.startswith('.env') and Path(name).name != '.env.example'
                        for name in archive.namelist())
@@ -130,6 +136,7 @@ def test_b13_source_zip_preserves_postgres_tls_entrypoint(tmp_path):
         archive_checker = module_from(ROOT/'scripts/improvement_archive.py', 'archive_bundle_regression')
         checked = archive_checker.validate_deployment_bundle(extracted)
         assert 'compose.improvements.yaml' in checked
+        assert 'compose.production.yaml' in checked
         (extracted/'compose.improvements.yaml').unlink()
         with pytest.raises(ValueError, match='compose.improvements.yaml'):
             archive_checker.validate_deployment_bundle(extracted)

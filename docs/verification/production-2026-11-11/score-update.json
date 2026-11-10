@@ -1,0 +1,45 @@
+{
+  "date_msk": "2026-11-11",
+  "scale": "Existing ATLAS 3.2 40-point rubric; self-assessment, not jury scoring",
+  "baseline_total": 33.95,
+  "baseline_completed": 42,
+  "credited": [
+    {
+      "id": "E06.1",
+      "weight": 0.2,
+      "evidence": "public-edge.json"
+    },
+    {
+      "id": "E06.2",
+      "weight": 0.2,
+      "evidence": "ru-eyeball-https.json"
+    },
+    {
+      "id": "E06.4",
+      "weight": 0.2,
+      "evidence": "public-api.json and public-browser-webkit-retest.json"
+    },
+    {
+      "id": "E09.4",
+      "weight": 0.1,
+      "evidence": "Public GitHub repository and anonymous HTTPS 200 from independent Russian access networks"
+    }
+  ],
+  "pending": [
+    {
+      "id": "E06.3",
+      "weight": 0.2,
+      "reason": "Technical setup verified; owner coverage through 2026-11-28, on-call responsibility and receipt of alerts not confirmed"
+    }
+  ],
+  "categories": {
+    "I": 7.9,
+    "A": 9.55,
+    "E": 9.4,
+    "Q": 7.8
+  },
+  "total": 34.65,
+  "mean_out_of_10": 8.6625,
+  "completed": 46,
+  "improvements": 70
+}

@@ -1,0 +1,119 @@
+{
+  "at_utc": "2026-11-10T22:12:17.820803+00:00",
+  "domain": "atlas-university.ru",
+  "scope": "Actual public DNS, system-verified TLS and bounded port connections from this runner; no Russian connectivity inference.",
+  "certificates": {
+    "atlas-university.ru": {
+      "valid_chain_and_hostname": true,
+      "protocol": "TLSv1.3",
+      "not_before": "Nov 10 21:10:10 2026 GMT",
+      "not_after": "Feb  8 21:10:09 2027 GMT",
+      "issuer": [
+        [
+          [
+            "countryName",
+            "US"
+          ]
+        ],
+        [
+          [
+            "organizationName",
+            "Let's Encrypt"
+          ]
+        ],
+        [
+          [
+            "commonName",
+            "YE2"
+          ]
+        ]
+      ],
+      "subject_alt_names": [
+        [
+          "DNS",
+          "atlas-university.ru"
+        ]
+      ]
+    },
+    "www.atlas-university.ru": {
+      "valid_chain_and_hostname": true,
+      "protocol": "TLSv1.3",
+      "not_before": "Nov 10 21:10:11 2026 GMT",
+      "not_after": "Feb  8 21:10:10 2027 GMT",
+      "issuer": [
+        [
+          [
+            "countryName",
+            "US"
+          ]
+        ],
+        [
+          [
+            "organizationName",
+            "Let's Encrypt"
+          ]
+        ],
+        [
+          [
+            "commonName",
+            "YE2"
+          ]
+        ]
+      ],
+      "subject_alt_names": [
+        [
+          "DNS",
+          "www.atlas-university.ru"
+        ]
+      ]
+    }
+  },
+  "redirects": [
+    {
+      "url": "http://atlas-university.ru/app/schedule?acceptance=canonical",
+      "status": 308,
+      "location": "https://atlas-university.ru/app/schedule?acceptance=canonical"
+    },
+    {
+      "url": "http://www.atlas-university.ru/app/schedule?acceptance=canonical",
+      "status": 308,
+      "location": "https://www.atlas-university.ru/app/schedule?acceptance=canonical"
+    },
+    {
+      "url": "https://www.atlas-university.ru/app/schedule?acceptance=canonical",
+      "status": 301,
+      "location": "https://atlas-university.ru/app/schedule?acceptance=canonical"
+    }
+  ],
+  "ports": {
+    "22": true,
+    "80": true,
+    "443": true,
+    "2019": false,
+    "5432": false,
+    "8000": false
+  },
+  "dns_ipv4": {
+    "atlas-university.ru": [
+      "51.250.86.74"
+    ],
+    "www.atlas-university.ru": [
+      "51.250.86.74"
+    ]
+  },
+  "health": {
+    "ok": true,
+    "service": "ATLAS Campus",
+    "version": "3.2.1",
+    "build": "c273de52957f023e"
+  },
+  "security_headers": {
+    "Strict-Transport-Security": "max-age=31536000",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Cache-Control": "no-store, private",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,5547 @@
+{
+  "started_at_utc": "2026-11-10T22:10:32.621335+00:00",
+  "url": "https://atlas-university.ru",
+  "scope": "Actual public HTTPS pages, real browser engines, no mocked responses; viewport emulation only.",
+  "physical_devices": false,
+  "native_safari": false,
+  "russian_connection_verified": false,
+  "tls_validation_disabled": false,
+  "mode": "write-labelled-fictional-requests",
+  "run_id": "1fe71e2d2514",
+  "widths": [
+    360,
+    390,
+    1440
+  ],
+  "runner_sha256": "7219c7e322764130da359eba7e611fa9f48f21cdf0eb45b125a953d83a0768eb",
+  "engines": [
+    {
+      "name": "chromium",
+      "version": "141.0.7390.37"
+    },
+    {
+      "name": "firefox",
+      "version": "142.0.1"
+    },
+    {
+      "name": "webkit",
+      "version": "26.0"
+    }
+  ],
+  "geometry": [
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "home",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Доброе утро, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "schedule",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "grades",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "plan",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "requests",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "notifications",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "campus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "courses",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "assignments",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "exams",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "attendance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "calendar",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "tasks",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "notes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "flashcards",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "quizzes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "focus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "consultations",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "messages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "library",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "events",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "finance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "contacts",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "knowledge",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "portfolio",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "staff",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "staffdesk",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "staffmessages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "home",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Доброе утро, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "schedule",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "grades",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "plan",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "requests",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "notifications",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "campus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "courses",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "assignments",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "exams",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "attendance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "calendar",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "tasks",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "notes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "flashcards",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "quizzes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "focus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "consultations",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "messages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "library",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "events",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "finance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "contacts",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "knowledge",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "portfolio",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "staff",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "staffdesk",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "staffmessages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "home",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Доброе утро, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "schedule",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "grades",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "plan",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "requests",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "notifications",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "campus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "courses",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "assignments",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "exams",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "attendance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "calendar",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "tasks",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "notes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "flashcards",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "quizzes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "focus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "consultations",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "messages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "library",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "events",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "finance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "contacts",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "knowledge",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "portfolio",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "staff",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "staffdesk",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "staffmessages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "mark",
+      "route": "home",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Доброе утро, Марк",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "mark",
+      "route": "schedule",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "mark",
+      "route": "grades",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "mark",
+      "route": "requests",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "submitted-request",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "request-review",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "request-processing",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "route": "request-ready",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "home",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Доброе утро, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "schedule",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "grades",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "plan",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "requests",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "notifications",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "campus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "courses",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "assignments",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "exams",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "attendance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "calendar",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "tasks",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "notes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "flashcards",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "quizzes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "focus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "consultations",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "messages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "library",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "events",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "finance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "contacts",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "knowledge",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "portfolio",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "staff",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "staffdesk",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "staffmessages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "home",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Доброе утро, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "schedule",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "grades",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "plan",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "requests",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "notifications",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "campus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "courses",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "assignments",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "exams",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "attendance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "calendar",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "tasks",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "notes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "flashcards",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "quizzes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "focus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "consultations",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "messages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "library",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "events",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "finance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "contacts",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "knowledge",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "portfolio",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "staff",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "staffdesk",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "staffmessages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "home",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Доброе утро, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "schedule",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "grades",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "plan",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "requests",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "notifications",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "campus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "courses",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "assignments",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "exams",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "attendance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "calendar",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "tasks",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "notes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "flashcards",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "quizzes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "focus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "consultations",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "messages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "library",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "events",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "finance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "contacts",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "knowledge",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "portfolio",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "staff",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "staffdesk",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "staffmessages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "mark",
+      "route": "home",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Доброе утро, Марк",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "mark",
+      "route": "schedule",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "mark",
+      "route": "grades",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "mark",
+      "route": "requests",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "submitted-request",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "request-review",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "request-processing",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "route": "request-ready",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "home",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Доброе утро, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "schedule",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "grades",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "plan",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "requests",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "notifications",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "campus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "courses",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "assignments",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "exams",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "attendance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "calendar",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "tasks",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "notes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "flashcards",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "quizzes",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "focus",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "consultations",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "messages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "library",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "events",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "finance",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "contacts",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "knowledge",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "portfolio",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "staff",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "staffdesk",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "staffmessages",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "profile",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "settings",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "home",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Доброе утро, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "schedule",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "grades",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "plan",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "requests",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "notifications",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "campus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "courses",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "assignments",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "exams",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "attendance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "calendar",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "tasks",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "notes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "flashcards",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "quizzes",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "focus",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "consultations",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "messages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "library",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "events",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "finance",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "contacts",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "knowledge",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "portfolio",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "staff",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "staffdesk",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "staffmessages",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "profile",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "settings",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "home",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Доброе утро, Алина",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "schedule",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "grades",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "plan",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой план",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "requests",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "notifications",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Уведомления",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "campus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Все разделы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "courses",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мои дисциплины",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "assignments",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сдача работ",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "exams",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Сессия и зачёты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "attendance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Посещаемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "calendar",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Календарь",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "tasks",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Личные задачи",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "notes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Конспекты",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "flashcards",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Карточки памяти",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "quizzes",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Самопроверка",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "focus",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Фокус и время",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "consultations",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Консультации",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "messages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Связь с офисом",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "library",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Библиотека",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "events",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Жизнь кампуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "finance",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Финансы",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "contacts",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Контакты и корпуса",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "knowledge",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Помощь и правила",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "portfolio",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Портфолио",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "staff",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "staffdesk",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Пульт сопровождения",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "staffmessages",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Диалоги студентов",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "profile",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Мой профиль",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "settings",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Настройки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "route": "home",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Доброе утро, Марк",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "route": "schedule",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Расписание",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "route": "grades",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Успеваемость",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "route": "requests",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "submitted-request",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "request-review",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "request-processing",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "route": "request-ready",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Учебный офис",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 360,
+      "scrollWidth": 360,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 390,
+      "scrollWidth": 390,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "route": "ready-result",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "title": "Заявки и справки",
+      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+    }
+  ],
+  "checks": [
+    {
+      "name": "chromium health HTTPS",
+      "ok": true
+    },
+    {
+      "name": "chromium expected application version",
+      "ok": true
+    },
+    {
+      "name": "chromium expected public build",
+      "ok": true
+    },
+    {
+      "name": "chromium release consistency",
+      "ok": true
+    },
+    {
+      "name": "chromium health HTTPS",
+      "ok": true
+    },
+    {
+      "name": "chromium expected application version",
+      "ok": true
+    },
+    {
+      "name": "chromium expected public build",
+      "ok": true
+    },
+    {
+      "name": "chromium release consistency",
+      "ok": true
+    },
+    {
+      "name": "chromium health HTTPS",
+      "ok": true
+    },
+    {
+      "name": "chromium expected application version",
+      "ok": true
+    },
+    {
+      "name": "chromium expected public build",
+      "ok": true
+    },
+    {
+      "name": "chromium release consistency",
+      "ok": true
+    },
+    {
+      "name": "chromium two students and staff are distinct",
+      "ok": true
+    },
+    {
+      "name": "chromium student groups differ",
+      "ok": true
+    },
+    {
+      "name": "chromium alina role denied /api/staff/requests",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "chromium staff role denied /api/grades",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "chromium alina home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina plan stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina notifications stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina campus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina courses stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina assignments stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina exams stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina attendance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina calendar stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina tasks stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina notes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina flashcards stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina quizzes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina focus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina consultations stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina messages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina library stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina events stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina finance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina contacts stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina knowledge stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina portfolio stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff staff stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff staffdesk stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff staffmessages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina plan stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina notifications stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina campus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina courses stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina assignments stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina exams stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina attendance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina calendar stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina tasks stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina notes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina flashcards stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina quizzes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina focus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina consultations stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina messages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina library stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina events stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina finance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina contacts stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina knowledge stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina portfolio stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff staff stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff staffdesk stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff staffmessages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina plan stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina notifications stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina campus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina courses stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina assignments stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina exams stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina attendance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina calendar stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina tasks stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina notes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina flashcards stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina quizzes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina focus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina consultations stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina messages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina library stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina events stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina finance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina contacts stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina knowledge stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina portfolio stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium alina settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff staff stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff staffdesk stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff staffmessages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium staff settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium mark home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium mark schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium mark grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium mark requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "chromium actual calendar download",
+      "ok": true
+    },
+    {
+      "name": "chromium draft preflight HTTP",
+      "ok": true
+    },
+    {
+      "name": "chromium existing request draft is empty",
+      "ok": true
+    },
+    {
+      "name": "chromium restored request draft has no comment",
+      "ok": true
+    },
+    {
+      "name": "chromium UI request submitted once",
+      "ok": true,
+      "status": 201
+    },
+    {
+      "name": "chromium second student denied /api/requests/5",
+      "ok": true,
+      "status": 404
+    },
+    {
+      "name": "chromium second student denied /api/requests/5/document",
+      "ok": true,
+      "status": 404
+    },
+    {
+      "name": "chromium staff UI transition review",
+      "ok": true,
+      "request_id": 5,
+      "status": 200
+    },
+    {
+      "name": "chromium staff UI transition processing",
+      "ok": true,
+      "request_id": 5,
+      "status": 200
+    },
+    {
+      "name": "chromium staff UI transition ready",
+      "ok": true,
+      "request_id": 5,
+      "status": 200
+    },
+    {
+      "name": "chromium actual owner document download",
+      "ok": true
+    },
+    {
+      "name": "chromium saved new request ready",
+      "ok": true
+    },
+    {
+      "name": "chromium alina logout",
+      "ok": true
+    },
+    {
+      "name": "chromium mark logout",
+      "ok": true
+    },
+    {
+      "name": "chromium staff logout",
+      "ok": true
+    },
+    {
+      "name": "firefox health HTTPS",
+      "ok": true
+    },
+    {
+      "name": "firefox expected application version",
+      "ok": true
+    },
+    {
+      "name": "firefox expected public build",
+      "ok": true
+    },
+    {
+      "name": "firefox release consistency",
+      "ok": true
+    },
+    {
+      "name": "firefox health HTTPS",
+      "ok": true
+    },
+    {
+      "name": "firefox expected application version",
+      "ok": true
+    },
+    {
+      "name": "firefox expected public build",
+      "ok": true
+    },
+    {
+      "name": "firefox release consistency",
+      "ok": true
+    },
+    {
+      "name": "firefox health HTTPS",
+      "ok": true
+    },
+    {
+      "name": "firefox expected application version",
+      "ok": true
+    },
+    {
+      "name": "firefox expected public build",
+      "ok": true
+    },
+    {
+      "name": "firefox release consistency",
+      "ok": true
+    },
+    {
+      "name": "firefox two students and staff are distinct",
+      "ok": true
+    },
+    {
+      "name": "firefox student groups differ",
+      "ok": true
+    },
+    {
+      "name": "firefox alina role denied /api/staff/requests",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "firefox staff role denied /api/grades",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "firefox alina home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina plan stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina notifications stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina campus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina courses stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina assignments stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina exams stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina attendance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina calendar stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina tasks stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina notes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina flashcards stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina quizzes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina focus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina consultations stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina messages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina library stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina events stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina finance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina contacts stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina knowledge stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina portfolio stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff staff stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff staffdesk stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff staffmessages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina plan stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina notifications stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina campus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina courses stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina assignments stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina exams stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina attendance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina calendar stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina tasks stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina notes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina flashcards stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina quizzes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina focus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina consultations stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina messages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina library stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina events stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina finance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina contacts stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina knowledge stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina portfolio stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff staff stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff staffdesk stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff staffmessages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina plan stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina notifications stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina campus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina courses stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina assignments stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina exams stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina attendance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina calendar stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina tasks stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina notes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina flashcards stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina quizzes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina focus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina consultations stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina messages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina library stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina events stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina finance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina contacts stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina knowledge stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina portfolio stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox alina settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff staff stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff staffdesk stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff staffmessages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox staff settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox mark home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox mark schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox mark grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox mark requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "firefox actual calendar download",
+      "ok": true
+    },
+    {
+      "name": "firefox draft preflight HTTP",
+      "ok": true
+    },
+    {
+      "name": "firefox existing request draft is empty",
+      "ok": true
+    },
+    {
+      "name": "firefox restored request draft has no comment",
+      "ok": true
+    },
+    {
+      "name": "firefox UI request submitted once",
+      "ok": true,
+      "status": 201
+    },
+    {
+      "name": "firefox second student denied /api/requests/6",
+      "ok": true,
+      "status": 404
+    },
+    {
+      "name": "firefox second student denied /api/requests/6/document",
+      "ok": true,
+      "status": 404
+    },
+    {
+      "name": "firefox staff UI transition review",
+      "ok": true,
+      "request_id": 6,
+      "status": 200
+    },
+    {
+      "name": "firefox staff UI transition processing",
+      "ok": true,
+      "request_id": 6,
+      "status": 200
+    },
+    {
+      "name": "firefox staff UI transition ready",
+      "ok": true,
+      "request_id": 6,
+      "status": 200
+    },
+    {
+      "name": "firefox actual owner document download",
+      "ok": true
+    },
+    {
+      "name": "firefox saved new request ready",
+      "ok": true
+    },
+    {
+      "name": "firefox alina logout",
+      "ok": true
+    },
+    {
+      "name": "firefox mark logout",
+      "ok": true
+    },
+    {
+      "name": "firefox staff logout",
+      "ok": true
+    },
+    {
+      "name": "webkit health HTTPS",
+      "ok": true
+    },
+    {
+      "name": "webkit expected application version",
+      "ok": true
+    },
+    {
+      "name": "webkit expected public build",
+      "ok": true
+    },
+    {
+      "name": "webkit release consistency",
+      "ok": true
+    },
+    {
+      "name": "webkit health HTTPS",
+      "ok": true
+    },
+    {
+      "name": "webkit expected application version",
+      "ok": true
+    },
+    {
+      "name": "webkit expected public build",
+      "ok": true
+    },
+    {
+      "name": "webkit release consistency",
+      "ok": true
+    },
+    {
+      "name": "webkit health HTTPS",
+      "ok": true
+    },
+    {
+      "name": "webkit expected application version",
+      "ok": true
+    },
+    {
+      "name": "webkit expected public build",
+      "ok": true
+    },
+    {
+      "name": "webkit release consistency",
+      "ok": true
+    },
+    {
+      "name": "webkit two students and staff are distinct",
+      "ok": true
+    },
+    {
+      "name": "webkit student groups differ",
+      "ok": true
+    },
+    {
+      "name": "webkit alina role denied /api/staff/requests",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "webkit staff role denied /api/grades",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "webkit alina home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina plan stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina notifications stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina campus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina courses stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina assignments stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina exams stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina attendance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina calendar stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina tasks stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina notes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina flashcards stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina quizzes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina focus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina consultations stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina messages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina library stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina events stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina finance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina contacts stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina knowledge stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina portfolio stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff staff stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff staffdesk stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff staffmessages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina plan stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina notifications stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina campus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina courses stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina assignments stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina exams stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina attendance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina calendar stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina tasks stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina notes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina flashcards stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina quizzes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina focus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina consultations stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina messages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina library stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina events stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina finance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina contacts stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina knowledge stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina portfolio stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff staff stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff staffdesk stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff staffmessages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina plan stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina notifications stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina campus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina courses stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina assignments stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina exams stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina attendance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina calendar stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina tasks stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina notes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina flashcards stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina quizzes stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina focus stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina consultations stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina messages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina library stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina events stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina finance stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina contacts stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina knowledge stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina portfolio stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit alina settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff staff stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff staffdesk stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff staffmessages stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff profile stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit staff settings stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit mark home stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit mark schedule stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit mark grades stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit mark requests stays on its route",
+      "ok": true
+    },
+    {
+      "name": "webkit actual calendar download",
+      "ok": true
+    },
+    {
+      "name": "webkit draft preflight HTTP",
+      "ok": true
+    },
+    {
+      "name": "webkit existing request draft is empty",
+      "ok": true
+    },
+    {
+      "name": "webkit restored request draft has no comment",
+      "ok": true
+    },
+    {
+      "name": "webkit UI request submitted once",
+      "ok": true,
+      "status": 201
+    },
+    {
+      "name": "webkit second student denied /api/requests/7",
+      "ok": true,
+      "status": 404
+    },
+    {
+      "name": "webkit second student denied /api/requests/7/document",
+      "ok": true,
+      "status": 404
+    },
+    {
+      "name": "webkit staff UI transition review",
+      "ok": true,
+      "request_id": 7,
+      "status": 200
+    },
+    {
+      "name": "webkit staff UI transition processing",
+      "ok": true,
+      "request_id": 7,
+      "status": 200
+    },
+    {
+      "name": "webkit staff UI transition ready",
+      "ok": true,
+      "request_id": 7,
+      "status": 200
+    },
+    {
+      "name": "webkit actual owner document download",
+      "ok": true
+    },
+    {
+      "name": "webkit saved new request ready",
+      "ok": true
+    },
+    {
+      "name": "webkit alina logout",
+      "ok": true
+    },
+    {
+      "name": "webkit mark logout",
+      "ok": true
+    },
+    {
+      "name": "webkit staff logout",
+      "ok": true
+    }
+  ],
+  "screenshots": [
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 360,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-alina-home.png",
+      "sha256": "dbf54c5b2b768a667c01a76b48c7cb206fb9e9eeb6d17b0d7eeaefb0509d0e1d"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 360,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-alina-schedule.png",
+      "sha256": "b35f9dd88126db9b4ad3c1682d6404141544715967b00d9367f589f65cc2083f"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 360,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-alina-requests.png",
+      "sha256": "a9f3fbc24da6de945f25544cea4f967636b181ea0cd344251142307ff8474a07"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "width": 360,
+      "screen": "staff",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-staff-staff.png",
+      "sha256": "8c2816909d988940c589dad3e6bfc1a870de643f909d46d4a372dcf6e6a6bef6"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 390,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-390-alina-home.png",
+      "sha256": "a5a02e7ef621290512f7088a99fb3bda85522d9fc6e3da9ea9c2e5093e452cc5"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 390,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-390-alina-schedule.png",
+      "sha256": "d4cf31e2e3f13cd7957512b49f0972b2acc2dc05c67a9a54bc218cd44555af2b"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 390,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-390-alina-requests.png",
+      "sha256": "24456db8455e66c24a0a2421ff8c3bedc99e31970b13ec0d6f770574a0bf0fd0"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "width": 390,
+      "screen": "staff",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-390-staff-staff.png",
+      "sha256": "e143959b672f685eac89c8f441e1a705cb858f2192de84a4a0bf5dd642fb1c6c"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-1440-alina-home.png",
+      "sha256": "50990bc135f8f2a5a7833d0b51395c08269c1929671f865fedbd94cd9d174b69"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-1440-alina-schedule.png",
+      "sha256": "1a409c8c84bca5a94e3ea603e569746aaeced7cda2ead43a019cbc4410f875e5"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-1440-alina-requests.png",
+      "sha256": "8d93f3c4eb673d40c056639b1f5996aeec4419b31332cc87cdeb23d2b18abbb4"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "width": 1440,
+      "screen": "staff",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-1440-staff-staff.png",
+      "sha256": "ec6ca89f8eed84c06d3de62675182e3530a42ec17e7a7508d94bd96d71812ff1"
+    },
+    {
+      "engine": "chromium",
+      "actor": "mark",
+      "width": 360,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-mark-home.png",
+      "sha256": "0d88e4c18c0e625152a3ad070f1c14e05b148bc273f1590cb40b79d639e6145b"
+    },
+    {
+      "engine": "chromium",
+      "actor": "mark",
+      "width": 360,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-mark-schedule.png",
+      "sha256": "04c3366e88b347eaaad030c86e26de7b9f989b429b74b79cb15f4846ddcc8daf"
+    },
+    {
+      "engine": "chromium",
+      "actor": "mark",
+      "width": 360,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-mark-requests.png",
+      "sha256": "103478b40659db02c87e65239adc0b30dcf09b650663135ba04913a2d940bc1f"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 360,
+      "screen": "request-form",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-alina-request-form.png",
+      "sha256": "7c675ea8c66f82f96c6a9a3ebaa937034cf998307d842de42464f679a0cdf7c0"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 360,
+      "screen": "submitted-request",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-alina-submitted-request.png",
+      "sha256": "8adde15212930e93f98b0b5dd42368adc59ad140cadce35e10fe008e15c91883"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "width": 360,
+      "screen": "request-review",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-staff-request-review.png",
+      "sha256": "a945dcb8c6c5f5410d7b5040196c239c79981d43f4a73f68630d5a6822cffc50"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "width": 360,
+      "screen": "request-processing",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-staff-request-processing.png",
+      "sha256": "43f1daa5df7b279381204ccd322dd62a8b95aacd445379a9403ad6a9feb6cc87"
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "width": 360,
+      "screen": "request-ready",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-staff-request-ready.png",
+      "sha256": "f171d4f4659bfe5d11e340a9bdc7eda5e2f1581868de1aba29c67ca5ca9d7000"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 360,
+      "screen": "ready-result",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-360-alina-ready-result.png",
+      "sha256": "5852d4110823a93224e72f98b29255cda2aec8af02ba06f4d552be03f702a9c5"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 390,
+      "screen": "ready-result",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-390-alina-ready-result.png",
+      "sha256": "a7b3a8e66231b847f3933b897247c2bd2070962bd8d7f369ead08c5ead119bca"
+    },
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "ready-result",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-chromium-1440-alina-ready-result.png",
+      "sha256": "1f40e4b4da7f354c0205afa2e99246820c0e2c42b7a513f849f690335b3144b4"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 360,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-alina-home.png",
+      "sha256": "3bb5352d011490496f4d537c28772acce7d37e4aa12b9f5146e8776cb08605cc"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 360,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-alina-schedule.png",
+      "sha256": "6c2de5c3b379388c74974ca3780db3c7efbfba27f807b7114bceaf775ce50d11"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 360,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-alina-requests.png",
+      "sha256": "9ae71bc361fa6016aae6bdb8830eddce6dc44c74eccafe4ca18241e9378e0d82"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "width": 360,
+      "screen": "staff",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-staff-staff.png",
+      "sha256": "d451e10350c4566be68b12a24c2b76e6be57946e889b9f5df06f3c06d478dcd1"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 390,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-390-alina-home.png",
+      "sha256": "12ce0fb5c3d8b8b7985649b7d2cc90f9d99a52b2a16aa667c934de7f00f2bf55"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 390,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-390-alina-schedule.png",
+      "sha256": "0ad95ae40ede574e20be6e7f9816f979a137bbef87cecfdb7433c0fd70d10d5a"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 390,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-390-alina-requests.png",
+      "sha256": "99a52e1775de5e5427e887d4d829bd9994051bc893bf86e44fe04d2b1177c4ad"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "width": 390,
+      "screen": "staff",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-390-staff-staff.png",
+      "sha256": "ec62d688a43686593e265fb8cac93a631da42dd5f2612eabc04fc6cc4bcfdd27"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-1440-alina-home.png",
+      "sha256": "f233f417ac3fa0e2129eea1de570d22fa34c8191ae83bd79ff4ff27e5f00e07b"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-1440-alina-schedule.png",
+      "sha256": "e83d180ea4cc75180ab9c4b0da571d421748f0a2088fd043071dae9c6e93e992"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-1440-alina-requests.png",
+      "sha256": "0bc53eb55a1048a008b54555a916fdf0fe4e051eca762fc22c5aa80d98b18699"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "width": 1440,
+      "screen": "staff",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-1440-staff-staff.png",
+      "sha256": "b2fbe96a9c0295759b73329354c60720f75c8ff9dc46def0cc6e08cccc732414"
+    },
+    {
+      "engine": "firefox",
+      "actor": "mark",
+      "width": 360,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-mark-home.png",
+      "sha256": "e9c10c802ebfa268d8d618eda85088c2506113b0220638864479eb4754155379"
+    },
+    {
+      "engine": "firefox",
+      "actor": "mark",
+      "width": 360,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-mark-schedule.png",
+      "sha256": "c9a3da6c4de477f48b121e18722b67d470adff97076d0050b12b1fcfe683041c"
+    },
+    {
+      "engine": "firefox",
+      "actor": "mark",
+      "width": 360,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-mark-requests.png",
+      "sha256": "27d50bc1da320a2ac943b6ea5c8e0ca88c8d17aec35b628431ce8523a170ef7a"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 360,
+      "screen": "request-form",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-alina-request-form.png",
+      "sha256": "7a92f05debce3152759a4bff5de2f2f310c1377fbab450a078e7dc81580538c6"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 360,
+      "screen": "submitted-request",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-alina-submitted-request.png",
+      "sha256": "80a21d5eb5269e0b51e5d533165efbabc8f8f139a5a21706f4ac7d8732fe332f"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "width": 360,
+      "screen": "request-review",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-staff-request-review.png",
+      "sha256": "65047f3a7476f6cdfdbb879ea19db80a5ebbe6be09ad72f4a16d9fc3526b9f93"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "width": 360,
+      "screen": "request-processing",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-staff-request-processing.png",
+      "sha256": "2e266504c2860d1376cf8f1faef7e14ac3238bc31da78f26033aac0c47de738e"
+    },
+    {
+      "engine": "firefox",
+      "actor": "staff",
+      "width": 360,
+      "screen": "request-ready",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-staff-request-ready.png",
+      "sha256": "11df55114846dcdd3a30d7db7cacc709b2d0cac57d12e365ede7e1f651df2c69"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 360,
+      "screen": "ready-result",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-360-alina-ready-result.png",
+      "sha256": "ee886a6544c3bb93f90415ff5068d591f6048dc6359c23a188c25192dbdf1d99"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 390,
+      "screen": "ready-result",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-390-alina-ready-result.png",
+      "sha256": "38d08a3fb11261886bbf8f9e492e7cef429fd59e1c3ac8edb493037b0f64ae51"
+    },
+    {
+      "engine": "firefox",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "ready-result",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-firefox-1440-alina-ready-result.png",
+      "sha256": "87adc32cc89bc5569fa690e5d2fd14b83d6fa320f21c19f1bbf93e917a146c43"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 360,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-alina-home.png",
+      "sha256": "0ccba32ca190772c9ce8c9696345f0345aaabef7e6ef4930829e87426d26e1e0"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 360,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-alina-schedule.png",
+      "sha256": "8b0fc29ca8a7ae09aac0b881ca95bcfae3f0a5a7f532735341cc7860049a223d"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 360,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-alina-requests.png",
+      "sha256": "b8202ae438942d1df1f3454027999570c14c15463f40d690f65bb8b7f02125ff"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "width": 360,
+      "screen": "staff",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-staff-staff.png",
+      "sha256": "c2ca65ae4502da802877a90c40cb4dfa44efe3fa181d8a251b57c129c54824d7"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 390,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-390-alina-home.png",
+      "sha256": "94e29ddf71ca149e5944889e9cd1308c23135e515c00bcb1b1c6e6493cae6662"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 390,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-390-alina-schedule.png",
+      "sha256": "86e92feade007c84199f2d6b8e2764fccece55903f75de7934fca57d534ccb4b"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 390,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-390-alina-requests.png",
+      "sha256": "f7d7937294ee960d68a67b947e11be7d2472f90ec7ef6b4cdbcb6392ab08b63d"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "width": 390,
+      "screen": "staff",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-390-staff-staff.png",
+      "sha256": "1d24ab3044941c6fa2a17729220f83346bd41369c8eb8583c30f32666c988ebe"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-1440-alina-home.png",
+      "sha256": "1581f56cdaa3453eb526d00b4f5d80936402f4d6434e6268c89339cd18d0b4b6"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-1440-alina-schedule.png",
+      "sha256": "8e798e6392feed3e91e9b175d0269e7dc29fa07e237c1caa29c2db1fb42faccc"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-1440-alina-requests.png",
+      "sha256": "8cb09092aeab932aab3e654999202f69ed98488bac129b0517be747232e64b45"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "width": 1440,
+      "screen": "staff",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-1440-staff-staff.png",
+      "sha256": "090b59fb1a9a20628235df7a6fb67b10ff9ca4ca919ffb0c903a38e3e51c4efe"
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "width": 360,
+      "screen": "home",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-mark-home.png",
+      "sha256": "279f4d31519353c9d4a449c05898eff5e1bb36722bf71255ece50aecde52231e"
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "width": 360,
+      "screen": "schedule",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-mark-schedule.png",
+      "sha256": "b2582f4c211da3d9e3e23da0e40aeb810315a6950133c7313da4433df996e9c0"
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "width": 360,
+      "screen": "requests",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-mark-requests.png",
+      "sha256": "b950f2847e76607c1809f2e2b5a0bdd752b32109e02774f01bb6eda83ac8ffa5"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 360,
+      "screen": "request-form",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-alina-request-form.png",
+      "sha256": "a550e4fb7d671f9b20bdf91b7f2d7bc0e4bb99cd5b18808f23e7ad4df37d214e"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 360,
+      "screen": "submitted-request",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-alina-submitted-request.png",
+      "sha256": "f0b30f067c3b5ad1a6b0c121dc15bc43df64b79094116f8386edbc5581c9891c"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "width": 360,
+      "screen": "request-review",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-staff-request-review.png",
+      "sha256": "80178cec90113b5e47785c3bc59820164e9384273249dea112841670626cea81"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "width": 360,
+      "screen": "request-processing",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-staff-request-processing.png",
+      "sha256": "d4b42e31aca347e818a88afa0b6da1f8f7e625a9529ea3447eff540aaad74491"
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "width": 360,
+      "screen": "request-ready",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-staff-request-ready.png",
+      "sha256": "d889b85b13b336b70c6a57c6cf5b0f169a333f23dba8b3d38229c966df997ea8"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 360,
+      "screen": "ready-result",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-360-alina-ready-result.png",
+      "sha256": "4e19236a5de628a7bf909a128a4d8bbe4e3c4e3ec9d71d19ecf5ed5de0700a98"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 390,
+      "screen": "ready-result",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-390-alina-ready-result.png",
+      "sha256": "559339717bb52b762fdbfc77b1229fafbd23644d07eadf4f4c20f3c1ab646b86"
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "width": 1440,
+      "screen": "ready-result",
+      "path": "screenshots/production-2026-11-11/1fe71e2d2514-webkit-1440-alina-ready-result.png",
+      "sha256": "67a938131944f208799f60e25856e547d5622cc90225de6665343154510971d4"
+    }
+  ],
+  "downloads": [
+    {
+      "engine": "chromium",
+      "kind": "calendar",
+      "bytes": 5708,
+      "sha256": "37e3acea3043ed0626fbc67213a3dfa8564cc037329f419be7cbcfc471fca1cf"
+    },
+    {
+      "engine": "chromium",
+      "kind": "fictional-document",
+      "bytes": 2799,
+      "sha256": "362e8ab8cf516536b9b9fbb7ac7974624434e0b957a4106223ee603e39a3b8b3",
+      "request_id": 5
+    },
+    {
+      "engine": "firefox",
+      "kind": "calendar",
+      "bytes": 5708,
+      "sha256": "a1c3a49c95c725bcc6941d75db646802f9df9e90dc348e520e414c1caed61e10"
+    },
+    {
+      "engine": "firefox",
+      "kind": "fictional-document",
+      "bytes": 2798,
+      "sha256": "f5758218ed177e46d6af9cca3a0262a155dae532aa97beccd39dd2b7a95d79b4",
+      "request_id": 6
+    },
+    {
+      "engine": "webkit",
+      "kind": "calendar",
+      "bytes": 5708,
+      "sha256": "e0716b9327f1ddfa542256854ca4af394935bdd68a5781a826c6688fc1407d52"
+    },
+    {
+      "engine": "webkit",
+      "kind": "fictional-document",
+      "bytes": 2797,
+      "sha256": "c2c6fe80ade95c333f56cc23e675fd79fea644afffe1b4fa94d9155d80f64a20",
+      "request_id": 7
+    }
+  ],
+  "created_fictional_requests": [
+    {
+      "engine": "chromium",
+      "request_id": 5,
+      "marker": "Production browser acceptance 1fe71e2d2514 chromium: все данные вымышлены."
+    },
+    {
+      "engine": "firefox",
+      "request_id": 6,
+      "marker": "Production browser acceptance 1fe71e2d2514 firefox: все данные вымышлены."
+    },
+    {
+      "engine": "webkit",
+      "request_id": 7,
+      "marker": "Production browser acceptance 1fe71e2d2514 webkit: все данные вымышлены."
+    }
+  ],
+  "browser_errors": [],
+  "console_errors": [
+    {
+      "engine": "chromium",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/api/me",
+      "message": "Failed to load resource: the server responded with a status of 401 ()",
+      "expected_initial_unauthenticated_401": true
+    },
+    {
+      "engine": "chromium",
+      "actor": "mark",
+      "url": "https://atlas-university.ru/api/me",
+      "message": "Failed to load resource: the server responded with a status of 401 ()",
+      "expected_initial_unauthenticated_401": true
+    },
+    {
+      "engine": "chromium",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/api/me",
+      "message": "Failed to load resource: the server responded with a status of 401 ()",
+      "expected_initial_unauthenticated_401": true
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/api/me",
+      "message": "Failed to load resource: the server responded with a status of 401 ()",
+      "expected_initial_unauthenticated_401": true
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "url": "https://atlas-university.ru/api/me",
+      "message": "Failed to load resource: the server responded with a status of 401 ()",
+      "expected_initial_unauthenticated_401": true
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/api/me",
+      "message": "Failed to load resource: the server responded with a status of 401 ()",
+      "expected_initial_unauthenticated_401": true
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/home",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/schedule",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/home",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/schedule",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/home",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/schedule",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "url": "https://atlas-university.ru/app/home",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "url": "https://atlas-university.ru/app/schedule",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    }
+  ],
+  "unexpected_console_errors": [
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/home",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/schedule",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/home",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/schedule",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/home",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/schedule",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "url": "https://atlas-university.ru/app/home",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "url": "https://atlas-university.ru/app/schedule",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "mark",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "staff",
+      "url": "https://atlas-university.ru/app/staff",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    },
+    {
+      "engine": "webkit",
+      "actor": "alina",
+      "url": "https://atlas-university.ru/app/requests",
+      "message": "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+      "expected_initial_unauthenticated_401": false
+    }
+  ],
+  "http_server_errors": [],
+  "failed_requests": [],
+  "cleanup_errors": [],
+  "failures": [],
+  "status": "FAIL",
+  "public_release": {
+    "version": "3.2.1",
+    "build": "c273de52957f023e"
+  },
+  "finished_at_utc": "2026-11-10T22:15:12.830966+00:00"
+}

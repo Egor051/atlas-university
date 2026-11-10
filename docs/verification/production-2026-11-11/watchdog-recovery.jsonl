@@ -1,0 +1,8 @@
+{"at_utc": "2026-11-10T22:20:17.399026+00:00", "status": 200, "ok": true, "latency_ms": 38.97, "consecutive_failures": 0, "last_recovery_unix": 0}
+{"at_utc": "2026-11-10T22:21:27.394547+00:00", "status": 200, "ok": true, "latency_ms": 43.46, "consecutive_failures": 0, "last_recovery_unix": 0}
+{"at_utc": "2026-11-10T22:22:28.430038+00:00", "status": 200, "ok": true, "latency_ms": 42.46, "consecutive_failures": 0, "last_recovery_unix": 0}
+{"at_utc": "2026-11-10T22:23:31.360748+00:00", "status": 200, "ok": true, "latency_ms": 45.95, "consecutive_failures": 0, "last_recovery_unix": 0}
+{"at_utc": "2026-11-10T22:24:18.606165+00:00", "ok": false, "error_type": "HTTPError", "latency_ms": 40.75, "consecutive_failures": 1, "last_recovery_unix": 0}
+{"at_utc": "2026-11-10T22:24:18.754294+00:00", "ok": false, "error_type": "HTTPError", "latency_ms": 40.58, "consecutive_failures": 2, "last_recovery_unix": 0}
+{"at_utc": "2026-11-10T22:24:18.896281+00:00", "ok": false, "error_type": "HTTPError", "latency_ms": 40.59, "consecutive_failures": 3, "last_recovery_unix": 1794349459.3215177, "recovery": {"web": true}}
+{"at_utc": "2026-11-10T22:24:46.765783+00:00", "status": 200, "ok": true, "latency_ms": 40.05, "consecutive_failures": 0, "last_recovery_unix": 1794349459.3215177}

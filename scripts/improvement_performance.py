@@ -6,12 +6,14 @@ emulations, not a physical phone, real users, public hosting or field INP.
 """
 from __future__ import annotations
 import argparse
+from contextlib import nullcontext
 from pathlib import Path
 import json
 import math
 import platform
 import time
 import traceback
+from urllib.parse import urlsplit
 
 from playwright.sync_api import sync_playwright,expect
 from improvement_runtime import DEFAULT_REPORTS,isolated_server,browser_ready,report_start,save_report
@@ -33,16 +35,23 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--runs',type=int,default=5)
     parser.add_argument('--report',type=Path,default=DEFAULT_REPORTS/'performance.json')
+    parser.add_argument('--url',help='Optional already deployed HTTPS origin; starts no local server and does not change domain records.')
     args=parser.parse_args();assert 3<=args.runs<=5
-    report=report_start('Chromium laboratory measurement on real isolated local HTTP. Synthetic interactions and emulated network/CPU; no field INP, real user or physical-device claim.')
+    if args.url:
+        parts=urlsplit(args.url)
+        if parts.scheme!='https' or not parts.hostname or parts.username or parts.password or parts.path not in {'','/'} or parts.query or parts.fragment:
+            parser.error('--url must be an HTTPS origin without credentials, path or query')
+        args.url=args.url.rstrip('/')
+    report=report_start(('Chromium laboratory measurement on actual public HTTPS.' if args.url else 'Chromium laboratory measurement on real isolated local HTTP.')+' Synthetic interactions and emulated network/CPU; no field INP, real user or physical-device claim.')
+    report['origin']=args.url or 'isolated local server'
     report['environment']={'os':platform.platform(),'python':platform.python_version(),'browser':'Playwright Chromium'}
-    report['profiles']={'desktop':{'viewport':'1440x1000','cpu_slowdown':1,'network':'unthrottled loopback'},
+    report['profiles']={'desktop':{'viewport':'1440x1000','cpu_slowdown':1,'network':'unthrottled public WAN' if args.url else 'unthrottled loopback'},
                         'mobile_lab':{'viewport':'390x844','cpu_slowdown':4,'latency_ms':150,'download_bits_per_second':1600000,'upload_bits_per_second':750000,'cache_disabled':True}}
     report['budgets']={'cold_login_lcp_p75_ms':2500,'cls_p75':.1,'authenticated_home_ready_p75_ms':4000,
                        'action_completion_p75_ms':1500,'lab_event_timing_reference_ms':200}
     report['samples']=[];report['resource_manifest']=[]
     try:
-        with isolated_server() as server,sync_playwright() as p:
+        with (nullcontext({'base':args.url}) if args.url else isolated_server()) as server,sync_playwright() as p:
             browser=p.chromium.launch()
             report['environment']['browser_version']=browser.version
             for profile in ['desktop','mobile_lab']:
@@ -100,7 +109,7 @@ def main():
         report['limitations']=['Five observations per profile by default, not a representative user population.',
             'LCP describes the cold login document; authenticated-home readiness is measured separately.',
             'EventTiming on synthetic interactions is not a field INP value.',
-            'Local loopback backend does not represent public WAN/server capacity.']
+            'A few public WAN samples are not a server capacity guarantee or Russian connectivity proof.' if args.url else 'Local loopback backend does not represent public WAN/server capacity.']
     except Exception:report['failures'].append(traceback.format_exc())
     finally:save_report(args.report,report)
     print(json.dumps({'status':report['status'],'summary':report.get('summary'),'failures':report['failures']},ensure_ascii=False))

@@ -1,0 +1,37 @@
+{
+  "started_at_utc": "2026-11-10T22:24:47.571620+00:00",
+  "url": "https://atlas-university.ru",
+  "request_id": 4,
+  "checks": [
+    {
+      "case": "web-abrupt-container-stop",
+      "recovery_wait_seconds": 4.69,
+      "readiness_attempts": 7,
+      "docker_restart_count_before": 0,
+      "docker_restart_count_after": 1,
+      "persistence_checks": 343,
+      "status": "PASS"
+    },
+    {
+      "case": "db-abrupt-container-stop",
+      "recovery_wait_seconds": 1.8,
+      "readiness_attempts": 3,
+      "docker_restart_count_before": 0,
+      "docker_restart_count_after": 1,
+      "persistence_checks": 343,
+      "status": "PASS"
+    },
+    {
+      "case": "vps-reboot",
+      "recovery_wait_seconds": 101.28,
+      "readiness_attempts": 53,
+      "boot_before_unix": 1794328988,
+      "boot_after_unix": 1794349559,
+      "ssh_reconnected": true,
+      "persistence_checks": 343,
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS",
+  "finished_at_utc": "2026-11-10T22:27:15.424733+00:00"
+}

@@ -1,0 +1,63 @@
+{
+  "at_utc": "2026-11-10T22:29:57.991109+00:00",
+  "scope": "Selected host settings and aggregate log evidence after the controlled reboot; no credentials or raw access logs.",
+  "checkout": "60b9ebe3d5a61fc0949de103aa0bd1f143c41a6c",
+  "running_image": "sha256:a46c2414c8229e121747371cebf0bcf5bf049bb7c1b8c8d8e1d4c4be23e9c333",
+  "image_revision": "60b9ebe3d5a61fc0949de103aa0bd1f143c41a6c",
+  "docker": "Docker version 29.9.3, build 5457199",
+  "compose": "Docker Compose version v5.7.0",
+  "python": "Python 3.13.18",
+  "postgres": "postgres (PostgreSQL) 17.11",
+  "caddy": "v2.11.9",
+  "schema_revisions": [
+    "0002_workflow",
+    "0003_listing_indexes",
+    "0004_full_campus",
+    "0005_contest_hardening",
+    "0006_audit_integrity"
+  ],
+  "config_modes": {
+    "/opt/atlas-campus/.env": "0o600",
+    "/etc/atlas-campus/compose.env": "0o600",
+    "/var/backups/atlas-campus": "0o700"
+  },
+  "enabled_units": {
+    "atlas-campus.service": "enabled",
+    "atlas-backup.timer": "enabled",
+    "atlas-monitor.timer": "enabled"
+  },
+  "health": {
+    "web": "healthy",
+    "db": "healthy",
+    "caddy": "healthy"
+  },
+  "db_network_internal": true,
+  "web_container_constraints": "atlas true [ALL] false",
+  "latest_host_monitor": {
+    "at_utc": "2026-11-10T22:29:28.560848+00:00",
+    "status": 200,
+    "ok": true,
+    "latency_ms": 40.51,
+    "consecutive_failures": 0,
+    "last_recovery_unix": 1794349459.3215177
+  },
+  "free_disk_bytes": 26306240512,
+  "logs_since_utc": "2026-11-10T22:26:00Z",
+  "web_http_status_counts": {
+    "200": 140,
+    "404": 17,
+    "401": 13,
+    "413": 1,
+    "403": 22,
+    "409": 1,
+    "422": 1
+  },
+  "web_5xx": 0,
+  "web_critical_or_tracebacks": 0,
+  "postgres_panic": 0,
+  "postgres_error_or_fatal": 0,
+  "caddy_error": 0,
+  "caddy_background_tls_maintenance": true,
+  "cloud_agent_active": "active",
+  "cloud_agent_installer_result": "exit-code"
+}

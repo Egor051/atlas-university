@@ -1,0 +1,122 @@
+[
+  {
+    "test": "ready",
+    "id": "2QfiM0P4jXYnQ5G1M00021Trw",
+    "createdAt": "2026-11-10T22:20:23.316Z",
+    "target": "atlas-university.ru",
+    "status": "finished",
+    "path": "/api/ready",
+    "results": [
+      {
+        "country": "RU",
+        "city": "Novosibirsk",
+        "asn": 8359,
+        "network": "MTS",
+        "eyeball_network": true,
+        "result": "finished",
+        "http_status": 200,
+        "tls_authorized": true,
+        "tls_protocol": "TLSv1.3",
+        "resolved_address": "51.250.86.74",
+        "expected_content": true
+      },
+      {
+        "country": "RU",
+        "city": "Moscow",
+        "asn": 34959,
+        "network": "PROCLOUD MSK",
+        "eyeball_network": true,
+        "result": "finished",
+        "http_status": 200,
+        "tls_authorized": true,
+        "tls_protocol": "TLSv1.3",
+        "resolved_address": "51.250.86.74",
+        "expected_content": true
+      },
+      {
+        "country": "RU",
+        "city": "Tomsk",
+        "asn": 31357,
+        "network": "Limited Company Information and Consulting Agency",
+        "eyeball_network": true,
+        "result": "finished",
+        "http_status": 200,
+        "tls_authorized": true,
+        "tls_protocol": "TLSv1.3",
+        "resolved_address": "51.250.86.74",
+        "expected_content": true
+      }
+    ]
+  },
+  {
+    "test": "home",
+    "id": "2wwYCFVnlSW5xa2qg00021Trx",
+    "createdAt": "2026-11-10T22:21:47.709Z",
+    "target": "atlas-university.ru",
+    "status": "finished",
+    "path": "/",
+    "results": [
+      {
+        "country": "RU",
+        "city": "Novosibirsk",
+        "asn": 8359,
+        "network": "MTS",
+        "eyeball_network": true,
+        "result": "finished",
+        "http_status": 200,
+        "tls_authorized": true,
+        "tls_protocol": "TLSv1.3",
+        "resolved_address": "51.250.86.74",
+        "expected_content": true
+      },
+      {
+        "country": "RU",
+        "city": "Tomsk",
+        "asn": 31357,
+        "network": "Limited Company Information and Consulting Agency",
+        "eyeball_network": true,
+        "result": "finished",
+        "http_status": 200,
+        "tls_authorized": true,
+        "tls_protocol": "TLSv1.3",
+        "resolved_address": "51.250.86.74",
+        "expected_content": true
+      }
+    ]
+  },
+  {
+    "test": "source",
+    "id": "2zUWzEd0dcJkplA3300021Trx",
+    "createdAt": "2026-11-10T22:21:47.871Z",
+    "target": "github.com",
+    "status": "finished",
+    "path": "/Egor051/atlas-university",
+    "results": [
+      {
+        "country": "RU",
+        "city": "Novosibirsk",
+        "asn": 8359,
+        "network": "MTS",
+        "eyeball_network": true,
+        "result": "finished",
+        "http_status": 200,
+        "tls_authorized": true,
+        "tls_protocol": "TLSv1.3",
+        "resolved_address": "140.82.121.4"
+      },
+      {
+        "country": "RU",
+        "city": "Tomsk",
+        "asn": 31357,
+        "network": "Limited Company Information and Consulting Agency",
+        "eyeball_network": true,
+        "result": "finished",
+        "http_status": 200,
+        "tls_authorized": true,
+        "tls_protocol": "TLSv1.3",
+        "resolved_address": "140.82.121.3"
+      }
+    ],
+    "scope": "HTTP and TLS verified by remote probes; repository public visibility and expected page separately verified without credentials."
+  }
+]

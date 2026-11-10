@@ -1,0 +1,1942 @@
+{
+  "started_at_utc": "2026-11-10T22:24:53.341644+00:00",
+  "url": "https://atlas-university.ru",
+  "mode": "verify-persistence",
+  "fictional_data_only": true,
+  "checks": [
+    {
+      "name": "anonymous GET /api/health",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 37.1
+    },
+    {
+      "name": "anonymous private API response /api/health",
+      "ok": true
+    },
+    {
+      "name": "release version",
+      "ok": true
+    },
+    {
+      "name": "source build identity",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/ready",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 69.4
+    },
+    {
+      "name": "anonymous private API response /api/ready",
+      "ok": true
+    },
+    {
+      "name": "database readiness",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/config",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 67.4
+    },
+    {
+      "name": "anonymous private API response /api/config",
+      "ok": true
+    },
+    {
+      "name": "public fictional contest configuration",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 72.0
+    },
+    {
+      "name": "public shell declares the concept",
+      "ok": true
+    },
+    {
+      "name": "security response headers",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /app/home",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 71.8
+    },
+    {
+      "name": "anonymous GET /app/schedule",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 70.1
+    },
+    {
+      "name": "anonymous GET /app/grades",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 68.6
+    },
+    {
+      "name": "anonymous GET /app/plan",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 69.1
+    },
+    {
+      "name": "anonymous GET /app/requests",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 69.4
+    },
+    {
+      "name": "anonymous GET /app/notifications",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 68.4
+    },
+    {
+      "name": "anonymous GET /app/profile",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 72.1
+    },
+    {
+      "name": "anonymous GET /app/campus",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 71.0
+    },
+    {
+      "name": "anonymous GET /app/courses",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 70.9
+    },
+    {
+      "name": "anonymous GET /app/assignments",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 73.2
+    },
+    {
+      "name": "anonymous GET /app/exams",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 70.7
+    },
+    {
+      "name": "anonymous GET /app/attendance",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 67.9
+    },
+    {
+      "name": "anonymous GET /app/calendar",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 68.7
+    },
+    {
+      "name": "anonymous GET /app/tasks",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 70.0
+    },
+    {
+      "name": "anonymous GET /app/notes",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 69.3
+    },
+    {
+      "name": "anonymous GET /app/flashcards",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 81.9
+    },
+    {
+      "name": "anonymous GET /app/quizzes",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 72.9
+    },
+    {
+      "name": "anonymous GET /app/focus",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 71.0
+    },
+    {
+      "name": "anonymous GET /app/consultations",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 69.8
+    },
+    {
+      "name": "anonymous GET /app/messages",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 70.0
+    },
+    {
+      "name": "anonymous GET /app/library",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 70.2
+    },
+    {
+      "name": "anonymous GET /app/events",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 69.1
+    },
+    {
+      "name": "anonymous GET /app/finance",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 70.0
+    },
+    {
+      "name": "anonymous GET /app/contacts",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 80.5
+    },
+    {
+      "name": "anonymous GET /app/knowledge",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 69.8
+    },
+    {
+      "name": "anonymous GET /app/portfolio",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 69.0
+    },
+    {
+      "name": "anonymous GET /app/settings",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 68.5
+    },
+    {
+      "name": "anonymous GET /app/staff",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 69.5
+    },
+    {
+      "name": "anonymous GET /app/staffdesk",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 81.0
+    },
+    {
+      "name": "anonymous GET /app/staffmessages",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 70.3
+    },
+    {
+      "name": "anonymous GET /static/app.js",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 47.8
+    },
+    {
+      "name": "anonymous GET /static/campus.js",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 45.1
+    },
+    {
+      "name": "anonymous GET /static/improvements.js",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 48.9
+    },
+    {
+      "name": "anonymous GET /static/style.css",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 54.6
+    },
+    {
+      "name": "anonymous GET /static/usability.css",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 56.4
+    },
+    {
+      "name": "anonymous GET /static/campus.css",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 32.8
+    },
+    {
+      "name": "anonymous GET /.env",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 66.2
+    },
+    {
+      "name": "anonymous GET /.git/HEAD",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 67.1
+    },
+    {
+      "name": "anonymous GET /compose.yaml",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 67.2
+    },
+    {
+      "name": "anonymous GET /Dockerfile",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 67.7
+    },
+    {
+      "name": "anonymous GET /docs",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 51.7
+    },
+    {
+      "name": "anonymous GET /redoc",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 69.3
+    },
+    {
+      "name": "anonymous GET /openapi.json",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 66.7
+    },
+    {
+      "name": "anonymous GET /api/me",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 67.9
+    },
+    {
+      "name": "anonymous private API response /api/me",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/grades",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 69.4
+    },
+    {
+      "name": "anonymous private API response /api/grades",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/schedule",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 69.8
+    },
+    {
+      "name": "anonymous private API response /api/schedule",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/requests",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 69.6
+    },
+    {
+      "name": "anonymous private API response /api/requests",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/notifications",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 71.0
+    },
+    {
+      "name": "anonymous private API response /api/notifications",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/staff/requests",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 69.2
+    },
+    {
+      "name": "anonymous private API response /api/staff/requests",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/learning/notes",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 70.2
+    },
+    {
+      "name": "anonymous private API response /api/learning/notes",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/services/finance",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 68.8
+    },
+    {
+      "name": "anonymous private API response /api/services/finance",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/drafts/export",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 70.8
+    },
+    {
+      "name": "anonymous private API response /api/drafts/export",
+      "ok": true
+    },
+    {
+      "name": "anonymous GET /api/me",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 68.9
+    },
+    {
+      "name": "anonymous private API response /api/me",
+      "ok": true
+    },
+    {
+      "name": "no cross-origin permission to read private API",
+      "ok": true
+    },
+    {
+      "name": "anonymous POST /api/login",
+      "ok": true,
+      "status": 413,
+      "expected_status": 413,
+      "elapsed_ms": 73.6
+    },
+    {
+      "name": "anonymous private API response /api/login",
+      "ok": true
+    },
+    {
+      "name": "alina POST /api/login",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 127.8
+    },
+    {
+      "name": "alina private API response /api/login",
+      "ok": true
+    },
+    {
+      "name": "alina secure session attributes",
+      "ok": true
+    },
+    {
+      "name": "mark POST /api/login",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 110.9
+    },
+    {
+      "name": "mark private API response /api/login",
+      "ok": true
+    },
+    {
+      "name": "mark secure session attributes",
+      "ok": true
+    },
+    {
+      "name": "staff POST /api/login",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 112.1
+    },
+    {
+      "name": "staff private API response /api/login",
+      "ok": true
+    },
+    {
+      "name": "staff secure session attributes",
+      "ok": true
+    },
+    {
+      "name": "three distinct fictional actors",
+      "ok": true
+    },
+    {
+      "name": "student group isolation",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/dashboard",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 100.2
+    },
+    {
+      "name": "alina private API response /api/dashboard",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/schedule",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 34.0
+    },
+    {
+      "name": "alina private API response /api/schedule",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/grades",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 74.4
+    },
+    {
+      "name": "alina private API response /api/grades",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/deadlines",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 74.0
+    },
+    {
+      "name": "alina private API response /api/deadlines",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/requests/types",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 31.5
+    },
+    {
+      "name": "alina private API response /api/requests/types",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/requests?paginated=true&limit=3",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 41.7
+    },
+    {
+      "name": "alina private API response /api/requests?paginated=true&limit=3",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/notifications?paginated=true&limit=3",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 55.2
+    },
+    {
+      "name": "alina private API response /api/notifications?paginated=true&limit=3",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/courses",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 39.7
+    },
+    {
+      "name": "alina private API response /api/learning/courses",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/assignments",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 34.8
+    },
+    {
+      "name": "alina private API response /api/learning/assignments",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/exams",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 34.1
+    },
+    {
+      "name": "alina private API response /api/learning/exams",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/attendance",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 34.6
+    },
+    {
+      "name": "alina private API response /api/learning/attendance",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/tasks",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 75.7
+    },
+    {
+      "name": "alina private API response /api/learning/tasks",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/notes",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 76.0
+    },
+    {
+      "name": "alina private API response /api/learning/notes",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/flashcards",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 79.4
+    },
+    {
+      "name": "alina private API response /api/learning/flashcards",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/quizzes",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 76.9
+    },
+    {
+      "name": "alina private API response /api/learning/quizzes",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/quiz-attempts",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 75.5
+    },
+    {
+      "name": "alina private API response /api/learning/quiz-attempts",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/focus-sessions",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 79.5
+    },
+    {
+      "name": "alina private API response /api/learning/focus-sessions",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/consultations",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 79.1
+    },
+    {
+      "name": "alina private API response /api/services/consultations",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/bookings",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 82.5
+    },
+    {
+      "name": "alina private API response /api/services/bookings",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/tickets",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 81.9
+    },
+    {
+      "name": "alina private API response /api/services/tickets",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/library",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 39.4
+    },
+    {
+      "name": "alina private API response /api/services/library",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/loans",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 77.6
+    },
+    {
+      "name": "alina private API response /api/services/loans",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/events",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 42.6
+    },
+    {
+      "name": "alina private API response /api/services/events",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/registrations",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 60.3
+    },
+    {
+      "name": "alina private API response /api/services/registrations",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/finance",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 79.0
+    },
+    {
+      "name": "alina private API response /api/services/finance",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/contacts",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 34.3
+    },
+    {
+      "name": "alina private API response /api/services/contacts",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/knowledge",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 31.8
+    },
+    {
+      "name": "alina private API response /api/services/knowledge",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/services/preferences",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 52.6
+    },
+    {
+      "name": "alina private API response /api/services/preferences",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/campus/portfolio",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 76.9
+    },
+    {
+      "name": "alina private API response /api/campus/portfolio",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/campus/search?q=atlas",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 83.7
+    },
+    {
+      "name": "alina private API response /api/campus/search?q=atlas",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/account/sessions",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 73.5
+    },
+    {
+      "name": "alina private API response /api/account/sessions",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/drafts/export",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 72.7
+    },
+    {
+      "name": "alina private API response /api/drafts/export",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/staff/requests?paginated=true&limit=3",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 72.5
+    },
+    {
+      "name": "alina private API response /api/staff/requests?paginated=true&limit=3",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/staff/overview",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 72.1
+    },
+    {
+      "name": "alina private API response /api/staff/overview",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/staff/tickets",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 72.1
+    },
+    {
+      "name": "alina private API response /api/staff/tickets",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/staff/consultations",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 75.0
+    },
+    {
+      "name": "alina private API response /api/staff/consultations",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/staff/events",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 73.1
+    },
+    {
+      "name": "alina private API response /api/staff/events",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/dashboard",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 44.0
+    },
+    {
+      "name": "mark private API response /api/dashboard",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/schedule",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 34.0
+    },
+    {
+      "name": "mark private API response /api/schedule",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/grades",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 82.4
+    },
+    {
+      "name": "mark private API response /api/grades",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/deadlines",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 74.1
+    },
+    {
+      "name": "mark private API response /api/deadlines",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/requests/types",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 31.8
+    },
+    {
+      "name": "mark private API response /api/requests/types",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/requests?paginated=true&limit=3",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 76.0
+    },
+    {
+      "name": "mark private API response /api/requests?paginated=true&limit=3",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/notifications?paginated=true&limit=3",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 84.9
+    },
+    {
+      "name": "mark private API response /api/notifications?paginated=true&limit=3",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/courses",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 37.4
+    },
+    {
+      "name": "mark private API response /api/learning/courses",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/assignments",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 34.0
+    },
+    {
+      "name": "mark private API response /api/learning/assignments",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/exams",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 33.1
+    },
+    {
+      "name": "mark private API response /api/learning/exams",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/attendance",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 33.5
+    },
+    {
+      "name": "mark private API response /api/learning/attendance",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/tasks",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 74.6
+    },
+    {
+      "name": "mark private API response /api/learning/tasks",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/notes",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 75.2
+    },
+    {
+      "name": "mark private API response /api/learning/notes",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/flashcards",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 76.5
+    },
+    {
+      "name": "mark private API response /api/learning/flashcards",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/quizzes",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 73.5
+    },
+    {
+      "name": "mark private API response /api/learning/quizzes",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/quiz-attempts",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 73.1
+    },
+    {
+      "name": "mark private API response /api/learning/quiz-attempts",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/focus-sessions",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 77.1
+    },
+    {
+      "name": "mark private API response /api/learning/focus-sessions",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/consultations",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 48.6
+    },
+    {
+      "name": "mark private API response /api/services/consultations",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/bookings",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 78.1
+    },
+    {
+      "name": "mark private API response /api/services/bookings",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/tickets",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 73.7
+    },
+    {
+      "name": "mark private API response /api/services/tickets",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/library",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 35.5
+    },
+    {
+      "name": "mark private API response /api/services/library",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/loans",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 74.1
+    },
+    {
+      "name": "mark private API response /api/services/loans",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/events",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 36.7
+    },
+    {
+      "name": "mark private API response /api/services/events",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/registrations",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 76.3
+    },
+    {
+      "name": "mark private API response /api/services/registrations",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/finance",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 53.2
+    },
+    {
+      "name": "mark private API response /api/services/finance",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/contacts",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 34.9
+    },
+    {
+      "name": "mark private API response /api/services/contacts",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/knowledge",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 36.4
+    },
+    {
+      "name": "mark private API response /api/services/knowledge",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/services/preferences",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 76.2
+    },
+    {
+      "name": "mark private API response /api/services/preferences",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/campus/portfolio",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 75.3
+    },
+    {
+      "name": "mark private API response /api/campus/portfolio",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/campus/search?q=atlas",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 78.9
+    },
+    {
+      "name": "mark private API response /api/campus/search?q=atlas",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/account/sessions",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 75.2
+    },
+    {
+      "name": "mark private API response /api/account/sessions",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/drafts/export",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 72.9
+    },
+    {
+      "name": "mark private API response /api/drafts/export",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/staff/requests?paginated=true&limit=3",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 74.1
+    },
+    {
+      "name": "mark private API response /api/staff/requests?paginated=true&limit=3",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/staff/overview",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 73.0
+    },
+    {
+      "name": "mark private API response /api/staff/overview",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/staff/tickets",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 73.4
+    },
+    {
+      "name": "mark private API response /api/staff/tickets",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/staff/consultations",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 72.9
+    },
+    {
+      "name": "mark private API response /api/staff/consultations",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/staff/events",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 73.3
+    },
+    {
+      "name": "mark private API response /api/staff/events",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/staff/requests?paginated=true&limit=3",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 48.2
+    },
+    {
+      "name": "staff private API response /api/staff/requests?paginated=true&limit=3",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/staff/overview",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 81.2
+    },
+    {
+      "name": "staff private API response /api/staff/overview",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/staff/tickets",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 49.9
+    },
+    {
+      "name": "staff private API response /api/staff/tickets",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/staff/consultations",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 46.2
+    },
+    {
+      "name": "staff private API response /api/staff/consultations",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/staff/events",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 38.0
+    },
+    {
+      "name": "staff private API response /api/staff/events",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/grades",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 73.3
+    },
+    {
+      "name": "staff private API response /api/grades",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/schedule",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 72.9
+    },
+    {
+      "name": "staff private API response /api/schedule",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/requests",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 74.3
+    },
+    {
+      "name": "staff private API response /api/requests",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/notifications",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 73.9
+    },
+    {
+      "name": "staff private API response /api/notifications",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/learning/notes",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 72.9
+    },
+    {
+      "name": "staff private API response /api/learning/notes",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/services/finance",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 71.1
+    },
+    {
+      "name": "staff private API response /api/services/finance",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/me",
+      "ok": true,
+      "status": 409,
+      "expected_status": 409,
+      "elapsed_ms": 70.6
+    },
+    {
+      "name": "alina private API response /api/me",
+      "ok": true
+    },
+    {
+      "name": "alina POST /api/requests",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 70.2
+    },
+    {
+      "name": "alina private API response /api/requests",
+      "ok": true
+    },
+    {
+      "name": "alina POST /api/requests",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 67.7
+    },
+    {
+      "name": "alina private API response /api/requests",
+      "ok": true
+    },
+    {
+      "name": "alina POST /api/requests",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 67.9
+    },
+    {
+      "name": "alina private API response /api/requests",
+      "ok": true
+    },
+    {
+      "name": "alina POST /api/requests",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 66.7
+    },
+    {
+      "name": "alina private API response /api/requests",
+      "ok": true
+    },
+    {
+      "name": "alina POST /api/notifications/read-all",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 67.0
+    },
+    {
+      "name": "alina private API response /api/notifications/read-all",
+      "ok": true
+    },
+    {
+      "name": "alina POST /api/requests",
+      "ok": true,
+      "status": 422,
+      "expected_status": 422,
+      "elapsed_ms": 96.3
+    },
+    {
+      "name": "alina private API response /api/requests",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/requests?paginated=true&limit=1",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 78.6
+    },
+    {
+      "name": "alina private API response /api/requests?paginated=true&limit=1",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/requests/8",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 75.0
+    },
+    {
+      "name": "mark private API response /api/requests/8",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/requests/8/document",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 73.0
+    },
+    {
+      "name": "mark private API response /api/requests/8/document",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/notifications?paginated=true&limit=1",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 76.6
+    },
+    {
+      "name": "alina private API response /api/notifications?paginated=true&limit=1",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/notifications/28",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 46.0
+    },
+    {
+      "name": "mark private API response /api/notifications/28",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/courses",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 37.6
+    },
+    {
+      "name": "alina private API response /api/learning/courses",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/courses/1",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 74.0
+    },
+    {
+      "name": "mark private API response /api/learning/courses/1",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/requests?paginated=true&limit=1",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 132.3
+    },
+    {
+      "name": "mark private API response /api/requests?paginated=true&limit=1",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/requests/3",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 72.6
+    },
+    {
+      "name": "alina private API response /api/requests/3",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/requests/3/document",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 73.8
+    },
+    {
+      "name": "alina private API response /api/requests/3/document",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/notifications?paginated=true&limit=1",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 78.7
+    },
+    {
+      "name": "mark private API response /api/notifications?paginated=true&limit=1",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/notifications/5",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 73.3
+    },
+    {
+      "name": "alina private API response /api/notifications/5",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/learning/courses",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 37.3
+    },
+    {
+      "name": "mark private API response /api/learning/courses",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/learning/courses/6",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 72.5
+    },
+    {
+      "name": "alina private API response /api/learning/courses/6",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/schedule/export",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 36.3
+    },
+    {
+      "name": "alina private API response /api/schedule/export",
+      "ok": true
+    },
+    {
+      "name": "calendar export",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/campus/portfolio/export",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 73.0
+    },
+    {
+      "name": "alina private API response /api/campus/portfolio/export",
+      "ok": true
+    },
+    {
+      "name": "portfolio export declares fictional data",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/requests/4",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 37.9
+    },
+    {
+      "name": "alina private API response /api/requests/4",
+      "ok": true
+    },
+    {
+      "name": "previously saved request is ready",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/requests/4",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 73.5
+    },
+    {
+      "name": "mark private API response /api/requests/4",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/requests/4/document",
+      "ok": true,
+      "status": 404,
+      "expected_status": 404,
+      "elapsed_ms": 74.3
+    },
+    {
+      "name": "mark private API response /api/requests/4/document",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/requests/4/document",
+      "ok": true,
+      "status": 403,
+      "expected_status": 403,
+      "elapsed_ms": 72.8
+    },
+    {
+      "name": "staff private API response /api/requests/4/document",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/requests/4/document",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 33.6
+    },
+    {
+      "name": "alina private API response /api/requests/4/document",
+      "ok": true
+    },
+    {
+      "name": "document is a fictional downloadable HTML sample",
+      "ok": true
+    },
+    {
+      "name": "downloaded document blocks active content",
+      "ok": true
+    },
+    {
+      "name": "document content survived restart or restore",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/drafts/acceptance:9f2862bb0b984c4083a3e01811560208",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 75.3
+    },
+    {
+      "name": "alina private API response /api/drafts/acceptance:9f2862bb0b984c4083a3e01811560208",
+      "ok": true
+    },
+    {
+      "name": "saved isolated draft survived restart or restore",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/drafts/acceptance:9f2862bb0b984c4083a3e01811560208",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 74.0
+    },
+    {
+      "name": "mark private API response /api/drafts/acceptance:9f2862bb0b984c4083a3e01811560208",
+      "ok": true
+    },
+    {
+      "name": "saved isolated draft remains private",
+      "ok": true
+    },
+    {
+      "name": "alina POST /api/logout",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 74.8
+    },
+    {
+      "name": "alina private API response /api/logout",
+      "ok": true
+    },
+    {
+      "name": "alina secure session attributes",
+      "ok": true
+    },
+    {
+      "name": "alina GET /api/me",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 69.5
+    },
+    {
+      "name": "alina private API response /api/me",
+      "ok": true
+    },
+    {
+      "name": "mark POST /api/logout",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 72.9
+    },
+    {
+      "name": "mark private API response /api/logout",
+      "ok": true
+    },
+    {
+      "name": "mark secure session attributes",
+      "ok": true
+    },
+    {
+      "name": "mark GET /api/me",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 72.2
+    },
+    {
+      "name": "mark private API response /api/me",
+      "ok": true
+    },
+    {
+      "name": "staff POST /api/logout",
+      "ok": true,
+      "status": 200,
+      "expected_status": 200,
+      "elapsed_ms": 73.9
+    },
+    {
+      "name": "staff private API response /api/logout",
+      "ok": true
+    },
+    {
+      "name": "staff secure session attributes",
+      "ok": true
+    },
+    {
+      "name": "staff GET /api/me",
+      "ok": true,
+      "status": 401,
+      "expected_status": 401,
+      "elapsed_ms": 70.9
+    },
+    {
+      "name": "staff private API response /api/me",
+      "ok": true
+    }
+  ],
+  "ok": true,
+  "release": {
+    "version": "3.2.1",
+    "build": "c273de52957f023e"
+  },
+  "persistence": {
+    "request_id": 4,
+    "status": "ready",
+    "version": 5,
+    "history_events": 5,
+    "document_content_sha256": "b476b23ef4f413b9f33ec9f30884d9de831ebde915dfa7cfc5e2d18d23131545",
+    "request_sha256": "585ec5596502478d788820d82484a905f67eee5966940cdf07bb5270e386f9d4"
+  },
+  "finished_at_utc": "2026-11-10T22:25:05.472965+00:00",
+  "checks_passed": 343,
+  "checks_total": 343
+}

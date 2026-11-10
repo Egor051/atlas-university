@@ -1,0 +1,326 @@
+{
+  "at_utc": "2026-11-10T22:22:28.338465+00:00",
+  "scope": "Fresh custom-format dump restored transactionally into a NEW database; running atlas was not overwritten or deleted.",
+  "backup_name": "atlas-20261110T222226Z-xXSUhE.dump",
+  "restore_database": "atlas_restore_20261110222226",
+  "source_stable_during_backup": true,
+  "all_tables_match": true,
+  "table_count": 38,
+  "row_count": 459,
+  "source_tables": {
+    "campus_events": {
+      "rows": 28,
+      "md5": "d71cad35c92447554f4a3ffa6f755a4f"
+    },
+    "consultation_bookings": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "consultation_slots": {
+      "rows": 138,
+      "md5": "df3b65fa404e137fb1165f0caa505f75"
+    },
+    "deadlines": {
+      "rows": 10,
+      "md5": "637da1b15320079bc76cdee12eb2ba68"
+    },
+    "document_requests": {
+      "rows": 8,
+      "md5": "186e541c6ca6d7c25cae0646295d41b4"
+    },
+    "event_registrations": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "finance_entries": {
+      "rows": 8,
+      "md5": "7633e236134df289494854a644ebf43f"
+    },
+    "grades": {
+      "rows": 10,
+      "md5": "89adc89a00dff5141cc39f716bc786e2"
+    },
+    "learning_attendance": {
+      "rows": 30,
+      "md5": "3da7daced84d320f1551a183769d8fe7"
+    },
+    "learning_course_modules": {
+      "rows": 40,
+      "md5": "a1fc08b3e68ff6b3feb7ddc02f931723"
+    },
+    "learning_courses": {
+      "rows": 10,
+      "md5": "7f9e51117bac3bed1407ac23b01302a2"
+    },
+    "learning_flashcards": {
+      "rows": 4,
+      "md5": "4ac7a052fa9b4456c83abcc66c517dd1"
+    },
+    "learning_focus_sessions": {
+      "rows": 2,
+      "md5": "a0069667462afd10763aedefcb767f54"
+    },
+    "learning_notes": {
+      "rows": 2,
+      "md5": "7bcb8cf1799830ebf93f802f76a2d284"
+    },
+    "learning_quiz_attempts": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "learning_quizzes": {
+      "rows": 4,
+      "md5": "589b0aed87c7e541aacf494591f7c392"
+    },
+    "learning_seeds": {
+      "rows": 2,
+      "md5": "a1997780b1f8c2881e707f00105f465c"
+    },
+    "learning_submissions": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "learning_tasks": {
+      "rows": 4,
+      "md5": "a65fbcbcb8cd56edb7eae1a320038a3b"
+    },
+    "lesson_changes": {
+      "rows": 25,
+      "md5": "381c120b57cbda3f0113ea53a98fd1a3"
+    },
+    "lessons": {
+      "rows": 25,
+      "md5": "c49976df7528d0c047beaf960e41217b"
+    },
+    "library_books": {
+      "rows": 8,
+      "md5": "6cf52dfe7b2c04ae5a9983e3d5da26a2"
+    },
+    "library_loans": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "login_attempts": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "login_sessions": {
+      "rows": 7,
+      "md5": "d8d159d99b98ab994ca2b93035163768"
+    },
+    "notifications": {
+      "rows": 28,
+      "md5": "fd74e8414922054efde581baa802ad4e"
+    },
+    "personal_drafts": {
+      "rows": 1,
+      "md5": "4e0e6998023d695d40ae517e38d88849"
+    },
+    "portfolio_items": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "request_events": {
+      "rows": 24,
+      "md5": "a4553a52be9a508986a61823ab57e6a4"
+    },
+    "request_followup_receipts": {
+      "rows": 1,
+      "md5": "4c4551cc29448f890ab109f5d2068ba9"
+    },
+    "request_idempotency": {
+      "rows": 5,
+      "md5": "1c501f0b68a6bce3dfacef1429624e13"
+    },
+    "schema_migrations": {
+      "rows": 5,
+      "md5": "95edad2fc93870a5ad5c8685cf7a7b39"
+    },
+    "service_idempotency": {
+      "rows": 1,
+      "md5": "b67a2728c4339c36d00169c47fe3a5f9"
+    },
+    "student_preferences": {
+      "rows": 2,
+      "md5": "b562b0c440b5f33da73e424f43b6019e"
+    },
+    "support_tickets": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "ticket_messages": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "users": {
+      "rows": 3,
+      "md5": "9f66e51aef1a05ccac30cc29da9d4586"
+    },
+    "write_quotas": {
+      "rows": 24,
+      "md5": "041f0d0262c9f3ca3e1ea31d8da627b1"
+    }
+  },
+  "restored_tables": {
+    "campus_events": {
+      "rows": 28,
+      "md5": "d71cad35c92447554f4a3ffa6f755a4f"
+    },
+    "consultation_bookings": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "consultation_slots": {
+      "rows": 138,
+      "md5": "df3b65fa404e137fb1165f0caa505f75"
+    },
+    "deadlines": {
+      "rows": 10,
+      "md5": "637da1b15320079bc76cdee12eb2ba68"
+    },
+    "document_requests": {
+      "rows": 8,
+      "md5": "186e541c6ca6d7c25cae0646295d41b4"
+    },
+    "event_registrations": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "finance_entries": {
+      "rows": 8,
+      "md5": "7633e236134df289494854a644ebf43f"
+    },
+    "grades": {
+      "rows": 10,
+      "md5": "89adc89a00dff5141cc39f716bc786e2"
+    },
+    "learning_attendance": {
+      "rows": 30,
+      "md5": "3da7daced84d320f1551a183769d8fe7"
+    },
+    "learning_course_modules": {
+      "rows": 40,
+      "md5": "a1fc08b3e68ff6b3feb7ddc02f931723"
+    },
+    "learning_courses": {
+      "rows": 10,
+      "md5": "7f9e51117bac3bed1407ac23b01302a2"
+    },
+    "learning_flashcards": {
+      "rows": 4,
+      "md5": "4ac7a052fa9b4456c83abcc66c517dd1"
+    },
+    "learning_focus_sessions": {
+      "rows": 2,
+      "md5": "a0069667462afd10763aedefcb767f54"
+    },
+    "learning_notes": {
+      "rows": 2,
+      "md5": "7bcb8cf1799830ebf93f802f76a2d284"
+    },
+    "learning_quiz_attempts": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "learning_quizzes": {
+      "rows": 4,
+      "md5": "589b0aed87c7e541aacf494591f7c392"
+    },
+    "learning_seeds": {
+      "rows": 2,
+      "md5": "a1997780b1f8c2881e707f00105f465c"
+    },
+    "learning_submissions": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "learning_tasks": {
+      "rows": 4,
+      "md5": "a65fbcbcb8cd56edb7eae1a320038a3b"
+    },
+    "lesson_changes": {
+      "rows": 25,
+      "md5": "381c120b57cbda3f0113ea53a98fd1a3"
+    },
+    "lessons": {
+      "rows": 25,
+      "md5": "c49976df7528d0c047beaf960e41217b"
+    },
+    "library_books": {
+      "rows": 8,
+      "md5": "6cf52dfe7b2c04ae5a9983e3d5da26a2"
+    },
+    "library_loans": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "login_attempts": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "login_sessions": {
+      "rows": 7,
+      "md5": "d8d159d99b98ab994ca2b93035163768"
+    },
+    "notifications": {
+      "rows": 28,
+      "md5": "fd74e8414922054efde581baa802ad4e"
+    },
+    "personal_drafts": {
+      "rows": 1,
+      "md5": "4e0e6998023d695d40ae517e38d88849"
+    },
+    "portfolio_items": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "request_events": {
+      "rows": 24,
+      "md5": "a4553a52be9a508986a61823ab57e6a4"
+    },
+    "request_followup_receipts": {
+      "rows": 1,
+      "md5": "4c4551cc29448f890ab109f5d2068ba9"
+    },
+    "request_idempotency": {
+      "rows": 5,
+      "md5": "1c501f0b68a6bce3dfacef1429624e13"
+    },
+    "schema_migrations": {
+      "rows": 5,
+      "md5": "95edad2fc93870a5ad5c8685cf7a7b39"
+    },
+    "service_idempotency": {
+      "rows": 1,
+      "md5": "b67a2728c4339c36d00169c47fe3a5f9"
+    },
+    "student_preferences": {
+      "rows": 2,
+      "md5": "b562b0c440b5f33da73e424f43b6019e"
+    },
+    "support_tickets": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "ticket_messages": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "users": {
+      "rows": 3,
+      "md5": "9f66e51aef1a05ccac30cc29da9d4586"
+    },
+    "write_quotas": {
+      "rows": 24,
+      "md5": "041f0d0262c9f3ca3e1ea31d8da627b1"
+    }
+  },
+  "application_role": {
+    "name": "atlas_app",
+    "superuser": false,
+    "createdb": false,
+    "createrole": false,
+    "replication": false
+  },
+  "status": "PASS"
+}

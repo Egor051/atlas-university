@@ -21,11 +21,13 @@ import uuid
 from playwright.sync_api import expect, sync_playwright
 
 from improvement_crossbrowser import STAFF, STUDENT
-from improvement_runtime import browser_login, browser_visit, geometry
+from improvement_runtime import ROOT, browser_login, browser_visit, geometry
 
 
 WIDTHS = [(360, 800), (390, 844), (1440, 1000)]
 KEY_SCREENS = {"home", "schedule", "requests", "staff"}
+WEBKIT_CAPTURE_STYLE_MESSAGE = ("Refused to apply a stylesheet because its hash, its nonce, "
+                                "or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.")
 
 
 def now():
@@ -53,6 +55,7 @@ class Acceptance:
     def __init__(self, args):
         self.args = args
         self.token = uuid.uuid4().hex[:12]
+        self.capturing = set()
         self.report = {
             "started_at_utc": now(), "url": args.url,
             "scope": "Actual public HTTPS pages, real browser engines, no mocked responses; viewport emulation only.",
@@ -102,9 +105,15 @@ class Acceptance:
             # Browser resource diagnostics for that expected response are kept,
             # but are not application errors. IDOR probes use context.request.
             expected = (urlsplit(url).path == "/api/me" and "401" in message.text)
+            # Playwright's WebKit snapshotter appends an empty inline `body {}`
+            # style to sync animations, even with caret=initial/animations=allow.
+            # Keep this diagnostic and classify it only inside the screenshot call.
+            capture_style = (engine == "webkit" and page in self.capturing and url == safe_url(page.url)
+                             and message.text == WEBKIT_CAPTURE_STYLE_MESSAGE)
             item["expected_initial_unauthenticated_401"] = expected
+            item["playwright_webkit_capture_style"] = capture_style
             self.report["console_errors"].append(item)
-            if not expected:
+            if not expected and not capture_style:
                 self.report["unexpected_console_errors"].append(item)
 
         page.on("pageerror", lambda error: self.report["browser_errors"].append({
@@ -117,12 +126,20 @@ class Acceptance:
             "failure": safe_text(request.failure)}))
 
     def capture(self, page, engine, actor, name):
+        if self.args.no_screenshots:
+            return
         width = page.viewport_size["width"]
         path = self.args.screenshots / f"{self.token}-{engine}-{width}-{actor}-{name}.png"
-        page.screenshot(path=str(path), full_page=not bool(page.locator(".modal").count()), animations="disabled")
+        self.capturing.add(page)
+        try:
+            page.screenshot(path=str(path), full_page=not bool(page.locator(".modal").count()),
+                            animations="allow", caret="initial")
+        finally:
+            self.capturing.discard(page)
+        relative_path = path.resolve().relative_to(ROOT).as_posix() if path.resolve().is_relative_to(ROOT) else path.name
         self.report["screenshots"].append({
             "engine": engine, "actor": actor, "width": width, "screen": name,
-            "path": str(path.resolve()), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
+            "path": relative_path, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
 
     def layout(self, page, engine, actor, route):
         result = geometry(page)
@@ -329,6 +346,7 @@ def parse_args():
     parser.add_argument("--url", required=True, help="Already deployed HTTPS origin; no local server is launched.")
     parser.add_argument("--report", required=True, type=Path, help="Credential-free JSON evidence path.")
     parser.add_argument("--screenshots", required=True, type=Path, help="Directory for actual public-page PNGs.")
+    parser.add_argument("--no-screenshots", action="store_true", help="Run independently of screenshot instrumentation.")
     parser.add_argument("--engines", default="chromium,firefox,webkit", help="Comma-separated installed browser engines.")
     parser.add_argument("--expect-build", help="Expected build identifier from the deployment receipt.")
     parser.add_argument("--write-demo", action="store_true", help="Create exactly one labelled fictional request per engine.")
