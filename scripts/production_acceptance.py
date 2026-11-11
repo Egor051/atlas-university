@@ -1,14 +1,13 @@
-"""Bounded acceptance of the public fictional ATLAS demo over verified HTTPS.
+"""Bounded acceptance of the public HTTPS demo or a disposable local server.
 
-The default mode signs in but does not change application records. Negative POST
-probes must be rejected before a domain write. --write-demo explicitly creates
-one labelled fictional request and one isolated draft; existing records are not
-changed or deleted. --request-id verifies a previously prepared ready request.
+Use --isolated --write-demo for record writes and --request-id to verify an
+existing ready request. Public checks only read application records.
 No passwords, session cookies, response bodies or database URLs enter the report.
 """
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 import hashlib
 import json
 import re
@@ -128,8 +127,9 @@ class Client:
         if cookie.startswith("atlas_session="):
             self.cookie = cookie.split(";", 1)[0]
             lower = cookie.lower()
-            self.report.check(f"{self.label} secure session attributes",
-                              all(item in lower for item in ("; httponly", "; secure", "; samesite=lax")))
+            self.report.check(f"{self.label} session attributes",
+                              all(item in lower for item in ("; httponly", "; samesite=lax"))
+                              and (self.base.startswith("http://127.0.0.1:") or "; secure" in lower))
         data = json.loads(raw) if "json" in response_headers.get("Content-Type", "") else raw
         if return_headers:
             # Callers consume headers in memory; they are never included in JSON.
@@ -170,11 +170,14 @@ def verify_ready_request(alina, mark, staff, request_id, report, expected_sha=No
 
 
 def run(args, report):
+    if args.write_demo and (not args.isolated or urlsplit(args.url).hostname != "127.0.0.1"):
+        raise AcceptanceFailure("The write workflow requires the runner's disposable server")
     context = ssl.create_default_context(cafile=args.ca)
     public, alina, mark, staff = [Client(args.url, report, context, name)
                                    for name in ("anonymous", "alina", "mark", "staff")]
     health = public.call("/api/health")
-    report.check("release version", health["ok"] is True and health["version"] == "3.2.1")
+    report.check("release version", health["ok"] is True and bool(health["version"])
+                 and (not args.expect_version or health["version"] == args.expect_version))
     report.data["release"] = {key: health.get(key) for key in ("version", "build")}
     if args.expect_build:
         report.check("source build identity", health.get("build") == args.expect_build)
@@ -185,7 +188,7 @@ def run(args, report):
     report.check("public shell declares the concept", "концепт" in shell.decode("utf-8").lower())
     report.check("security response headers", headers.get("X-Content-Type-Options") == "nosniff"
                  and headers.get("X-Frame-Options") == "DENY"
-                 and "max-age=" in headers.get("Strict-Transport-Security", "")
+                 and (args.isolated or "max-age=" in headers.get("Strict-Transport-Security", ""))
                  and "frame-ancestors 'none'" in headers.get("Content-Security-Policy", ""))
     for page in PAGES:
         public.call("/app/" + page)
@@ -199,7 +202,8 @@ def run(args, report):
     _, cross_origin_headers = public.call("/api/me", headers={"Origin": "https://untrusted.invalid"},
                                           expected=401, return_headers=True)
     report.check("no cross-origin permission to read private API", not cross_origin_headers.get("Access-Control-Allow-Origin"))
-    public.call("/api/login", {"login": "acceptance.invalid", "password": "x" * 40000}, expected=413)
+    if args.isolated:
+        public.call("/api/login", {"login": "acceptance.invalid", "password": "x" * 40000}, expected=413)
 
     # Three sequential correct logins; no brute-force or throttle saturation.
     users = [alina.login(STUDENTS[0]), mark.login(STUDENTS[1]), staff.login(STAFF)]
@@ -217,12 +221,13 @@ def run(args, report):
                  "/api/learning/notes", "/api/services/finance"):
         staff.call(path, expected=403)
     alina.call("/api/me", headers={"X-ATLAS-User": str(users[1]["id"])}, expected=409)
-    for method_headers in ({"Origin": "https://untrusted.invalid"}, {"Sec-Fetch-Site": "same-site"},
-                           {"Sec-Fetch-Site": "cross-site"}):
-        alina.call("/api/requests", {"type": "study"}, headers=method_headers, expected=403)
-    alina.call("/api/requests", {"type": "study"}, csrf=False, expected=403)
-    alina.call("/api/notifications/read-all", {}, csrf=False, expected=403)
-    alina.call("/api/requests", {"type": "study", "student_id": users[1]["id"]}, expected=422)
+    if args.isolated:
+        for method_headers in ({"Origin": "https://untrusted.invalid"}, {"Sec-Fetch-Site": "same-site"},
+                               {"Sec-Fetch-Site": "cross-site"}):
+            alina.call("/api/requests", {"type": "study"}, headers=method_headers, expected=403)
+        alina.call("/api/requests", {"type": "study"}, csrf=False, expected=403)
+        alina.call("/api/notifications/read-all", {}, csrf=False, expected=403)
+        alina.call("/api/requests", {"type": "study", "student_id": users[1]["id"]}, expected=422)
     for owner, other in ((alina, mark), (mark, alina)):
         own = owner.call("/api/requests?paginated=true&limit=1")["items"]
         if own:
@@ -240,10 +245,10 @@ def run(args, report):
     report.check("portfolio export declares fictional data", "ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ" in portfolio.decode())
 
     if args.write_demo:
-        marker = "Production acceptance " + uuid.uuid4().hex
+        marker = "Локальная приёмка API " + uuid.uuid4().hex
         request_key = uuid.uuid4().hex
         body = {"type": "study", "comment": marker + ": fictional data only.",
-                "details": {"purpose": "Вымышленная проверка production", "copies": "1"}}
+                "details": {"purpose": "Вымышленная заявка для локальной приёмки", "copies": "1"}}
         key_headers = {"Idempotency-Key": request_key}
         created = alina.call("/api/requests", body, headers=key_headers, expected=201)
         rid = created["id"]
@@ -297,20 +302,26 @@ def run(args, report):
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--url", default="https://atlas-university.ru")
+    target = parser.add_mutually_exclusive_group()
+    target.add_argument("--url")
+    target.add_argument("--isolated", action="store_true", help="Start a loopback server with a disposable database.")
     parser.add_argument("--ca", help="Optional explicit trusted CA file; certificate validation is never disabled.")
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--write-demo", action="store_true", help="Create one labelled fictional request and isolated draft.")
+    mode.add_argument("--write-demo", action="store_true", help="Exercise request writes on the disposable server.")
     mode.add_argument("--request-id", type=int, help="Verify a previously prepared ready request; no domain writes.")
     parser.add_argument("--draft-name", help="Optional previously created isolated acceptance draft.")
     parser.add_argument("--expected-document-sha", help="Normalized document content SHA-256 from the earlier report.")
     parser.add_argument("--expect-build", help="Expected public /api/health build identifier.")
+    parser.add_argument("--expect-version", help="Expected version from /api/health.")
     parser.add_argument("--report", type=Path, help="Write a credential-free JSON report, including failures.")
     args = parser.parse_args()
-    parsed = urlsplit(args.url)
-    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path not in {"", "/"}:
-        parser.error("--url must be one HTTPS origin without credentials or path")
-    args.url = args.url.rstrip("/")
+    if args.write_demo and not args.isolated:
+        parser.error("--write-demo requires --isolated and cannot use --url")
+    if not args.isolated:
+        args.url = (args.url or "https://atlas-university.ru").rstrip("/")
+        parsed = urlsplit(args.url)
+        if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path:
+            parser.error("--url must be one HTTPS origin without credentials or path")
     if args.request_id is not None and args.request_id < 1:
         parser.error("--request-id must be positive")
     if args.expected_document_sha and not re.fullmatch(r"[a-f0-9]{64}", args.expected_document_sha):
@@ -322,8 +333,7 @@ def parse_args():
     return args
 
 
-def main():
-    args = parse_args()
+def report_run(args):
     mode = "write-labelled-fictional-records" if args.write_demo else "verify-persistence" if args.request_id else "read-only-domain-records"
     report = Reporter(args.url, mode)
     try:
@@ -341,6 +351,15 @@ def main():
         args.report.write_text(json.dumps(report.data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report.data, ensure_ascii=False))
     return 0 if report.data["ok"] else 1
+
+
+def main():
+    args = parse_args()
+    from improvement_runtime import isolated_server
+    with isolated_server() if args.isolated else nullcontext() as server:
+        if server:
+            args.url = server["base"]
+        return report_run(args)
 
 
 if __name__ == "__main__":

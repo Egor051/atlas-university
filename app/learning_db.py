@@ -110,6 +110,7 @@ class Attendance(Base):
     day: Mapped[date] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(20))
     note: Mapped[str] = mapped_column(String(300), default='')
+    version: Mapped[int] = mapped_column(Integer, default=1, server_default='1')
 
 
 class PersonalTask(Base):

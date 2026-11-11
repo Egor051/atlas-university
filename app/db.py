@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone, date
 from sqlalchemy import create_engine, ForeignKey, Integer, String, DateTime, Date, Boolean, Text, UniqueConstraint, event, inspect, select, text, Index
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 from argon2 import PasswordHasher
-from .config import settings
+from .config import DEMO_LOGINS, settings
 from .session_security import as_utc
 from .storage_guards import lock_owner
 
@@ -104,6 +104,7 @@ class Grade(Base):
     exam_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     trend: Mapped[int] = mapped_column(Integer, default=0)
     color: Mapped[str] = mapped_column(String(20))
+    version: Mapped[int] = mapped_column(Integer, default=1, server_default='1')
 
 class Deadline(Base):
     __tablename__ = 'deadlines'
@@ -234,7 +235,7 @@ def migrate_database():
     """
     # Register additive extension tables before metadata creation. These imports
     # do not create a connection, run DDL or seed data by themselves.
-    from . import learning_db, services_db, campus_db, improvement_db  # noqa: F401
+    from . import learning_db, services_db, campus_db, improvement_db, university_db, workspace_db, units_db  # noqa: F401
     with engine.begin() as connection:
         if engine.dialect.name == 'postgresql':
             connection.execute(text('SELECT pg_advisory_xact_lock(2026110601)'))
@@ -279,6 +280,15 @@ def migrate_database():
             from .audit_migration import upgrade_integrity
             upgrade_integrity(connection)
             connection.execute(SchemaMigration.__table__.insert().values(version='0006_audit_integrity', applied_at=utc_now()))
+        if '0007_university_library_direct' not in versions:
+            connection.execute(SchemaMigration.__table__.insert().values(version='0007_university_library_direct', applied_at=utc_now()))
+        if '0008_academic_workspace' not in versions:
+            for name in ('grades', 'learning_attendance'):
+                if 'version' not in {column['name'] for column in inspect(connection).get_columns(name)}:
+                    connection.exec_driver_sql(f'ALTER TABLE {name} ADD COLUMN version INTEGER NOT NULL DEFAULT 1')
+            connection.execute(SchemaMigration.__table__.insert().values(version='0008_academic_workspace', applied_at=utc_now()))
+        if '0009_student_units' not in versions:
+            connection.execute(SchemaMigration.__table__.insert().values(version='0009_student_units', applied_at=utc_now()))
 
 
 def seed_demo(session=None):
@@ -363,12 +373,18 @@ def initialize_database():
                     seed_demo(db)
                 from .learning_db import seed_learning
                 from .services_db import seed_services
+                from .university_seed import seed_university
+                from .workspace_seed import seed_workspace
+                from .units_seed import seed_units
                 seed_learning(db)
                 seed_services(db)
+                seed_university(db)
+                seed_workspace(db)
+                seed_units(db)
                 db.flush()
     elif settings.app_env == 'production':
         with SessionLocal() as db:
-            if db.scalar(select(User.id).where(User.login.in_(['alina.demo', 'mark.demo', 'dean.demo'])).limit(1)):
+            if db.scalar(select(User.id).where(User.login.in_(DEMO_LOGINS)).limit(1)):
                 raise RuntimeError('DEMO_MODE=false cannot run a production database containing public demo accounts')
 
 

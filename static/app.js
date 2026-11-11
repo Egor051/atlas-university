@@ -44,11 +44,54 @@
   const statusNames = {submitted:'Отправлена',review:'На рассмотрении',processing:'В работе',needs_info:'Нужны уточнения',ready:'Готово',rejected:'Отклонена'};
   const campus = window.ATLASCampus;
   const improvements=window.ATLASImprovements;
+  const university=window.ATLASUniversity;
+  const operations=window.ATLASOperations;
+  const extensions=[university,operations,window.ATLASUnits];
+  const extensionFor=page=>extensions.find(ext=>ext.has(page));
+  const extensionPages=role=>extensions.flatMap(ext=>ext.pages.filter(p=>p.roles.includes(role)));
   pages.push(...campus.pages.filter(p=>!p.staff));
   const staffPages = [{id:'staff',label:'Учебный офис',icon:'file',hint:'Очередь заявлений и справок'},...campus.pages.filter(p=>p.staff),pages[6],campus.pages.find(p=>p.id==='settings')];
+  const section = (id,label,icon,hint,children) => ({id,label,icon,hint,children});
+  const account = section('account','Мой аккаунт','user','Профиль и параметры кабинета',['profile','settings']);
+  const planningOffice = section('schedule-work','Организация занятий','calendar','Расписание, согласование и справочники',['timetable-admin','schedule-changes','registry','tables']);
+  const workNotices = section('work-contact','Рабочая связь','bell','Личные рабочие уведомления',['work-notices']);
+  const sections = {
+    student:[
+      section('records','Учебный учёт','graduation','Расписание, оценки, посещаемость и экзамены',['schedule','grades','attendance','exams']),
+      section('learning','Обучение','book','Дисциплины, учебные материалы и самостоятельная подготовка',['courses','materials','assignments','quizzes','flashcards','library']),
+      section('planning','Планирование','plan','Календарь, сроки и личные инструменты',['calendar','plan','tasks','notes','focus']),
+      section('administration','Сервисы деканата','file','Заявления, справки, финансы и правила',['requests','finance','knowledge']),
+      section('communications','Связь','send','Личная переписка, обращения и консультации',['direct','notifications','messages','consultations']),
+      section('university','Университет','pin','Институты, кафедры и подразделения',['contacts','union','vuc']),
+      section('campus-life','Вне учёбы','sparkles','Кружки и мероприятия',['events']),
+      {...account,children:['profile','portfolio','settings']},
+    ],
+    staff:[
+      section('office','Работа офиса','file','Обработка заявлений, сопровождение и ответы студентам',['staff','staffdesk','staffmessages']),
+      planningOffice,
+      section('learning','Материалы','book','Учебная библиотека и публикации',['materials','materials-admin']),
+      section('communications','Связь','send','Личные диалоги и рабочие уведомления',['direct','work-notices']),
+      account,
+    ],
+    teacher:[
+      section('academic-work','Учебная работа','graduation','Группы, ведомости, расписание и консультации',['teaching','teach-schedule','teach-consultations','tables']),
+      section('learning','Материалы','book','Учебная библиотека и публикации',['materials','materials-admin']),
+      section('communications','Связь','send','Личные диалоги и рабочие уведомления',['direct','work-notices']),
+      account,
+    ],
+    scheduler:[planningOffice,workNotices,account],
+    admin:[planningOffice,workNotices,account],
+    union:[section('union-work','Работа профсоюза','file','Заявления, членство, публикации и отчёты',['union-office']),workNotices,account],
+    vuc:[section('vuc-work','Работа ВУЦ','file','Отбор, учебные группы и публикации',['vuc-office']),workNotices,account],
+  };
+  pages.push(...sections.student,...extensionPages('student').filter(p=>p.id!=='university'));
+  staffPages.push(...sections.staff,...extensionPages('staff'));
+  const menuFor = role => role==='student'?pages:role==='staff'?staffPages:
+    [pages[6],campus.pages.find(p=>p.id==='settings'),...sections[role],...extensionPages(role)];
+  const startPage = role => ({student:'home',staff:'staff',teacher:'teacher',scheduler:'timetable-admin',admin:'registry',union:'union-office',vuc:'vuc-office'})[role];
   const transitions = {submitted:['review','needs_info','rejected'],review:['processing','needs_info','ready','rejected'],processing:['ready','needs_info','rejected'],needs_info:['review','rejected'],ready:[],rejected:[]};
-  const titles = Object.fromEntries([...pages.map(p => [p.id,p.label]),...staffPages.map(p=>[p.id,p.label])]);
-  const state = {user:null,sessionEpoch:0,page:'home',data:{},week:null,day:null,scheduleMode:matchMedia('(max-width: 700px)').matches?'day':'week',unread:0,requestFilter:'all',requestView:'mine',serviceQuery:'',planFilter:'active',noticeFilter:'all',staffFilter:'active',staffQuery:'',config:{demo_mode:false},loadingId:0,modalId:0,pending:0,requestOffset:0,noticeOffset:0,staffOffset:0};
+  const pageTitle = page => menuFor(state.user.role).find(p=>p.id===page)?.label;
+  const state = {user:null,sessionEpoch:0,page:'home',routeHref:'/',routeParts:[],routeContext:{},historyEntry:0,data:{},week:null,day:null,scheduleMode:matchMedia('(max-width: 700px)').matches?'day':'week',unread:0,requestFilter:'all',requestView:'mine',serviceQuery:'',planFilter:'active',noticeFilter:'all',staffFilter:'active',staffQuery:'',config:{demo_mode:false},loadingId:0,modalId:0,pending:0,requestOffset:0,noticeOffset:0,staffOffset:0};
   const app = $('#app');
   let lastFocus, pollTimer, searchTimer, globalSearchTimer;
   let staffSearchId=0;
@@ -107,6 +150,10 @@
   window.addEventListener('storage',event=>{if(event.key==='atlas-session-change')revalidateIdentity();});
   window.addEventListener('focus',revalidateIdentity);
   async function load(page) {
+    const extension=extensionFor(page);
+    if(extension)return extension.load(page,state.routeParts,state.routeContext);
+    const group=sections[state.user.role].find(item=>item.id===page);
+    if(group)return group;
     if(campus.has(page))return campus.load(page);
     if(page==='home')return api('dashboard');
     if(page==='schedule')return api('schedule?week='+state.week);
@@ -117,56 +164,161 @@
     if(page==='staff')return api(`staff/requests?paginated=true&limit=30&offset=${state.staffOffset}&filter=${state.staffFilter}&q=${encodeURIComponent(state.staffQuery)}`);
     return state.user;
   }
-  function allowedPage(page) {if(!titles[page])page='home';if(state.user?.role==='staff'&&!staffPages.some(p=>p.id===page))return 'staff';return state.user?.role==='student'&&(page==='staff'||campus.pages.some(p=>p.id===page&&p.staff))?'home':page;}
-  function routeFromUrl(){return allowedPage(location.pathname.split('/')[2]||'home');}
-  function route(page,replace=false){
+  const contextPages=new Set(['schedule','calendar','courses','assignments','exams','tasks','events','consultations','messages','staffmessages','notes','portfolio','library']);
+  function cleanContext(page, context){
+    if(!contextPages.has(page))return {};
+    const result={};
+    const id=Number(context.id);
+    if(Number.isSafeInteger(id)&&id>0)result.id=id;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(context.date||'')&&Math.abs(dueDays(context.date))<=360&&isoDate(asDate(context.date))===context.date)result.date=context.date;
+    if(context.subject?.trim())result.subject=context.subject.trim().slice(0,130);
+    if(context.kind?.trim())result.kind=context.kind.trim().slice(0,40);
+    return result;
+  }
+  function routeFromUrl(url=location){
+    const [prefix,initial,...rest]=url.pathname.split('/').filter(Boolean);
+    const query=new URLSearchParams(url.search);
+    if(prefix!=='app')return {};
+    const group=sections[state.user.role].find(item=>item.id===initial);
+    const nested=group?.children.includes(rest[0]);
+    const page=nested?rest[0]:initial;
+    const parts=nested?rest.slice(1):rest;
+    return {page:!parts.length||extensionFor(page)?.validParts(page,parts)?page:null,parts,context:Object.fromEntries(query)};
+  }
+  function replaceRouteContext(){
+    if(!Object.keys(state.routeContext).length)return;
+    state.routeContext={};state.routeHref=state.routeHref.split('?')[0];
+    history.replaceState({atlasEntry:state.historyEntry},'',state.routeHref);
+  }
+  async function route(page,{replace=false,fromHistory=false,parts=[],context={}}={}){
     if(state.pending){toast('Дождитесь завершения отправки.');return;}
-    if(!closeModal())return;state.page=allowedPage(page);state.loadingId++;
-    history[replace?'replaceState':'pushState']({page:state.page},'',`/app/${state.page}`);
-    renderShell();const loaded=updatePage();window.scrollTo({top:0,behavior:'instant'});return loaded;
-  }
-  async function navigateContext(page,context={}){
-    if(state.pending)return;
-    if(page==='schedule'&&/^\d{4}-\d{2}-\d{2}$/.test(context.date||'')){state.day=context.date;state.week=monday(context.date);state.scheduleMode='day';}
-    campus.prepareRoute?.(page,context);
-    const epoch=state.sessionEpoch;const loading=route(page);const loadId=state.loadingId;await loading;
-    if(epoch!==state.sessionEpoch||state.page!==page||loadId!==state.loadingId)return;
-    if(page==='schedule'){
-      const row=Number.isSafeInteger(Number(context.id))?$(`[data-lesson-id="${Number(context.id)}"]`):null;
+    if(!state.user||!closeModal())return;
+    const role=state.user.role;
+    const valid=menuFor(role).some(item=>item.id===page);
+    const target=valid?page:startPage(role);
+    const extension=extensionFor(target);
+    const detail=valid&&extension?.validParts(target,parts)?parts:[];
+    const next=valid?(extension?extension.cleanQuery(target,context,detail):cleanContext(target,context)):{};
+    const query=new URLSearchParams(next).toString();
+    const href=`/app/${[target,...detail].join('/')}${query?'?'+query:''}`;
+    const previous=state.routeContext, previousPage=state.page;
+    if(Object.keys(previous).length&&contextPages.has(previousPage))campus.resetRouteContext(previousPage);
+    state.page=target;state.routeParts=detail;state.routeContext=next;
+    if(query&&!extension){
+      if(target==='schedule'&&next.date){state.day=next.date;state.week=monday(next.date);state.scheduleMode='day';}
+      campus.prepareRoute(target,next);
+    }else if(target==='schedule'&&previousPage==='schedule'&&previous.date){state.day=today();state.week=monday(state.day);}
+    if(fromHistory||replace||state.routeHref===href){
+      state.historyEntry=history.state?.atlasEntry??0;
+      history.replaceState({atlasEntry:state.historyEntry},'',href);
+    }else{
+      state.historyEntry++;
+      history.pushState({atlasEntry:state.historyEntry},'',href);
+    }
+    state.routeHref=href;
+    renderShell();
+    const epoch=state.sessionEpoch;
+    const loading=updatePage();const loadId=state.loadingId;
+    window.scrollTo({top:0,behavior:'instant'});
+    await loading;
+    if(!query||extension||epoch!==state.sessionEpoch||loadId!==state.loadingId||$('.error-state'))return;
+    if(target==='schedule'){
+      const row=next.id?$(`[data-lesson-id="${next.id}"]`):null;
       if(row){row.classList.add('search-match');row.tabIndex=-1;row.scrollIntoView({block:'center',behavior:'instant'});row.focus({preventScroll:true});}
-    }else await campus.openContext?.(page,context);
+    }else await campus.openContext(target,next);
   }
-  const logo = () => `<div class="logo"><span class="logo-mark" aria-hidden="true">Λ</span><span class="logo-copy"><span class="logo-word">АТЛАС<span class="logo-period">.</span></span><span class="logo-sub">ЦИФРОВОЙ КАМПУС</span></span></div>`;
+  function goToUrl(url,options={}){
+    const {page,parts,context}=routeFromUrl(url);
+    return route(page,{...options,parts,context});
+  }
+  function enterRoute(){return goToUrl(location,{replace:true});}
+  const navigateContext = (page,context) => route(page,{context});
+  const logo = () => `<div class="logo"><img class="logo-mark" src="${esc($('link[rel="icon"]').getAttribute('href'))}" alt="" width="40" height="40" /><span class="logo-copy"><span class="logo-word">АТЛАС<span class="logo-period">.</span></span><span class="logo-sub">ЦИФРОВОЙ КАМПУС</span></span></div>`;
   const avatar = (u,extra='') => `<span aria-hidden="true" class="avatar ${['purple','orange','blue'].includes(u.accent)?u.accent:'purple'} ${extra}">${esc(u.initials)}</span>`;
   const badge = r => `<span class="request-status ${Object.hasOwn(statusNames,r.status)?r.status:'submitted'}"><span class="status-dot"></span>${esc(statusNames[r.status]||r.status)}</span>`;
-  const mainPages=['home','schedule','grades','assignments','requests','notifications'];
-  const navGroups=[['Учёба и подготовка',['courses','exams','attendance','flashcards','quizzes']],['Планирование',['plan','calendar','tasks','notes','focus']],['Услуги и кампус',['consultations','messages','library','events','finance','contacts','knowledge']],['Личное',['portfolio','settings']]];
-  function navItem(p){const active=state.page===p.id||(p.sectionNav&&!['home','schedule','grades','requests'].includes(state.page));return `<button class="nav-item ${active?'active':''}" data-route="${p.id}" ${active?`aria-current="${state.page===p.id?'page':'location'}"`:''}>${icon(p.icon)}<span>${esc(p.label)}</span>${p.id==='notifications'?`<span class="nav-badge" ${state.unread?'':'hidden'}>${state.unread}</span>`:''}</button>`;}
-  function navMarkup(menu){if(state.user.role==='staff')return menu.map(navItem).join('');return mainPages.map(id=>navItem(menu.find(p=>p.id===id))).join('')+`<div class="nav-separator"></div>`+navGroups.map(([name,ids])=>`<details class="nav-group" ${ids.includes(state.page)?'open':''}><summary class="${ids.includes(state.page)?'has-current':''}">${esc(name)}${icon('right')}</summary><div>${ids.map(id=>navItem(menu.find(p=>p.id===id))).join('')}</div></details>`).join('')+navItem({...menu.find(p=>p.id==='campus'),label:'Все разделы',icon:'menu'});}
+  function currentSection(){
+    return sections[state.user.role].find(group=>group.id===state.page||group.children.includes(state.page));
+  }
+  function routeLink(page,label,cls=''){
+    return `<a class="${cls}" href="/app/${page}" data-route="${page}">${esc(label)}</a>`;
+  }
+  function breadcrumbs(data){
+    const role=state.user.role, root=startPage(role), group=currentSection();
+    const crumbs=[['Кабинет','/app/'+root]];
+    if(state.page!==root){
+      if(group&&group.id!==state.page)crumbs.push([group.label,'/app/'+group.id]);
+      crumbs.push([pageTitle(state.page),'/app/'+state.page]);
+    }
+    if(state.routeParts.length){
+      for(const parent of data?.parents||[])crumbs.push([parent.title,parent.href]);
+      crumbs.push([data?.title||'Запись',state.routeHref]);
+    }
+    return `<nav class="breadcrumbs" aria-label="Путь к разделу"><ol>${crumbs.map(([label,href],index)=>`<li>${index?icon('right'):''}${index===crumbs.length-1?`<strong aria-current="page">${esc(label)}</strong>`:`<a href="${esc(href)}" data-app-link>${esc(label)}</a>`}</li>`).join('')}</ol></nav>`;
+  }
+  function siblingNav(){
+    const group=currentSection();
+    if(!group||group.id===state.page||group.children.length<2)return '';
+    return `<nav class="section-nav" aria-label="${esc(group.label)} — разделы">${group.children.map(id=>id===state.page?`<span aria-current="page">${esc(pageTitle(id))}</span>`:routeLink(id,pageTitle(id))).join('')}</nav>`;
+  }
+  function navItem(p,{mobile=false}={}){
+    const active=state.page===p.id||(p.sectionNav&&!['home','schedule','grades','requests'].includes(state.page));
+    const attributes=`class="nav-item ${active?'active':''}" data-route="${p.id}" ${active?`aria-current="${state.page===p.id?'page':'location'}"`:''}`;
+    const label=`${icon(p.icon)}<span>${esc(p.label)}</span>${p.id==='notifications'?`<span class="nav-badge" ${state.unread?'':'hidden'}>${state.unread}</span>`:''}${p.id==='direct'?university.unreadBadge():''}`;
+    return mobile?`<button type="button" ${attributes}>${label}</button>`:`<a href="/app/${p.id}" ${attributes}>${label}</a>`;
+  }
+  function navMarkup(menu){
+    const role=state.user.role, active=currentSection();
+    const groups=sections[role].map(group=>`<details class="nav-group" ${active===group?'open':''}>
+      <summary class="${active===group?'has-current':''}">${esc(group.label)}${icon('right')}</summary>
+      <div>${navItem({...group,label:'Обзор раздела'})}${group.children.map(id=>navItem(menu.find(p=>p.id===id))).join('')}</div>
+    </details>`).join('');
+    if(role==='student')return navItem(pages[0])+groups+navItem({...menu.find(p=>p.id==='campus'),icon:'menu'});
+    const directory=menu.find(p=>p.id==='university');
+    return (role==='teacher'?navItem(menu.find(p=>p.id==='teacher')):'')+groups+(directory?navItem(directory):'');
+  }
+  function sectionPage(group){
+    return head('',esc(group.label),esc(group.hint))+sectionLinks(group.children.map(id=>menuFor(state.user.role).find(p=>p.id===id)));
+  }
+  function sectionLinks(items){
+    return `<div class="campus-hub-grid">${items.map(p=>`<a class="campus-hub-link card" href="/app/${p.id}" data-route="${p.id}"><span class="campus-hub-icon">${icon(p.icon)}</span><span><b>${esc(p.label)}</b><small>${esc(p.hint)}</small></span>${icon('right')}</a>`).join('')}</div>`;
+  }
   function renderShell(){
     if(!state.user)return showLogin();
-    const u=state.user;const staff=u.role==='staff';const menu=staff?staffPages:pages;
-    document.title=`${titles[state.page]} — АТЛАС`;
-    const mobile=staff?[{...staffPages[0],label:'Заявки'},{...staffPages[1],label:'Обзор'},{...staffPages[2],label:'Диалоги'},pages[6]]:[{...pages[0],label:'Главная'},pages[1],{...pages[2],label:'Оценки'},{...pages[4],label:'Заявки'},{...campus.pages.find(p=>p.id==='campus'),label:'Разделы',icon:'menu',sectionNav:true}];
+    const u=state.user, student=u.role==='student', menu=menuFor(u.role);
+    const shortcut=(id,label)=>({...menu.find(p=>p.id===id),label});
+    document.title=`${pageTitle(state.page)} — АТЛАС`;
+    const mobile=student?[shortcut('home','Главная'),pages[1],shortcut('grades','Оценки'),shortcut('requests','Заявки'),{...shortcut('campus','Разделы'),icon:'menu',sectionNav:true}]
+      :u.role==='staff'?[shortcut('staff','Заявки'),shortcut('staffdesk','Обзор'),shortcut('staffmessages','Вопросы'),shortcut('direct','Личные'),pages[6]]
+      :u.role==='teacher'?[shortcut('teacher','Кабинет'),shortcut('teaching','Группы'),shortcut('direct','Диалоги'),shortcut('academic-work','Работа'),pages[6]]
+      :['union','vuc'].includes(u.role)?[shortcut(startPage(u.role),'Кабинет'),shortcut('work-notices','Уведомления'),pages[6]]
+      :[shortcut('timetable-admin','Занятия'),shortcut('schedule-changes','Проекты'),shortcut('registry','Данные'),shortcut('tables','Таблицы'),pages[6]];
+    const notice=student?`<button class="circle-button" data-route="notifications" aria-label="Уведомления"><span class="dot" data-unread-dot ${state.unread?'':'hidden'}></span>${icon('bell')}</button>`
+      :menu.some(p=>p.id==='direct')?`<button class="circle-button" data-route="direct" aria-label="Личные сообщения">${icon('send')}${university.unreadBadge(true)}</button>`
+      :`<button class="circle-button" data-route="work-notices" aria-label="Рабочие уведомления">${icon('bell')}</button>`;
     app.innerHTML=`<div class="shell">
       <aside class="sidebar" aria-label="Личный кабинет">
-        <button class="brand-button" data-route="${staff?'staff':'home'}" title="На главную">${logo()}</button>
+        <button class="brand-button" data-route="${startPage(u.role)}" title="На главную">${logo()}</button>
         <nav class="nav-stack" aria-label="Основная навигация">${navMarkup(menu)}</nav>
-        <div class="side-user">${avatar(u)}<button class="side-person" data-route="profile"><b>${esc(u.full_name)}</b><span>${esc(staff?'Учебный офис':u.group)}</span></button><button class="icon-button" data-action="logout" aria-label="Выйти из кабинета">${icon('logout')}</button></div>
+        <div class="side-user">${avatar(u)}<button class="side-person" data-route="profile"><b>${esc(u.full_name)}</b><span>${esc(u.group)}</span></button><button class="icon-button" data-action="logout" aria-label="Выйти из кабинета">${icon('logout')}</button></div>
       </aside>
       <main class="main">
-        <header class="topbar"><div class="breadcrumbs">Кабинет ${icon('right')}<strong>${esc(titles[state.page])}</strong></div><div class="top-actions"><span class="today-label">${dateFmt(today(),{day:'numeric',month:'long'})}</span><button class="search-trigger" data-action="search">${icon('search')}<span>Поиск по кабинету</span><kbd>Ctrl K</kbd></button><button class="circle-button" data-action="retry" aria-label="Обновить данные">${icon('refresh')}</button>${staff?'':`<button class="circle-button" data-route="notifications" aria-label="Уведомления"><span class="dot" data-unread-dot ${state.unread?'':'hidden'}></span>${icon('bell')}</button>`}<button class="avatar-button" data-route="profile" aria-label="Мой профиль, ${esc(u.initials)}">${avatar(u)}</button></div></header>
-        <header class="mobile-header"><button class="brand-button" data-route="${staff?'staff':'home'}" title="На главную">${logo()}</button><div class="mobile-actions"><button class="circle-button" data-action="search" aria-label="Поиск по кабинету">${icon('search')}</button>${staff?'':`<button class="circle-button" data-route="notifications" aria-label="Уведомления">${icon('bell')}<span class="dot" data-unread-dot ${state.unread?'':'hidden'}></span></button>`}<button class="avatar-button" data-route="profile" aria-label="Мой профиль, ${esc(u.initials)}">${avatar(u)}</button></div></header>
+        <header class="topbar">
+          <button class="brand-button topbar-brand" data-route="${startPage(u.role)}" title="На главную">${logo()}</button>
+          ${breadcrumbs()}
+          <div class="top-actions"><span class="today-label">${dateFmt(today(),{day:'numeric',month:'long'})}</span><button class="search-trigger" data-action="search">${icon('search')}<span>Поиск по кабинету</span><kbd aria-hidden="true">Ctrl K</kbd></button><button type="button" class="circle-button" id="refresh-current" data-action="retry" title="Обновить данные раздела" aria-label="Обновить данные раздела">${icon('refresh')}</button>${notice}<button class="avatar-button" data-route="profile" aria-label="Мой профиль, ${esc(u.initials)}">${avatar(u)}</button></div>
+        </header>
         <div class="concept-bar" role="note">${icon('info')}<span>Конкурсный концепт · все данные вымышлены<span class="concept-long"> · неофициальный сервис</span></span></div>
+        ${siblingNav()}
         <div class="content" id="page-content" tabindex="-1"></div>
         <footer class="app-footer"><span>АТЛАС Campus · конкурсный прототип</span><span>Время занятий — МСК (UTC+3)</span></footer>
-      </main><nav class="bottom-nav" aria-label="Мобильная навигация">${mobile.map(navItem).join('')}</nav>
+      </main><nav class="bottom-nav" aria-label="Мобильная навигация">${mobile.map(p=>navItem(p,{mobile:true})).join('')}</nav>
     </div><div id="modal-root"></div>`;
     improvements.shell();
   }
   function loading(){return `<div class="loading-state" role="status" aria-label="Загрузка раздела"><div class="skeleton skeleton-heading"></div><div class="skeleton skeleton-sub"></div><div class="skeleton-grid"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div><span class="sr-only">Загружаем данные…</span></div>`;}
   async function updatePage({quiet=false}={}) {
     const page=state.page;const requestId=++state.loadingId;const target=$('#page-content');if(!target||!state.user)return;
+    target.dataset.loadId=requestId;
     if(!quiet){target.innerHTML=loading();target.setAttribute('aria-busy','true');}
     try {let d=await load(page);if(requestId!==state.loadingId||page!==state.page||!state.user)return;
       if(['requests','notifications','staff'].includes(page)&&d.offset>0&&d.offset>=d.total){const field={requests:'requestOffset',notifications:'noticeOffset',staff:'staffOffset'}[page];state[field]=Math.max(0,Math.floor((d.total-1)/d.limit)*d.limit);d=await load(page);if(requestId!==state.loadingId||page!==state.page||!state.user)return;}
@@ -174,7 +326,19 @@
       drawPage();updateBadges();improvements.markFresh();
       if(!quiet)$('#page-title')?.focus({preventScroll:true});
     }catch(error){if(error.stale||requestId!==state.loadingId||!state.user)return;target.innerHTML=`<section class="card error-state" role="alert">${icon('alert')}<h1 id="page-title" tabindex="-1">Не удалось загрузить раздел</h1><p>${esc(error.message)}</p><button class="primary-button" data-action="retry">${icon('refresh')} Попробовать ещё раз</button></section>`;}
-    finally{target.removeAttribute('aria-busy');}
+    finally{if(target.dataset.loadId===String(requestId))target.removeAttribute('aria-busy');}
+  }
+  async function refreshCurrent(trigger){
+    const control=$('#refresh-current');
+    if(!control||control.disabled||state.pending||!navigator.onLine)return;
+    const focused=document.activeElement===trigger;
+    control.disabled=true;control.setAttribute('aria-busy','true');
+    if(trigger!==control)trigger.disabled=true;
+    try{await updatePage({quiet:trigger===control});}
+    finally{
+      control.removeAttribute('aria-busy');control.disabled=!navigator.onLine;
+      if(control.isConnected&&focused&&document.activeElement===document.body)control.focus();
+    }
   }
   function updateBadges(){for(const el of $$('[data-unread-dot]'))el.hidden=!state.unread;for(const b of $$('.nav-badge')){b.hidden=!state.unread;b.textContent=state.unread>99?'99+':state.unread;}}
   function head(kicker,title,description,actions=''){return `<div class="title-row"><div><h1 class="page-title" id="page-title" tabindex="-1">${title}</h1>${description?`<p class="page-subtitle">${description}</p>`:''}</div>${actions?`<div class="page-actions">${actions}</div>`:''}</div>`;}
@@ -230,20 +394,41 @@
   }
   function notificationsPage(data){
     const visible=data.items;const counts=data.counts;const unread=counts.unread;
-    return head('Важное приходит вовремя','Уведомления','Переносы, ответы по заявкам и объявления — с переходом к делу.',`<button class="outline-button" data-action="read-all" ${unread?'':'disabled'}>${icon('check')} Прочитать все</button>`)+
-      `<section class="card card-pad notification-page">${filterButtons([['all','Все',counts.all],['unread','Непрочитанные',unread],['request','Заявки',counts.request],['schedule','Расписание',counts.schedule]],state.noticeFilter,'data-notice-filter')}${visible.length?visible.map(n=>`<article class="notification-full ${n.is_read?'read':''}"><span class="notice-icon ${n.category==='deadline'?'orange':''}">${icon(n.category==='request'?'file':n.category==='schedule'?'calendar':n.category==='deadline'?'clock':'bell')}</span><div class="notice-content"><div class="notice-title"><h2>${esc(n.title)}</h2>${!n.is_read?'<span class="notice-dot" role="img" aria-label="Не прочитано"></span>':''}</div><p>${esc(n.body)}</p><div class="notice-bottom"><time>${stamp(n.created_at)} МСК</time><button class="mini-link" data-action="open-notice" data-id="${n.id}">Открыть ${icon('arrow')}</button>${!n.is_read?`<button class="quiet-button" data-action="read-notification" data-id="${n.id}">Прочитано ${icon('check')}</button>`:''}</div></div></article>`).join(''):empty('bell','Ничего не пропущено','Уведомлений по этому фильтру нет.')}${pagination(data,'notifications')}</section>`;
+    const filters=[['all','Все',counts.all],['unread','Непрочитанные',unread],['request','Заявки',counts.request],['schedule','Расписание',counts.schedule]];
+    if(counts.direct)filters.push(['direct','Сообщения',counts.direct]);
+    if(counts.union)filters.push(['union','Профсоюз',counts.union]);
+    if(counts.vuc)filters.push(['vuc','ВУЦ',counts.vuc]);
+    return head('','Уведомления','Переносы, сообщения и ответы по заявкам.',`<button class="outline-button" data-action="read-all" ${unread?'':'disabled'}>${icon('check')} Прочитать все</button>`)+
+      `<section class="card card-pad notification-page">${filterButtons(filters,state.noticeFilter,'data-notice-filter')}${visible.length?visible.map(n=>`<article class="notification-full ${n.is_read?'read':''}"><span class="notice-icon ${n.category==='deadline'?'orange':''}">${icon(({request:'file',schedule:'calendar',deadline:'clock',direct:'send'})[n.category]||'bell')}</span><div class="notice-content"><div class="notice-title"><h2>${esc(n.title)}</h2>${!n.is_read?'<span class="notice-dot" role="img" aria-label="Не прочитано"></span>':''}</div><p>${esc(n.body)}</p><div class="notice-bottom"><time>${stamp(n.created_at)} МСК</time><button class="mini-link" data-action="open-notice" data-id="${n.id}">Открыть ${icon('arrow')}</button>${!n.is_read?`<button class="quiet-button" data-action="read-notification" data-id="${n.id}">Прочитано ${icon('check')}</button>`:''}</div></div></article>`).join(''):empty('bell','Ничего не пропущено','Уведомлений по этому фильтру нет.')}${pagination(data,'notifications')}</section>`;
   }
   function profilePage(u){
-    const staff=u.role==='staff';
-    const fields=staff?[['Подразделение',u.faculty],['Роль','Сотрудник учебного офиса'],['Доступ','Обращения и услуги']]:[['Факультет',u.faculty],['Направление',u.program],['Курс',u.course],['Группа',u.group],['Учебный номер',u.student_number]];
-    return head('','Мой профиль','Вымышленный профиль для демонстрации кабинета.',`<button class="outline-button" data-route="settings">${icon('shield')} Настройки</button>`)+`<section class="card card-pad profile-summary"><div class="profile-identity">${avatar(u)}<div><h2>${esc(u.full_name)}</h2><p>${esc(staff?'Учебный офис':u.group+' · '+u.course+' курс')}</p></div><span class="campus-pill">Демо</span></div><dl class="profile-data">${fields.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v||'—')}</dd></div>`).join('')}</dl></section>`+disclosure('Доступ и безопасность',`<div class="security-list"><div>${icon('shield')}<span><b>Данные разделены по аккаунтам</b><p>${staff?'Можно отвечать на обращения. Оценки и расписание студентов недоступны.':'Другие студенты не могут открыть ваши оценки, заявки и заметки.'}</p></span></div><div>${icon('info')}<span><b>Это конкурсный концепт</b><p>Все персонажи и документы вымышлены. Подключений к вузу нет.</p></span></div></div>`)+`<button class="danger-button" data-action="logout">${icon('logout')} Выйти из кабинета</button>`;
+    const student=u.role==='student';
+    const fields=student?[['Факультет',u.faculty],['Направление',u.program],['Курс',u.course],['Группа',u.group],['Учебный номер',u.student_number]]
+      :[['Подразделение',u.faculty],['Роль',u.group],['Направление работы',u.program]];
+    return head('','Мой профиль','Вымышленный профиль для демонстрации кабинета.',`<button class="outline-button" data-route="settings">${icon('shield')} Настройки</button>`)+`<section class="card card-pad profile-summary"><div class="profile-identity">${avatar(u)}<div><h2>${esc(u.full_name)}</h2><p>${esc(student?u.group+' · '+u.course+' курс':u.group)}</p></div><span class="campus-pill">Демо</span></div><dl class="profile-data">${fields.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v||'—')}</dd></div>`).join('')}</dl></section>`+disclosure('Доступ и безопасность',`<div class="security-list"><div>${icon('shield')}<span><b>Данные разделены по аккаунтам</b><p>${student?'Другие студенты не могут открыть ваши оценки, заявки и заметки.':'Кабинет использует полномочия вашей роли. Личную переписку видят только участники.'}</p></span></div><div>${icon('info')}<span><b>Это конкурсный концепт</b><p>Все персонажи и документы вымышлены. Подключений к вузу нет.</p></span></div></div>`)+`<button class="danger-button" data-action="logout">${icon('logout')} Выйти из кабинета</button>`;
   }
   function staffPage(data){
     const counts=data.counts;const visible=data.items;
-    return head('Помощь студентам в одном окне','Учебный офис','Разбирайте обращения, отвечайте студентам и сохраняйте историю решений.',`<button class="outline-button" data-action="retry">${icon('refresh')} Обновить очередь</button>`)+
+    return head('Помощь студентам в одном окне','Учебный офис','Разбирайте обращения, отвечайте студентам и сохраняйте историю решений.')+
       `<div class="grade-summary"><div class="card summary-metric"><span class="summary-icon">${icon('file')}</span><div><b>${counts.active}</b><p>Ожидают решения</p></div></div><div class="card summary-metric"><span class="summary-icon orange">${icon('clock')}</span><div><b>${counts.overdue}</b><p>Срок требует внимания</p></div></div><div class="card summary-metric"><span class="summary-icon teal">${icon('checkCircle')}</span><div><b>${counts.ready}</b><p>Результат готов</p></div></div></div><section class="card card-pad">${cardHead('Очередь обращений')}<div class="staff-tools"><label class="search-field">${icon('search')}<input id="staff-search" maxlength="100" value="${esc(state.staffQuery)}" placeholder="Номер, студент, группа…" aria-label="Поиск по очереди" autocomplete="off" /></label>${filterButtons([['active','В работе',counts.active],['all','Все',counts.all],['submitted','Новые',counts.submitted],['ready','Готовые',counts.ready],['overdue','Просрочены',counts.overdue]],state.staffFilter,'data-staff-filter')}</div><div id="staff-results" class="request-list">${visible.length?visible.map(r=>requestRow(r,true)).join(''):empty('checkCircle','Обращений не найдено','По этому фильтру обращений нет. Попробуйте другой фильтр или запрос.')}${pagination(data,'staff')}</div></section>`;
   }
-  function drawPage(){const target=$('#page-content');const data=state.data[state.page];if(!target||!data)return;const renders={home:dashboard,schedule:schedulePage,grades:gradesPage,plan:planPage,requests:requestsPage,notifications:notificationsPage,profile:profilePage,staff:staffPage};target.innerHTML=campus.has(state.page)?campus.render(state.page,data):renders[state.page](data);target.removeAttribute('aria-busy');campus.afterRender(state.page);}
+  function drawPage(){
+    const target=$('#page-content'), page=state.page, data=state.data[page];if(!target||!data)return;
+    const renders={home:dashboard,schedule:schedulePage,grades:gradesPage,plan:planPage,requests:requestsPage,notifications:notificationsPage,profile:profilePage,staff:staffPage};
+    const extension=extensionFor(page);
+    if(extension){
+      target.innerHTML=extension.render(page,data);
+      if(state.routeParts.length){
+        $('.breadcrumbs').outerHTML=breadcrumbs(data);
+        document.title=`${data.title||pageTitle(page)} — АТЛАС`;
+      }
+      extension.afterRender?.(page,data);
+    }else{
+      target.innerHTML=data.children?sectionPage(data):campus.has(page)?campus.render(page,data):renders[page](data);
+      campus.afterRender(page);
+    }
+    target.removeAttribute('aria-busy');
+  }
 
   function modal(content,{wide=false,label='Диалог'}={}) {
     if(state.pending){toast('Дождитесь завершения отправки.');return;}
@@ -354,12 +539,17 @@
   const matchesPage=(p,q)=>normalise(q).split(/\s+/).every(word=>normalise(`${p.label} ${p.hint} ${searchWords[p.id]||''}`).includes(word));
   function searchModal(){
     if($('.modal form[data-dirty="true"]')&&!closeModal())return;
-    const options=state.user.role==='staff'?staffPages:pages;const student=state.user.role==='student';
+    const options=menuFor(state.user.role);const student=state.user.role==='student';
     modal(modalHead('Поиск по кабинету',student?'Найдите раздел, задание, заявку или личную заметку.':'Найдите нужный раздел учебного офиса.')+`<label class="search-field search-large">${icon('search')}<input id="search-input" maxlength="100" aria-label="Поиск по кабинету" placeholder="Например, оценки, справка или конспект" autofocus autocomplete="off" /></label><div class="search-results" id="search-results"></div>`,{label:'Поиск по кабинету'});
     const modalId=state.modalId;const epoch=state.sessionEpoch;let revision=0;
     const draw=async q=>{
       const current=++revision;clearTimeout(globalSearchTimer);
-      const choices=q?options.filter(p=>matchesPage(p,q)):options.filter(p=>(student?['schedule','grades','assignments','requests','messages','campus']:['staff','staffmessages','staffdesk','profile']).includes(p.id));
+      const shortcuts=student?['schedule','grades','assignments','requests','direct','campus']
+        :state.user.role==='staff'?['staff','staffmessages','staffdesk','schedule-changes','direct']
+        :state.user.role==='teacher'?['teacher','teaching','teach-schedule','direct','materials-admin']
+        :['union','vuc'].includes(state.user.role)?[state.user.role+'-office','work-notices','profile']
+        :['timetable-admin','schedule-changes','registry','tables'];
+      const choices=q?options.filter(p=>matchesPage(p,q)):options.filter(p=>shortcuts.includes(p.id));
       $('#search-results').innerHTML=`<p class="search-group-label">${q?'Разделы':'Часто нужно'}</p>`+(choices.length?choices.map(p=>`<button class="search-result" data-route="${esc(p.id)}">${icon(p.icon)}<span><b>${esc(p.label)}</b><small>${esc(p.hint)}</small></span>${icon('right')}</button>`).join(''):'<p class="search-empty">Раздел не найден. Попробуйте «оценки», «справка» или «конспекты».</p>')+(student&&q.length>=2?'<div id="search-personal" aria-live="polite"><p class="search-group-label" role="status">Ищем в ваших данных…</p></div>':'');
       if(!student||q.length<2)return;
       globalSearchTimer=setTimeout(async()=>{
@@ -370,17 +560,27 @@
     };
     draw('');$('#search-input').addEventListener('input',e=>draw(e.target.value.trim()));
   }
-  function clearSession({expired=false}={}){deadlineWrites.clear();improvements.reset(expired);campus.reset();clearInterval(pollTimer);state.sessionEpoch++;state.loadingId++;state.modalId++;state.pending=0;removeDraft();draftMemory.clear();draftStorageAvailable=true;state.user=null;state.data={};state.unread=0;state.staffQuery='';state.requestOffset=state.noticeOffset=state.staffOffset=0;state.requestFilter=state.noticeFilter='all';state.requestView='mine';state.serviceQuery='';state.requestView='mine';state.serviceQuery='';state.staffFilter='active';state.planFilter='active';$('.skip-link')?.removeAttribute('inert');document.body.classList.remove('modal-open');}
-  const demoAccounts=[{login:'alina.demo',password:'AtlasDemo!2026-A',full_name:'Алина Ветрова',initials:'АВ',accent:'purple',description:'2 курс · ИТ-24-03 · первый студент'},{login:'mark.demo',password:'AtlasDemo!2026-M',full_name:'Марк Северин',initials:'МС',accent:'orange',description:'3 курс · ПИ-23-02 · другие данные'},{login:'dean.demo',password:'AtlasStaff!2026-D',full_name:'Кира Миронова',initials:'КМ',accent:'blue',description:'Учебный офис · обработка заявок'}];
+  function clearSession({expired=false}={}){deadlineWrites.clear();improvements.reset(expired);campus.reset();extensions.forEach(ext=>ext.reset?.());clearInterval(pollTimer);state.sessionEpoch++;state.loadingId++;state.modalId++;state.pending=0;removeDraft();draftMemory.clear();draftStorageAvailable=true;state.user=null;state.data={};state.unread=0;state.staffQuery='';state.requestOffset=state.noticeOffset=state.staffOffset=0;state.requestFilter=state.noticeFilter='all';state.requestView='mine';state.serviceQuery='';state.staffFilter='active';state.planFilter='active';$('.skip-link')?.removeAttribute('inert');document.body.classList.remove('modal-open');}
+  const demoAccounts=[
+    {login:'alina.demo',password:'AtlasDemo!2026-A',full_name:'Алина Ветрова',initials:'АВ',accent:'purple',description:'2 курс · ИТ-24-03 · первый студент'},
+    {login:'mark.demo',password:'AtlasDemo!2026-M',full_name:'Марк Северин',initials:'МС',accent:'orange',description:'3 курс · ПИ-23-02 · другие данные'},
+    {login:'dean.demo',password:'AtlasStaff!2026-D',full_name:'Кира Миронова',initials:'КМ',accent:'blue',description:'Учебный офис · обработка заявок'},
+    {login:'orlov.demo',password:'AtlasTeach!2026-M',full_name:'Михаил Орлов',initials:'МО',accent:'purple',description:'Преподаватель · материалы и переписка'},
+    {login:'schedule.demo',password:'AtlasRooms!2026-S',full_name:'София Берестова',initials:'СБ',accent:'blue',description:'Диспетчер · расписание и аудитории'},
+    {login:'registry.demo',password:'AtlasRegistry!2026-R',full_name:'Роман Ильин',initials:'РИ',accent:'blue',description:'Администратор · справочники и утверждение'},
+    {login:'union.demo',password:'AtlasUnion!2026-U',full_name:'Полина Савельева',initials:'ПС',accent:'blue',description:'Профсоюз · членство и обращения'},
+    {login:'vuc.demo',password:'AtlasCenter!2026-V',full_name:'Артём Неверов',initials:'АН',accent:'blue',description:'ВУЦ · учебный офис'},
+  ];
   function showLogin(){
     document.title='Вход в кампус — АТЛАС';app.innerHTML=`<main class="login-root"><section class="login-art">${logo()}<div class="login-copy"><span class="login-kicker">МЕНЬШЕ РУТИНЫ. БОЛЬШЕ ВОЗМОЖНОСТЕЙ.</span><h1>Твой кампус.<br>В твоём <em>ритме.</em></h1><p>От первой пары до готовой справки.<br>Одно спокойное место для всех учебных дел.</p><div class="login-illustration" aria-hidden="true"><div class="illustration-grid"></div><div class="login-ticket"><span>МОЙ ДЕНЬ / АТЛАС</span><div><b>${dateFmt(today(),{day:'numeric'})}</b><span>${dateFmt(today(),{month:'long'})}<small>${dateFmt(today(),{weekday:'long'})}</small></span></div><p>${icon('calendar')} Весь день под контролем</p></div><div class="illustration-bubble">${icon('checkCircle')} Справка готова<small>Можно скачать в кабинете</small></div><span class="illustration-star">✳</span></div><div class="login-benefits"><span>${icon('calendar')} Учёба</span><span>${icon('file')} Документы</span><span>${icon('send')} Связь с офисом</span></div></div><footer>Конкурсный концепт. Все данные вымышлены.<br>Неофициальный сервис · без интеграции с вузом</footer></section><section class="login-panel" id="page-content"><div class="login-mobile-brand">${logo()}</div><div class="login-form-wrap"><span class="page-kicker">ДОБРО ПОЖАЛОВАТЬ</span><h1>Вход в кабинет</h1><p class="form-intro">Все учебные дела становятся ближе.</p><form id="login-form"><div class="field"><label for="login-name">Логин</label><input id="login-name" name="login" required autocomplete="username" maxlength="100" placeholder="Ваш логин" /></div><div class="field"><label for="login-password">Пароль</label><div class="password-wrap"><input id="login-password" name="password" type="password" required autocomplete="current-password" maxlength="200" placeholder="Введите пароль" /><button class="password-toggle" type="button" data-action="password" aria-controls="login-password" aria-pressed="false">Показать</button></div></div><div class="inline-error" id="login-error" role="alert" hidden></div><button class="primary-button login-submit" type="submit">Войти в кабинет ${icon('arrow')}</button></form>${state.config.demo_mode?`<div class="demo-accounts"><div class="demo-accounts-header"><span>ИЛИ ПОПРОБУЙТЕ ДЕМО</span><span class="demo-tag">Без регистрации</span></div><div class="demo-list">${demoAccounts.map((u,i)=>`<button class="demo-user" data-demo="${i}">${avatar(u)}<span><b>${u.full_name}</b><small>${u.description}</small></span>${icon('arrow')}</button>`).join('')}</div><details class="demo-credentials"><summary>Логины и пароли для жюри</summary>${demoAccounts.map(u=>`<p><code>${u.login}</code><span>${u.password}</span></p>`).join('')}</details></div>`:''}<div class="login-note">${icon('shield')}<p>Конкурсный прототип. Только вымышленные персонажи и документы. Не вводите реальные данные.</p></div><p class="login-footer">АТЛАС Campus © 2026 · Учиться в своём ритме</p></div></section></main>`;
   }
   async function submitLogin(form){if(form.dataset.pending)return;form.dataset.pending='true';const error=$('#login-error'),button=$('button[type="submit"]',form);error.hidden=true;button.disabled=true;button.textContent='Входим…';$$('[data-demo]').forEach(b=>b.disabled=true);
-    try{const {user}=await api('login',{method:'POST',body:JSON.stringify({login:form.elements.login.value,password:form.elements.password.value})});state.sessionEpoch++;state.user=user;announceIdentity();await campus.prepare();if(!state.user)return;await route(user.role==='staff'?'staff':'home',true);startPolling();await improvements.resumeRecovery();toast(`С возвращением, ${user.full_name.split(' ')[0]}!`);}
+    try{const {user}=await api('login',{method:'POST',body:JSON.stringify({login:form.elements.login.value,password:form.elements.password.value})});state.sessionEpoch++;state.user=user;announceIdentity();await campus.prepare();if(!state.user)return;await enterRoute();startPolling();await improvements.resumeRecovery();toast(`С возвращением, ${user.full_name.split(' ')[0]}!`);}
     catch(e){error.hidden=false;error.textContent=e.message;button.disabled=false;button.innerHTML=`Войти в кабинет ${icon('arrow')}`;$$('[data-demo]').forEach(b=>b.disabled=false);delete form.dataset.pending;}
   }
   async function refreshUnread(){if(state.user?.role!=='student'||document.hidden)return;const userId=state.user.id;try{const data=await api('notifications?paginated=true&limit=1');if(state.user?.id===userId){state.unread=data.unread_count;updateBadges();}}catch{/* Explicit page requests show errors; background polling is quiet. */}}
-  function startPolling(){clearInterval(pollTimer);refreshUnread();pollTimer=setInterval(refreshUnread,45000);}
+  function pollBadges(){refreshUnread();if(['student','teacher','staff'].includes(state.user?.role))university.pollUnread();}
+  function startPolling(){clearInterval(pollTimer);pollBadges();pollTimer=setInterval(pollBadges,45000);}
   async function markRead(id){await api(`notifications/${Number(id)}/read`,{method:'POST'});const data=state.data.notifications;if(data){const item=data.items.find(n=>n.id===Number(id));if(item&&!item.is_read){item.is_read=true;data.counts.unread=Math.max(0,data.counts.unread-1);data.unread_count=data.counts.unread;}}await refreshUnread();}
   async function openNotice(id){
     try{
@@ -389,6 +589,15 @@
       const n=await api('notifications/'+Number(id));if(!current())return;
       await markRead(id);if(!current())return;
       if(n.request_id){const loading=route('requests');const nextModalId=state.modalId;const nextLoadId=state.loadingId;await loading;if(epoch===state.sessionEpoch&&state.page==='requests'&&nextModalId===state.modalId&&nextLoadId===state.loadingId)await requestDetails(Number(n.request_id));return;}
+      if(n.category==='direct'&&/^\/app\/direct\/[1-9]\d*$/.test(n.target||'')){
+        await goToUrl(new URL(n.target,location.origin));return;
+      }
+      if(['academic','schedule'].includes(n.category)&&/^\/app\/(?:assignments|grades|attendance|schedule)(?:\?|$)/.test(n.target||'')){
+        await goToUrl(new URL(n.target,location.origin));return;
+      }
+      if(['union','vuc'].includes(n.category)&&/^\/app\/(?:union|vuc)(?:\/[1-9]\d*|\?tab=learning)?$/.test(n.target||'')){
+        await goToUrl(new URL(n.target,location.origin));return;
+      }
       const target={'/app/schedule':'schedule','/app/grades':'grades','/app/requests':'requests','/app/plan':'plan','/app/consultations':'consultations','/app/messages':'messages','/app/support':'messages','/app/events':'events','/app/campus':'events'}[n.target]||({schedule:'schedule',deadline:'plan',request:'requests'}[n.category]);
       if(target){route(target);return;}
       modal(modalHead(n.title,stamp(n.created_at)+' МСК')+`<p class="user-text campus-body">${esc(n.body)}</p><div class="modal-actions"><button class="primary-button" data-action="close-modal">Прочитано</button></div>`,{label:'Уведомление'});
@@ -412,7 +621,19 @@
   document.addEventListener('click',async e=>{
     const download=e.target.closest('a[download][href^="/api/"]');if(download){e.preventDefault();if(download.getAttribute('aria-busy')!=='true')await downloadFile(download);return;}
     const result=e.target.closest('[data-search-target]');if(result){await openSearchResult(result.dataset.searchTarget,Number(result.dataset.searchId));return;}
-    const to=e.target.closest('[data-route]');if(to){if(state.pending)return;if(to.dataset.recordId||to.dataset.date||to.dataset.subject)await navigateContext(to.dataset.route,{id:to.dataset.recordId,date:to.dataset.date,subject:to.dataset.subject,kind:to.dataset.kind});else route(to.dataset.route);return;}
+    const to=e.target.closest('[data-route], a[data-app-link]');
+    if(to){
+      if(to.tagName==='A'&&(e.button!==0||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey))return;
+      e.preventDefault();
+      if(to.hasAttribute('data-app-link')){
+        const url=new URL(to.href);
+        if(url.origin===location.origin&&url.pathname.startsWith('/app/'))await goToUrl(url);
+        return;
+      }
+      if(to.dataset.recordId||to.dataset.date||to.dataset.subject)await navigateContext(to.dataset.route,{id:to.dataset.recordId,date:to.dataset.date,subject:to.dataset.subject,kind:to.dataset.kind});
+      else await route(to.dataset.route);
+      return;
+    }
     const demo=e.target.closest('[data-demo]');if(demo){const u=demoAccounts[Number(demo.dataset.demo)];$('#login-name').value=u.login;$('#login-password').value=u.password;$('#login-form').requestSubmit();return;}
     const view=e.target.closest('[data-view]');if(view){state.scheduleMode=view.dataset.view;drawPage();$(`[data-view="${state.scheduleMode}"]`)?.focus({preventScroll:true});return;}
     const day=e.target.closest('[data-day]');if(day){state.day=day.dataset.day;drawPage();$(`[data-day="${state.day}"]`)?.focus({preventScroll:true});return;}
@@ -429,7 +650,7 @@
     if(action==='request-details'){await requestDetails(Number(el.dataset.id));return;}
     if(action==='request-history'){await loadRequestHistory(Number(el.dataset.id),Number(el.dataset.offset),el);return;}
     if(action==='search'){searchModal();return;}
-    if(action==='retry'){await updatePage();return;}
+    if(action==='retry'){await refreshCurrent(el);return;}
     if(action==='this-week'){state.week=monday(today());state.day=today();await updatePage();return;}
     if(action==='prev-week'||action==='next-week'){const week=addDays(state.week,action==='prev-week'?-7:7);if(Math.abs(dueDays(week))>360){toast('В демонстрации доступно расписание в пределах года.');return;}state.week=week;state.day=week;await updatePage();return;}
     if(action==='logout'){el.disabled=true;try{await api('logout',{method:'POST'});clearSession();announceIdentity();history.replaceState({},'','/');showLogin();toast('Вы вышли из кабинета.');}catch(error){el.disabled=false;toast('Не удалось завершить сессию. '+error.message);}return;}
@@ -454,8 +675,22 @@
     if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&state.user){e.preventDefault();if(state.pending){toast('Дождитесь завершения отправки.');return;}searchModal();return;}
     const dialog=$('.modal');if(e.key==='Tab'&&dialog){const controls=$$('a[href],button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),summary,[tabindex="0"]',dialog).filter(x=>x.getClientRects().length&&getComputedStyle(x).visibility!=='hidden'&&!x.closest('details:not([open]) > :not(summary)'));if(!controls.length){e.preventDefault();return;}const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
   });
-  window.addEventListener('popstate',()=>{if(state.user){if(state.pending){history.pushState({page:state.page},'',`/app/${state.page}`);toast('Дождитесь завершения отправки.');return;}if(!closeModal()){history.pushState({page:state.page},'','/app/'+state.page);return;}state.page=routeFromUrl();renderShell();updatePage();}});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden){revalidateIdentity();refreshUnread();}});
+  let restoringHistory=false;
+  window.addEventListener('popstate',event=>{
+    if(restoringHistory){restoringHistory=false;return;}
+    if(!state.user)return;
+    if(location.pathname+location.search===state.routeHref)return;
+    if(state.pending||!closeModal()){
+      if(state.pending)toast('Дождитесь завершения отправки.');
+      const index=event.state?.atlasEntry;
+      if(Number.isInteger(index)&&index!==state.historyEntry){
+        restoringHistory=true;history.go(state.historyEntry-index);
+      }else history.replaceState({atlasEntry:state.historyEntry},'',state.routeHref);
+      return;
+    }
+    goToUrl(location,{fromHistory:true});
+  });
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){revalidateIdentity();pollBadges();}});
   document.addEventListener('input',e=>{
     const form=e.target.closest('.modal form[data-c-form]');if(form&&form.dataset.cForm!=='personal-search')form.dataset.dirty='true';
     if(e.target.id==='service-search'){const value=e.target.value;const pos=e.target.selectionStart;state.serviceQuery=value;drawPage();const input=$('#service-search');input.focus({preventScroll:true});input.setSelectionRange(pos,pos);}
@@ -464,8 +699,8 @@
   window.addEventListener('beforeunload',e=>{if($('.modal form[data-dirty="true"]')){e.preventDefault();e.returnValue='';}});
   window.addEventListener('online',()=>toast('Подключение восстановлено. Можно обновить раздел.'));
   window.addEventListener('offline',()=>toast('Нет сети. Показаны уже загруженные данные; для сохранения нужен сервер.'));
-  async function boot(){try{state.config=await api('config');}catch{/* Fail closed: do not advertise demo credentials if config is unavailable. */}try{state.user=await api('me');await campus.prepare();if(!state.user)return;route(routeFromUrl(),true);startPolling();}catch{showLogin();}}
-  const context={state,api,deadlinePending:id=>deadlineWrites.has(Number(id)),$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,monday,refreshUnread,newRequestModal,pages,staffPages,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
-  improvements.init(context);campus.init(context);
+  async function boot(){try{state.config=await api('config');}catch{/* Fail closed: do not advertise demo credentials if config is unavailable. */}try{state.user=await api('me');await campus.prepare();if(!state.user)return;await enterRoute();startPolling();}catch{showLogin();}}
+  const context={state,api,deadlinePending:id=>deadlineWrites.has(Number(id)),$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,monday,refreshUnread,newRequestModal,pages,staffPages,sections,routeLink,sectionLinks,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
+  improvements.init(context);campus.init(context);extensions.forEach(ext=>ext.init(context));
   boot();
 })();

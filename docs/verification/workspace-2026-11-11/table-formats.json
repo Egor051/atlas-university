@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "checked_at_utc": "2026-11-11T16:33:30.539129+00:00",
+  "independent_reader": "openpyxl 3.1.5",
+  "checks": [
+    "read the ATLAS XLSX export with an independent reader",
+    "read an independently generated XLSX with ATLAS",
+    "reject XLSX cells containing formulas",
+    "preserve CSV expression-like text as a literal"
+  ]
+}

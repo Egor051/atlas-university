@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import subprocess
+import sys
+
+import pytest
 
 
 def load_monitor():
@@ -41,3 +45,15 @@ def test_readiness_failure_reports_exception_type_without_sensitive_details(monk
     result = monitor.sample('https://campus.example.test')
     assert result['ok'] is False and result['error_type'] == 'OSError'
     assert 'SENSITIVE_SENTINEL' not in str(result)
+
+
+@pytest.mark.parametrize('script,extra', [
+    ('production_acceptance.py', []),
+    ('production_browser.py', ['--report', 'unused.json', '--screenshots', 'unused']),
+])
+def test_acceptance_write_flag_rejects_any_supplied_url(script, extra):
+    path = Path(__file__).resolve().parents[1] / 'scripts' / script
+    result = subprocess.run([sys.executable, str(path), '--url', 'https://127.0.0.1:1', '--write-demo', *extra],
+                            capture_output=True, text=True, timeout=10)
+    assert result.returncode == 2
+    assert '--write-demo requires --isolated' in result.stderr

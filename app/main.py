@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 from argon2.exceptions import VerifyMismatchError, VerificationError
 from fastapi import FastAPI, Request, Response, Depends, HTTPException, Query
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, RedirectResponse
 from pydantic import BaseModel, Field, ConfigDict, StrictBool, field_validator
 from sqlalchemy import select, func, update, delete, text, or_, case
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -30,7 +30,7 @@ from .db import (SessionLocal, User, LoginSession, Lesson, LessonChange, Grade,
                  RequestEvent, RequestIdempotency, LoginAttempt,
                  password_hasher, initialize_database, CAMPUS_TZ, campus_today,
                  utc_now, request_due_date, engine)
-from .config import settings
+from .config import DEMO_LOGINS, settings
 from .version import VERSION, build_id
 from .session_security import as_utc, validate_expected_actor, PasswordAdmission
 
@@ -134,7 +134,7 @@ def require_user(request: Request, db: Session = Depends(get_db)) -> User:
     row = db.scalar(select(LoginSession).where(LoginSession.token_hash == token_hash))
     if not row or as_utc(row.expires_at) <= as_utc(utc_now()):
         raise HTTPException(401, 'Сессия истекла, войдите повторно')
-    if not settings.demo_mode and row.user.login in {'alina.demo', 'mark.demo', 'dean.demo'}:
+    if not settings.demo_mode and row.user.login in DEMO_LOGINS:
         raise HTTPException(401, 'Демонстрационные учётные записи отключены')
     validate_expected_actor(request.headers.get('X-ATLAS-User'), row.user_id)
     return row.user
@@ -146,6 +146,13 @@ def require_student(user: User = Depends(require_user)):
 def require_staff(user: User = Depends(require_user)):
     if user.role != 'staff': raise HTTPException(403, 'Только для сотрудников')
     return user
+
+def require_roles(*roles):
+    def authorize(user: User = Depends(require_user)):
+        if user.role not in roles:
+            raise HTTPException(403, 'Операция недоступна вашей роли')
+        return user
+    return authorize
 
 def require_same_origin(request: Request):
     # Every mutating browser request must carry a non-safelisted header.
@@ -252,7 +259,7 @@ def login(body: LoginBody, request: Request, response: Response, db: Session = D
         try:
             valid = password_hasher.verify(u.password_hash if u else DUMMY_PASSWORD_HASH,body.password) and u is not None
         except (VerifyMismatchError,VerificationError): valid=False
-    if not settings.demo_mode and login_name in {'alina.demo', 'mark.demo', 'dean.demo'}:
+    if not settings.demo_mode and login_name in DEMO_LOGINS:
         valid = False
     if not valid:
         db.add(LoginAttempt(ip_hash=ip_hash, account_hash=account_hash, created_at=now))
@@ -292,14 +299,18 @@ def me(user:User=Depends(require_user)):
     return public_user(user)
 
 def get_week_schedule(db: Session, user: User, week_start: date):
+    from .scheduling import student_classes
     end=week_start+timedelta(days=7)
+    additions = {}
+    for lesson in student_classes(db,user,week_start):
+        additions.setdefault(lesson['date'],[]).append(lesson)
     lessons=db.scalars(select(Lesson).where(Lesson.student_id==user.id).order_by(Lesson.weekday,Lesson.start_time)).all()
     changes=db.scalars(select(LessonChange).where(LessonChange.student_id==user.id,LessonChange.day>=week_start,LessonChange.day<end)).all()
     by_key={(c.lesson_id,c.day):c for c in changes}
     days=[]
     for offset in range(7):
         day=week_start+timedelta(days=offset)
-        daily=[]
+        daily=additions.get(str(day),[])
         for l in lessons:
             if l.weekday != day.weekday():continue
             change=by_key.get((l.id,day))
@@ -380,7 +391,7 @@ def deadline_payload(d):
 
 
 RequestFilter = Literal['all', 'active', 'overdue', 'submitted', 'review', 'processing', 'needs_info', 'ready', 'rejected']
-NotificationFilter = Literal['all', 'unread', 'schedule', 'deadline', 'request', 'announcement']
+NotificationFilter = Literal['all', 'unread', 'schedule', 'deadline', 'request', 'announcement', 'direct', 'academic', 'union', 'vuc']
 
 
 def text_search(column, value):
@@ -580,7 +591,7 @@ def request_document(request_id: int, user: User = Depends(require_student), db:
 @app.get('/api/notifications')
 def notifications(response: Response, paginated: bool = False, offset: int = Query(0, ge=0, le=2147483647), limit: int = Query(200, ge=1, le=200), filter: NotificationFilter = 'all', q: str = Query('', max_length=100), user:User=Depends(require_student),db:Session=Depends(get_db)):
     scope = [Notification.student_id == user.id]
-    expressions = {'unread': Notification.is_read.is_(False), **{category: Notification.category == category for category in ['schedule', 'deadline', 'request', 'announcement']}}
+    expressions = {'unread': Notification.is_read.is_(False), **{category: Notification.category == category for category in ['schedule', 'deadline', 'request', 'announcement', 'direct', 'academic', 'union', 'vuc']}}
     values = db.execute(select(func.count(Notification.id).label('all'), *[func.coalesce(func.sum(case((condition, 1), else_=0)), 0).label(name) for name, condition in expressions.items()]).where(*scope)).mappings().one()
     counts = {name: int(value) for name, value in values.items()}
     conditions = list(scope)
@@ -671,16 +682,26 @@ def staff_update(request_id:int,body:StaffStatusBody,user:User=Depends(require_s
     return request_with_history(row, db)
 
 @app.get('/')
-def index(): return FileResponse(APP_DIR/'static'/'index.html')
-
+@app.get('/app')
 @app.get('/app/{path:path}')
-def app_routes(path:str): return FileResponse(APP_DIR/'static'/'index.html')
+def index():
+    shell = (APP_DIR / 'static' / 'index.html').read_text(encoding='utf-8')
+    return HTMLResponse(shell.replace('__ATLAS_BUILD__', build_id()), headers={'Cache-Control': 'no-cache'})
+
+
+@app.get('/favicon.ico')
+def browser_icon():
+    return RedirectResponse(f'/static/favicon.svg?v={build_id()}', headers={'Cache-Control': 'no-cache'})
 
 @app.get('/static/{filename:path}')
-def static_files(filename:str):
-    allowed={'app.js':'text/javascript','campus.js':'text/javascript','improvements.js':'text/javascript','campus.css':'text/css','style.css':'text/css','usability.css':'text/css','favicon.svg':'image/svg+xml'}
+def static_files(filename:str, v: str = ''):
+    allowed={'app.js':'text/javascript','campus.js':'text/javascript','improvements.js':'text/javascript',
+             'university.js':'text/javascript','campus.css':'text/css','style.css':'text/css','usability.css':'text/css',
+             'university.css':'text/css','operations.css':'text/css','operations.js':'text/javascript',
+             'units.js':'text/javascript','favicon.svg':'image/svg+xml'}
     if filename not in allowed: raise HTTPException(404)
-    return FileResponse(APP_DIR/'static'/filename,media_type=allowed[filename])
+    cache = 'public, max-age=31536000, immutable' if v == build_id() else 'no-cache'
+    return FileResponse(APP_DIR/'static'/filename,media_type=allowed[filename],headers={'Cache-Control': cache})
 
 
 # Router factories receive the same authentication, ownership and CSRF
@@ -693,6 +714,22 @@ app.include_router(services_router())
 app.include_router(campus_router())
 from .improvements import create_router as improvements_router, install_quota
 app.include_router(improvements_router())
+from .university import create_router as university_router
+from .direct import create_router as direct_router
+from .workspace import create_router as workspace_router
+from .teaching import router as teaching_router
+from .scheduling import router as scheduling_router
+from .references import router as registry_router
+from .table_imports import router as tables_router
+from .units import router as units_router
+app.include_router(university_router())
+app.include_router(direct_router())
+app.include_router(workspace_router())
+app.include_router(teaching_router)
+app.include_router(scheduling_router)
+app.include_router(registry_router)
+app.include_router(tables_router)
+app.include_router(units_router)
 install_quota(app)
 # Install last so headers also cover early quota, CSRF and actor-affinity
 # rejections. Starlette wraps newly added middleware around the existing stack.

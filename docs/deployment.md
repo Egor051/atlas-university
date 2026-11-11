@@ -50,17 +50,23 @@ JSON хранится в `/var/lib/atlas-ops/status.json`, история — в
 ### Публичная приёмка
 
 ```sh
-python scripts/production_acceptance.py --url https://atlas-university.ru --write-demo --report public-api.json
-python scripts/production_browser.py --url https://atlas-university.ru --write-demo --report public-browser.json --screenshots screenshots/public
+python scripts/production_acceptance.py --url https://atlas-university.ru --expect-version 3.2.1 --report public-api.json
+python scripts/production_browser.py --url https://atlas-university.ru --expect-version 3.2.1 --report public-browser.json --screenshots screenshots/public
 ```
 
-Без `--write-demo` эти сценарии не меняют доменные записи. Вход создаёт обычные
-демосеансы; отрицательные проверки записи обязаны получить отказ.
-API-приёмка создаёт одну помеченную заявку и отдельный черновик, браузерная —
-одну заявку на движок. Оба сценария используют реальные ответы и проверяют TLS.
-Идентификатор, имя черновика и hash документа из отчёта API передаются повторно
-через `--request-id`, `--draft-name`, `--expected-document-sha` после restart и
-reboot. Существующие заявки и черновики не удаляются.
+Публичные сценарии проверяют TLS, создают обычные демосеансы и читают записи.
+Готовый документ можно проверить повторно по `--request-id` и
+`--expected-document-sha`. История происхождения прежних тестовых заявок
+задокументирована в [отчёте о навигации](navigation-2026-11-11.md).
+
+Запись, ответы сотрудника и негативные проверки выполняются на одноразовом
+локальном сервере с отдельной SQLite. Скрипты создают его и закрывают вместе
+с временной базой. `--write-demo` требует `--isolated`.
+
+```sh
+python scripts/production_acceptance.py --isolated --write-demo --report local-api.json
+python scripts/production_browser.py --isolated --write-demo --report local-browser.json --screenshots screenshots/local
+```
 
 ### Копия вне VPS
 
@@ -89,7 +95,14 @@ reboot. Существующие заявки и черновики не уда�
 powershell -ExecutionPolicy Bypass -File scripts/start.ps1 -Install
 ```
 
-Повторный запуск: `powershell -ExecutionPolicy Bypass -File scripts/start.ps1`. Параметр `-NoBrowser` отключает автоматическое открытие браузера, `-Port 8001` меняет порт. Скрипт слушает только `127.0.0.1`, использует локальный `atlas.db`, не читает облачные учётные данные и не сбрасывает заявки. Остановка — Ctrl+C. Если порт занят, укажите другой. Переноситесь на сервер вместе с исходниками, но не переносите `.venv`.
+Повторный запуск выполняется командой
+`powershell -ExecutionPolicy Bypass -File scripts/start.ps1`.
+`-NoBrowser` отключает автоматическое открытие браузера.
+`-Port 8001` выбирает другой локальный порт.
+`-DatabasePath` принимает путь к отдельной SQLite в существующей
+папке. По умолчанию используется `atlas.db`. Скрипт слушает
+`127.0.0.1` и сохраняет заявки. Остановка сочетанием Ctrl+C.
+[Пример запуска для ручной приёмки](final-local-acceptance.md#локальный-сервер).
 
 ## Что требуется от VPS
 

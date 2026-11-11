@@ -24,9 +24,7 @@ jobs:
       - run: python -m pytest -q tests/
         env:
           ATLAS_RUN_BROWSER_TESTS: '1'
-      - run: node --check static/app.js
-      - run: node --check static/campus.js
-      - run: node --check static/improvements.js
+      - run: npm run check
       - run: python scripts/browser_check.py
       - run: python scripts/accessibility_check.py
       - run: python scripts/extension_browser_check.py

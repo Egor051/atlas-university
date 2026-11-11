@@ -1,14 +1,14 @@
-"""Real browser acceptance of an already deployed public ATLAS HTTPS origin.
+"""Real browser acceptance over HTTPS or on a disposable local ATLAS server.
 
-No local server is started and no responses are intercepted or mocked. The
-default mode signs in, reads pages and downloads a calendar. --write-demo creates
-one labelled fictional request per engine and changes only that new request.
+The public mode signs in, reads pages and downloads a calendar. Use --isolated
+--write-demo for the request, staff answer and document workflow.
 Browser engines and viewport emulation do not establish physical-device,
 native-Safari or Russian residential/mobile connectivity results.
 """
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -21,10 +21,10 @@ import uuid
 from playwright.sync_api import expect, sync_playwright
 
 from improvement_crossbrowser import STAFF, STUDENT
-from improvement_runtime import ROOT, browser_login, browser_visit, geometry
+from improvement_runtime import ROOT, browser_login, browser_visit, geometry, isolated_server
 
 
-WIDTHS = [(360, 800), (390, 844), (1440, 1000)]
+WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
 KEY_SCREENS = {"home", "schedule", "requests", "staff"}
 WEBKIT_CAPTURE_STYLE_MESSAGE = ("Refused to apply a stylesheet because its hash, its nonce, "
                                 "or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.")
@@ -58,7 +58,8 @@ class Acceptance:
         self.capturing = set()
         self.report = {
             "started_at_utc": now(), "url": args.url,
-            "scope": "Actual public HTTPS pages, real browser engines, no mocked responses; viewport emulation only.",
+            "scope": ("Disposable local server and database" if args.isolated else "Public HTTPS pages")
+                     + "; real browser engines, viewport emulation.",
             "physical_devices": False, "native_safari": False,
             "russian_connection_verified": False, "tls_validation_disabled": False,
             "mode": "write-labelled-fictional-requests" if args.write_demo else "read-only-domain-records",
@@ -191,12 +192,13 @@ class Acceptance:
 
     def workflow(self, a, b, staff, engine):
         base = self.args.url
-        # This shared public demo identity may already have a person's draft.
-        # Fail before opening/editing the form rather than overwriting that data.
+        if not self.args.isolated or urlsplit(base).hostname != "127.0.0.1":
+            raise RuntimeError("The write workflow requires the runner's disposable server")
+        # A leftover draft even on a disposable server would affect the scenario.
         saved = a.request.get(base + "/api/drafts/request")
         self.check(engine + " draft preflight HTTP", saved.status == 200)
         self.check(engine + " existing request draft is empty", not saved.json().get("values"))
-        marker = f"Production browser acceptance {self.token} {engine}: все данные вымышлены."
+        marker = f"Локальная браузерная приёмка {self.token} {engine}."
         for page in (a, b, staff):
             page.set_viewport_size({"width": 360, "height": 800})
         browser_visit(a, base, "requests")
@@ -212,7 +214,7 @@ class Acceptance:
         }""")
         self.check(engine + " restored request draft has no comment", not a.locator("#doc-comment").input_value())
         a.locator("#doc-comment").fill(marker)
-        a.locator("#service-purpose").fill("Вымышленная проверка публичного конкурсного стенда")
+        a.locator("#service-purpose").fill("Вымышленная заявка для локальной приёмки")
         a.locator("#service-copies").select_option("1")
         self.capture(a, engine, "alina", "request-form")
         with a.expect_response(lambda r: r.url == base + "/api/requests" and r.request.method == "POST") as pending:
@@ -233,7 +235,7 @@ class Acceptance:
         row = staff.locator(f'.request-row[data-id="{request_id}"]')
         expect(row).to_be_visible()
         row.click()
-        answer = f"Вымышленный образец готов. Production browser acceptance {self.token} {engine}."
+        answer = "Вымышленный образец справки готов к скачиванию."
         for status in ("review", "processing", "ready"):
             form = staff.locator("#staff-form")
             expect(form).to_be_visible()
@@ -302,9 +304,10 @@ class Acceptance:
                 self.monitor(page, engine, actor)
                 browser_login(page, self.args.url, index)
                 health_response = page.request.get(self.args.url + "/api/health")
-                self.check(engine + " health HTTPS", health_response.status == 200)
+                self.check(engine + " HTTP health", health_response.status == 200)
                 health = health_response.json()
-                self.check(engine + " expected application version", health.get("version") == "3.2.1")
+                if self.args.expect_version:
+                    self.check(engine + " expected application version", health.get("version") == self.args.expect_version)
                 if self.args.expect_build:
                     self.check(engine + " expected public build", health.get("build") == self.args.expect_build)
                 self.report.setdefault("public_release", {key: health.get(key) for key in ("version", "build")})
@@ -331,7 +334,7 @@ class Acceptance:
             self.case(engine + " calendar export", lambda: self.calendar(a, engine),
                       page=a, engine=engine, actor="alina")
             if self.args.write_demo:
-                self.case(engine + " public student-staff-document workflow",
+                self.case(engine + " isolated student-staff-document workflow",
                           lambda: self.workflow(a, b, staff, engine), page=a, engine=engine, actor="alina")
         finally:
             for page, actor in zip(pages, ("alina", "mark", "staff")):
@@ -343,27 +346,32 @@ class Acceptance:
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--url", required=True, help="Already deployed HTTPS origin; no local server is launched.")
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--url", help="Already deployed HTTPS origin for read checks.")
+    target.add_argument("--isolated", action="store_true", help="Start a loopback server with a disposable database.")
     parser.add_argument("--report", required=True, type=Path, help="Credential-free JSON evidence path.")
     parser.add_argument("--screenshots", required=True, type=Path, help="Directory for actual public-page PNGs.")
     parser.add_argument("--no-screenshots", action="store_true", help="Run independently of screenshot instrumentation.")
     parser.add_argument("--engines", default="chromium,firefox,webkit", help="Comma-separated installed browser engines.")
-    parser.add_argument("--expect-build", help="Expected build identifier from the deployment receipt.")
-    parser.add_argument("--write-demo", action="store_true", help="Create exactly one labelled fictional request per engine.")
+    parser.add_argument("--expect-build", help="Expected build identifier from /api/health.")
+    parser.add_argument("--expect-version", help="Expected version from /api/health.")
+    parser.add_argument("--write-demo", action="store_true", help="Exercise request writes on the disposable server.")
     args = parser.parse_args()
-    parsed = urlsplit(args.url)
-    if (parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password
-            or parsed.query or parsed.fragment or parsed.path not in {"", "/"}):
-        parser.error("--url must be one HTTPS origin without credentials, query or path")
-    args.url = args.url.rstrip("/")
+    if args.write_demo and not args.isolated:
+        parser.error("--write-demo requires --isolated and cannot use --url")
+    if args.url:
+        parsed = urlsplit(args.url)
+        if (parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password
+                or parsed.query or parsed.fragment or parsed.path not in {"", "/"}):
+            parser.error("--url must be one HTTPS origin without credentials, query or path")
+        args.url = args.url.rstrip("/")
     args.engines = args.engines.split(",")
     if not args.engines or len(set(args.engines)) != len(args.engines) or not set(args.engines) <= {"chromium", "firefox", "webkit"}:
         parser.error("--engines must be unique names from chromium,firefox,webkit")
     return args
 
 
-def main():
-    args = parse_args()
+def run(args):
     acceptance = Acceptance(args)
     try:
         with sync_playwright() as playwright:
@@ -378,6 +386,14 @@ def main():
         "created_fictional_requests": acceptance.report["created_fictional_requests"],
         "failures": len(acceptance.report["failures"]), "report": str(args.report.resolve())}, ensure_ascii=False))
     return 0 if acceptance.report["status"] == "PASS" else 1
+
+
+def main():
+    args = parse_args()
+    with isolated_server() if args.isolated else nullcontext() as server:
+        if server:
+            args.url = server['base']
+        return run(args)
 
 
 if __name__ == "__main__":

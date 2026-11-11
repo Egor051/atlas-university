@@ -64,6 +64,14 @@ def commit_idempotent(db, receipt, payload):
     return payload
 
 
+def consultation_scope(user):
+    from .workspace_db import GroupMember, TeacherConsultation, TeachingLoad
+    linked = select(TeacherConsultation.slot_id).where(TeacherConsultation.slot_id == ConsultationSlot.id).exists()
+    assigned = (select(TeacherConsultation.slot_id).join(TeachingLoad).join(GroupMember, GroupMember.group_id == TeachingLoad.group_id)
+                .where(TeacherConsultation.slot_id == ConsultationSlot.id, GroupMember.student_id == user.id).exists())
+    return or_(~linked, assigned)
+
+
 CONTACTS = [
     {'id': 1, 'name': 'Учебный офис', 'role': 'Заявки, справки и учебные вопросы', 'department': 'Студенческий офис', 'subject': '', 'room': 'Корпус Б, Б-102', 'hours': 'Пн–пт, 09:00–17:00 · МСК', 'email': 'office@atlas.example'},
     {'id': 2, 'name': 'М. Орлов', 'role': 'Преподаватель', 'department': 'Институт цифровых технологий', 'subject': 'Алгоритмы и структуры данных', 'room': 'Корпус А, А-301', 'hours': 'Вт, 15:00–16:00 · запись в кабинете', 'email': 'orlov@atlas.example'},
@@ -270,7 +278,7 @@ def create_router():
 
     @router.get('/api/services/consultations')
     def consultations(scope: Literal['upcoming','archive','all'] = 'upcoming', q: str = Query('', max_length=100), record_id: int | None = Query(None, ge=1), limit: int = Query(300, ge=1, le=300), offset: int = Query(0, ge=0, le=2147483647), user: User = Depends(require_student), db: Session = Depends(get_db)):
-        conditions = scoped_catalog(ConsultationSlot, scope, record_id) + search_catalog([ConsultationSlot.subject, ConsultationSlot.teacher], q)
+        conditions = scoped_catalog(ConsultationSlot, scope, record_id) + search_catalog([ConsultationSlot.subject, ConsultationSlot.teacher], q) + [consultation_scope(user)]
         query = select(ConsultationSlot).where(*conditions).order_by(ConsultationSlot.start_at, ConsultationSlot.id)
         rows, meta = page_rows(db, query, limit, offset)
         mine = {b.slot_id: b.id for b in db.scalars(select(ConsultationBooking).where(ConsultationBooking.student_id == user.id, ConsultationBooking.status == 'active', ConsultationBooking.slot_id.in_([row.id for row in rows]))).all()}
@@ -286,7 +294,9 @@ def create_router():
 
     @router.post('/api/services/consultations/{slot_id}/book', status_code=201)
     def book_consultation(slot_id: int, body: EmptyBody, request: Request, response: Response, user: User = Depends(require_student), db: Session = Depends(get_db), _: None = Depends(require_same_origin)):
-        slot = not_found(db.get(ConsultationSlot, slot_id))
+        from .workspace import lock_workspace
+        lock_workspace(db,user.id)
+        slot = not_found(db.scalar(select(ConsultationSlot).where(ConsultationSlot.id==slot_id,consultation_scope(user))))
         receipt, replay = begin_idempotent(db, request, response, user, f'consultation-book:{slot_id}', {})
         if replay is not None: return replay
         # This UPDATE is both a capacity guard and a row lock. Duplicate checks
@@ -302,6 +312,13 @@ def create_router():
         row = ConsultationBooking(student_id=user.id, slot_id=slot_id, status='active', created_at=utc_now())
         db.add(row)
         notify(db, user.id, 'Запись на консультацию сохранена', f'{slot.subject}: {slot.teacher}. Подробности в разделе консультаций.', '/app/consultations')
+        from .university_db import Teacher, TeachingAssignment
+        from .workspace_db import TeacherConsultation, TeachingLoad
+        from .workspace import notify as workspace_notify
+        teacher_id = db.scalar(select(Teacher.user_id).select_from(TeacherConsultation).join(TeachingLoad)
+                               .join(TeachingAssignment).join(Teacher).where(TeacherConsultation.slot_id==slot_id))
+        if teacher_id:
+            workspace_notify(db,teacher_id,'Новая запись на консультацию',slot.subject,'/app/teach-consultations')
         db.flush()
         db.refresh(slot)
         return commit_idempotent(db, receipt, booking_payload(db, row))
@@ -328,9 +345,15 @@ def create_router():
 
     @router.post('/api/staff/consultations', status_code=201)
     def add_consultation(body: SlotBody, request: Request, response: Response, user: User = Depends(require_staff), db: Session = Depends(get_db), _: None = Depends(require_same_origin)):
+        from .workspace import lock_workspace
+        from .scheduling import aliases, teacher_is_busy
+        from .university_db import Teacher
+        lock_workspace(db,user.id)
         receipt, replay = begin_idempotent(db, request, response, user, 'consultation-create', body.model_dump())
         if replay is not None: return replay
         validate_future_publication(body.start_at)
+        if any(body.teacher in aliases(t) and teacher_is_busy(db,t,body.start_at,body.end_at) for t in db.scalars(select(Teacher))):
+            raise HTTPException(409,'В это время преподаватель уже занят')
         row = ConsultationSlot(**body.model_dump(), booked_count=0)
         db.add(row)
         db.flush()

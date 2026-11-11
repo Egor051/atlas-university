@@ -94,7 +94,7 @@ def enter_demo(page, index, first_name):
 
 
 def leave_demo(page):
-    page.locator(".sidebar [data-route='profile']").first.click()
+    page.locator(".topbar [data-route='profile']").click()
     expect(page.locator("#page-title")).to_have_text("Мой профиль")
     page.locator(".danger-button[data-action='logout']").click()
     expect(page.locator("#login-form")).to_be_visible()
@@ -194,6 +194,7 @@ def test_ambiguous_submission_reuses_key_when_session_storage_is_blocked(fronten
     """)
     page.goto(address)
     enter_demo(page, 0, "Алина")
+    page.locator('.nav-group summary').filter(has_text='Сервисы деканата').click()
     page.locator(".nav-stack [data-route='requests']").click()
     expect(page.locator("#page-title")).to_have_text("Заявки и справки")
     page.locator(".page-actions [data-action='new-request']").click()

@@ -1,0 +1,63 @@
+{
+  "checked_at_utc": "2026-11-11T12:28:15.639722+00:00",
+  "scope": "Disposable SQLite backup and local Docker PostgreSQL",
+  "revision": "0007_university_library_direct",
+  "checks": {
+    "sqlite_preservation": {
+      "before_revision": "0006_audit_integrity",
+      "after_revision": "0007_university_library_direct",
+      "old_application_tables_preserved": 37,
+      "new_tables": [
+        "direct_contacts",
+        "direct_dialogs",
+        "direct_messages",
+        "teaching_materials",
+        "university_departments",
+        "university_disciplines",
+        "university_faculties",
+        "university_teachers",
+        "university_teaching_assignments",
+        "university_teaching_slots"
+      ],
+      "original_file_sha256_unchanged": true,
+      "original_revision": "0005_contest_hardening"
+    },
+    "sqlite_workflow": [
+      "directory relationship",
+      "Cyrillic search",
+      "HTML download",
+      "concurrent replay",
+      "message after process restart",
+      "non-participant denied",
+      "read and notification acknowledged"
+    ],
+    "postgresql_preservation": {
+      "before_revision": "0006_audit_integrity",
+      "after_revision": "0007_university_library_direct",
+      "old_application_tables_preserved": 37,
+      "new_tables": [
+        "direct_contacts",
+        "direct_dialogs",
+        "direct_messages",
+        "teaching_materials",
+        "university_departments",
+        "university_disciplines",
+        "university_faculties",
+        "university_teachers",
+        "university_teaching_assignments",
+        "university_teaching_slots"
+      ],
+      "version": "17.11"
+    },
+    "postgresql_workflow": [
+      "directory relationship",
+      "Cyrillic search",
+      "HTML download",
+      "concurrent replay",
+      "message after process restart",
+      "non-participant denied",
+      "read and notification acknowledged"
+    ]
+  },
+  "status": "PASS"
+}

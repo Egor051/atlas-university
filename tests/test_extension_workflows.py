@@ -27,7 +27,9 @@ def test_cli_migrate_and_seed_share_extension_metadata_without_losing_rows():
         try:
             tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             assert {'learning_courses', 'consultation_slots', 'portfolio_items', 'support_tickets'} <= tables
-            assert connection.execute('SELECT count(*) FROM users').fetchone()[0] == 3
+            assert connection.execute('SELECT role, count(*) FROM users GROUP BY role ORDER BY role').fetchall() == [
+                ('admin', 1), ('scheduler', 1), ('staff', 1), ('student', 2), ('teacher', 4), ('union', 1), ('vuc', 1),
+            ]
             assert connection.execute('SELECT count(*) FROM learning_courses').fetchone()[0] == 10
             assert connection.execute('SELECT count(*) FROM schema_migrations WHERE version=?', ('0004_full_campus',)).fetchone()[0] == 1
         finally:

@@ -91,7 +91,7 @@ def test_offline_indicator_persists_and_reconnection_keeps_form(frontend_page):
     page.context.set_offline(True)
     page.wait_for_timeout(5500)  # Past the old ephemeral toast lifetime.
     expect(page.locator('#connection-state')).to_contain_text('Нет сети')
-    expect(page.locator('#connection-state button')).to_be_disabled()
+    expect(page.locator('#refresh-current')).to_be_disabled()
     page.context.set_offline(False)
     expect(page.locator('#connection-state')).not_to_contain_text('Нет сети')
     expect(form.locator('[name="body"]')).to_have_value('Текст должен сохраниться при восстановлении связи.')

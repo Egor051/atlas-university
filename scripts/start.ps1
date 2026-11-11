@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidateRange(1024, 65535)][int]$Port = 8000,
+    [string]$DatabasePath = '',
     [switch]$NoBrowser,
     [switch]$Install
 )
@@ -27,8 +28,15 @@ $env:DEMO_MODE = 'true'
 $env:COOKIE_SECURE = 'false'
 $env:PUBLIC_ORIGIN = "http://127.0.0.1:$Port"
 $env:ALLOWED_HOSTS = '127.0.0.1,localhost'
-$dbPath = (Join-Path $projectRoot 'atlas.db').Replace([IO.Path]::DirectorySeparatorChar, [char]'/')
-$env:DATABASE_URL = "sqlite:///$dbPath"
+$dbPath = if ([string]::IsNullOrWhiteSpace($DatabasePath)) {
+    Join-Path $projectRoot 'atlas.db'
+} else {
+    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($DatabasePath)
+}
+if (-not (Test-Path -LiteralPath ([IO.Path]::GetDirectoryName($dbPath)) -PathType Container)) {
+    throw 'The directory for the local SQLite database must exist.'
+}
+$env:DATABASE_URL = 'sqlite:///' + $dbPath.Replace([IO.Path]::DirectorySeparatorChar, [char]'/')
 Write-Host "ATLAS Campus: http://127.0.0.1:$Port"
 Write-Host 'Contest concept. All data is fictional. Press Ctrl+C to stop; your requests remain saved.'
 $portProbe = [Net.Sockets.TcpClient]::new()

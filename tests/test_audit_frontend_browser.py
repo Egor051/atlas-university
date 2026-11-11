@@ -159,7 +159,7 @@ def test_deadline_refresh_keeps_write_locked_until_response_settles(frontend_pag
         actual=route.fetch();assert actual.status==200;held.append((route,actual))
     page.route(f'**/api/deadlines/{rid}/toggle',hold)
     mark.set_checked(not before);wait_for_held_response(page,held)
-    page.locator('[data-refresh-current]').click()
+    page.locator('#refresh-current').click()
     replacement=page.locator(f'[data-deadline="{rid}"]');expect(replacement).to_be_disabled();expect(replacement).to_be_checked(checked=not before)
     # Even a programmatic change cannot create a second overlapping write.
     replacement.evaluate('(node)=>{node.checked=!node.checked;node.dispatchEvent(new Event("change",{bubbles:true}));}')

@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "build": "87835a508cb284c1",
+  "checked_at_utc": "2026-11-11T17:01:43.048127+00:00",
+  "checks": [
+    "unsupported extension, invalid UTF-8 and oversized file rejected",
+    "invalid selection preserves editor text",
+    "valid UTF-8 Markdown imported and published",
+    "student reads and downloads actual escaped HTML"
+  ]
+}

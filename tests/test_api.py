@@ -1,18 +1,6 @@
 """Security regression and end-to-end API tests, using only fictional fixture data."""
-import os
-import tempfile
-import atexit
-from pathlib import Path
-
-# Configure isolated DB *before* the application imports its SQLAlchemy engine.
-_testdir = tempfile.TemporaryDirectory(prefix='atlas-tests-')
-os.environ['DATABASE_URL'] = 'sqlite:///' + str(Path(_testdir.name)/'test.db')
 from fastapi.testclient import TestClient
 from app.main import app
-from app.db import engine
-
-# Release pooled SQLite handles before TemporaryDirectory cleanup on Windows.
-atexit.register(engine.dispose)
 
 
 def client(): return TestClient(app)

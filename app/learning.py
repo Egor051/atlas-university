@@ -16,6 +16,7 @@ from .learning_db import (Course, CourseModule, AssignmentSubmission, StudyNote,
 from .services import begin_idempotent, commit_idempotent
 from .storage_guards import (lock_owner, update_personal, delete_personal,
                              require_record_token, identity_conditions)
+from .workspace_db import GroupWork, WorkDelivery
 
 
 def create_router():
@@ -78,23 +79,36 @@ def create_router():
         return dict(id=row.id, text=row.text, url=row.url, status=row.status, version=row.version,
                     submitted_at=date_iso(row.submitted_at), updated_at=date_iso(row.updated_at))
 
-    def assignment_payload(deadline, db, user, submissions=None):
-        submission = submissions.get(deadline.id) if submissions is not None else db.scalar(select(AssignmentSubmission).where(AssignmentSubmission.deadline_id == deadline.id, AssignmentSubmission.student_id == user.id))
+    def assignment_payload(deadline, submission, instructions, feedback):
+        default_instructions = 'Подготовьте решение, опишите ход работы и проверку результата. Вставьте текст работы или добавьте HTTPS-ссылку на учебный материал. Это сдача внутри конкурсного прототипа: реальному преподавателю работа не отправляется.'
         return dict(id=deadline.id, deadline_id=deadline.id, subject=deadline.subject, title=deadline.title, due_date=date_iso(deadline.due_date), is_done=deadline.is_done,
-                    instructions='Подготовьте решение, опишите ход работы и проверку результата. Вставьте текст работы или добавьте HTTPS-ссылку на учебный материал. Это сдача внутри конкурсного прототипа: реальному преподавателю работа не отправляется.',
+                    instructions=instructions or default_instructions, feedback=feedback.get(submission.id,[]) if submission else [],
                     submission=submission_payload(submission), overdue=deadline.due_date < campus_today())
+
+    def assignment_detail_payload(deadline, db, user):
+        from .teaching import assignment_feedback
+        submission = db.scalar(select(AssignmentSubmission).where(AssignmentSubmission.deadline_id == deadline.id,
+                                                                    AssignmentSubmission.student_id == user.id))
+        instructions = db.scalar(select(GroupWork.instructions).join(WorkDelivery).where(WorkDelivery.deadline_id == deadline.id))
+        return assignment_payload(deadline, submission, instructions, assignment_feedback(db,[submission] if submission else []))
 
     @router.get('/assignments')
     def assignments(user: User = Depends(require_student), db: Session = Depends(get_db)):
-        rows = db.scalars(select(Deadline).where(Deadline.student_id == user.id).order_by(Deadline.due_date, Deadline.id).limit(200)).all()
-        submissions = {s.deadline_id:s for s in db.scalars(select(AssignmentSubmission).where(AssignmentSubmission.student_id == user.id, AssignmentSubmission.deadline_id.in_([row.id for row in rows])))}
-        items = [assignment_payload(row, db, user, submissions) for row in rows]
+        from .teaching import assignment_feedback
+        query = (select(Deadline, GroupWork.instructions).outerjoin(WorkDelivery, WorkDelivery.deadline_id == Deadline.id)
+                 .outerjoin(GroupWork, GroupWork.id == WorkDelivery.work_id).where(Deadline.student_id == user.id)
+                 .order_by(Deadline.due_date, Deadline.id).limit(200))
+        rows = db.execute(query).all()
+        submissions = {row.deadline_id:row for row in db.scalars(select(AssignmentSubmission).where(
+            AssignmentSubmission.student_id == user.id, AssignmentSubmission.deadline_id.in_([deadline.id for deadline,_ in rows])))}
+        feedback = assignment_feedback(db, submissions.values())
+        items = [assignment_payload(row, submissions.get(row.id), instructions, feedback) for row,instructions in rows]
         submitted = sum(bool(item['submission'] and item['submission']['status'] == 'submitted') for item in items)
         return dict(items=items, summary=dict(total=len(items), submitted=submitted, pending=len(items)-submitted))
 
     @router.get('/assignments/{deadline_id}')
     def assignment_detail(deadline_id: int, user: User = Depends(require_student), db: Session = Depends(get_db)):
-        return assignment_payload(owned(db, Deadline, deadline_id, user), db, user)
+        return assignment_detail_payload(owned(db, Deadline, deadline_id, user), db, user)
 
     class SubmissionBody(StrictBody):
         text: str = Field(min_length=10, max_length=8000)
@@ -146,7 +160,9 @@ def create_router():
         except IntegrityError:
             db.rollback()
             raise HTTPException(409, 'Работа уже сохранена другой отправкой. Обновите раздел.') from None
-        return commit_idempotent(db, receipt, assignment_payload(deadline, db, user))
+        from .teaching import submission_notice
+        submission_notice(db, deadline)
+        return commit_idempotent(db, receipt, assignment_detail_payload(deadline, db, user))
 
     @router.post('/assignments/{deadline_id}/withdraw', dependencies=protected)
     def withdraw_assignment(deadline_id: int, request: Request, response: Response, user: User = Depends(require_student), db: Session = Depends(get_db)):
@@ -162,7 +178,7 @@ def create_router():
             db.rollback()
             raise HTTPException(409, 'Работа уже изменилась. Обновите раздел.')
         db.flush()
-        return commit_idempotent(db, receipt, assignment_payload(deadline, db, user))
+        return commit_idempotent(db, receipt, assignment_detail_payload(deadline, db, user))
 
     @router.get('/exams')
     def exams(user: User = Depends(require_student), db: Session = Depends(get_db)):

@@ -33,6 +33,8 @@ def quota_limit(bucket, period):
     # Public shared fictional accounts need meaningful limits. Local development
     # permits repeat automated acceptance; the same algorithm is tested below.
     limits = {'write': (180,2000), 'create': (60,500), 'draft': (120,3000)}
+    if bucket == 'direct':
+        return (12, 120)[period]
     return limits[bucket][period] * (1 if settings.app_env=='production' else 20)
 
 def reserve_write(db,user_id,bucket,now):
@@ -50,11 +52,15 @@ def creates_resource(path,method):
     if method!='POST':return False
     path=canonical_resource_path(path)
     if path in {'/api/requests','/api/services/tickets','/api/staff/consultations','/api/staff/events','/api/staff/announcements',
-                '/api/learning/notes','/api/learning/flashcards','/api/learning/tasks','/api/learning/focus-sessions','/api/campus/portfolio'}:
+                '/api/learning/notes','/api/learning/flashcards','/api/learning/tasks','/api/learning/focus-sessions','/api/campus/portfolio',
+                '/api/materials','/api/direct/dialogs','/api/teaching/consultations','/api/scheduling/changes'}:
         return True
     return bool(re.fullmatch(r'/api/(?:services|staff)/tickets/[0-9]+/messages',path)
                 or re.fullmatch(r'/api/services/(?:consultations/[0-9]+/book|events/[0-9]+/register|library/[0-9]+/borrow)',path)
-                or re.fullmatch(r'/api/learning/(?:assignments/[0-9]+/submit|quizzes/[0-9]+/attempt)',path))
+                or re.fullmatch(r'/api/learning/(?:assignments/[0-9]+/submit|quizzes/[0-9]+/attempt)',path)
+                or re.fullmatch(r'/api/direct/dialogs/[0-9]+/messages',path)
+                or re.fullmatch(r'/api/teaching/[0-9]+/works(?:/[0-9]+/feedback/[0-9]+)?',path)
+                or re.fullmatch(r'/api/units/(?:union|vuc)/cases',path))
 
 def charge_token(token,path,method,expected_actor=None):
     # Synchronous DB work is dispatched to a worker thread by middleware so a

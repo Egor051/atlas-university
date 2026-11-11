@@ -1,0 +1,92 @@
+{
+  "started_at_utc": "2026-11-11T13:44:22.038750+00:00",
+  "finished_at_utc": "2026-11-11T13:44:45.792084+00:00",
+  "status": "PASS",
+  "scope": "Disposable SQLite and loopback Docker PostgreSQL, no production access",
+  "sqlite": {
+    "before_revision": "0007_university_library_direct",
+    "after_revision": "0009_student_units",
+    "preserved_tables": 47,
+    "preserved_rows": 410,
+    "new_tables": [
+      "academic_classes",
+      "academic_classrooms",
+      "academic_group_members",
+      "academic_group_work",
+      "academic_groups",
+      "academic_schedule_changes",
+      "academic_teacher_consultations",
+      "academic_teaching_loads",
+      "academic_work_deliveries",
+      "academic_work_feedback",
+      "center_enrollments",
+      "center_groups",
+      "center_programs",
+      "center_sessions",
+      "union_memberships",
+      "unit_case_events",
+      "unit_cases",
+      "unit_publications",
+      "workspace_notices",
+      "workspace_operation_events",
+      "workspace_table_imports"
+    ],
+    "repeated_upgrade_preserved": true,
+    "restarted_process": [
+      "grade and author history",
+      "published lesson in both cabinets",
+      "union membership and file",
+      "VUC enrollment, calendar and result",
+      "notifications survived",
+      "other roles and students denied",
+      "XLSX report served"
+    ]
+  },
+  "postgresql": {
+    "before_revision": "0007_university_library_direct",
+    "after_revision": "0009_student_units",
+    "preserved_tables": 47,
+    "preserved_rows": 410,
+    "new_tables": [
+      "academic_classes",
+      "academic_classrooms",
+      "academic_group_members",
+      "academic_group_work",
+      "academic_groups",
+      "academic_schedule_changes",
+      "academic_teacher_consultations",
+      "academic_teaching_loads",
+      "academic_work_deliveries",
+      "academic_work_feedback",
+      "center_enrollments",
+      "center_groups",
+      "center_programs",
+      "center_sessions",
+      "union_memberships",
+      "unit_case_events",
+      "unit_cases",
+      "unit_publications",
+      "workspace_notices",
+      "workspace_operation_events",
+      "workspace_table_imports"
+    ],
+    "repeated_upgrade_preserved": true,
+    "restarted_process": [
+      "grade and author history",
+      "published lesson in both cabinets",
+      "union membership and file",
+      "VUC enrollment, calendar and result",
+      "notifications survived",
+      "other roles and students denied",
+      "XLSX report served"
+    ],
+    "version": "17.11"
+  },
+  "local_sqlite_copy": {
+    "revision": "0009_student_units",
+    "tables": 68,
+    "rows": 458,
+    "repeated_upgrade_preserved": true,
+    "original_sha256_unchanged_during_run": true
+  }
+}

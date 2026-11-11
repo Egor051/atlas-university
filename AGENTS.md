@@ -13,11 +13,17 @@
 | Учебный контур | `app/learning.py`, `app/learning_db.py` |
 | Сервисы и повтор запросов | `app/services.py`, `app/services_db.py` |
 | Поиск, профиль, портфолио | `app/campus.py`, `app/campus_db.py` |
+| Каталог университета и учебные файлы | `app/university.py`, `app/university_db.py`, `app/university_seed.py` |
+| Личная переписка и права участников | `app/direct.py`, `static/university.js` |
+| Журналы, задания, проверка работ и консультации | `app/teaching.py`, `app/workspace_db.py`, `static/operations.js` |
+| Расписание, аудитории, группы и таблицы | `app/scheduling.py`, `app/references.py`, `app/table_imports.py`, `app/table_formats.py` |
+| Профсоюз и ВУЦ | `app/units.py`, `app/units_db.py`, `app/units_seed.py`, `static/units.js` |
 | SQLAlchemy-модели, фиктивная база | `app/db.py` |
 | React-free фронтенд, маршрутизация, компоненты | `static/app.js`, `static/campus.js` |
 | Черновики, ошибки, связь | `static/improvements.js` |
 | Стили и медиазапросы | `static/style.css`, `static/usability.css`, `static/campus.css` |
 | Безопасность API и сценарии | `tests/test_api.py` |
+| Изоляция БД перед сбором тестов | `tests/conftest.py` |
 | HTTPS/DB-деплой | `compose.yaml`, `Dockerfile`, `deploy/Caddyfile` |
 | Скриншоты и процесс создания | `screenshots/`, `docs/` |
 
@@ -59,3 +65,11 @@
 ## Версия 3.2: текущие контракты
 
 Схема 0005 аддитивная; не удалять БД. Студент добавляет уточнение или просьбу об отзыве, статус меняет только сотрудник. При переходе к записи сохранять id/date/subject/kind и проверки эпохи сеанса. Черновики принадлежат пользователю: ключ сохраняется до основной отправки, fingerprint - SHA-256, после await повторно проверяются uid и epoch. Новые проверки: tests/test_improvements_*.py и scripts/improvement_*.py. Реальные интервью, физические устройства и РФ не подменяются симуляцией.
+
+## Версия 3.3
+
+Схема 0007 добавляет каталог, материалы и личные диалоги. Роль `teacher`
+управляет публикациями по своим назначениям и видит свои диалоги. Офис
+управляет публикациями всех дисциплин. Оба участника диалога проверяются
+по сеансу, текст выводится как данные. Сценарии приёмки с записью запускают
+собственную временную базу через `--isolated`.

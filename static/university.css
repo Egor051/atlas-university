@@ -1,0 +1,51 @@
+.school-filter {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.school-filter .field, .school-compose .field { margin-bottom: 0; }
+.school-filter .field > *, .school-compose textarea { min-width: 0; width: 100%; }
+.school-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.school-section, .school-detail-grid, .school-inbox { margin-bottom: 14px; min-width: 0; }
+.school-section > h2, .school-inbox h2, .school-reader h2 { margin: 0 0 12px; font-size: 17px; }
+.school-detail-grid, .school-inbox { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.school-detail-grid .school-section { margin: 0; }
+.school-section p, .school-reader p { color: #49516a; line-height: 1.6; }
+.school-tile { overflow-wrap: anywhere; }
+.school-tile h2, .school-inbox .compact-row h2 { margin: 0; font-size: 15px; }
+.school-card-link { color: #504294; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.school-meta { color: #565e75; font-size: 12px; }
+.school-list { list-style: none; margin: 0; padding: 0; }
+.school-list li { padding: 10px 0; overflow-wrap: anywhere; }
+.school-list li + li { border-top: 1px solid var(--border); }
+.school-list li > p { margin: 3px 0 0; }
+.school-list .mini-link { margin-top: 4px; }
+.school-material-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: #49516a; margin: 0 0 14px; }
+.school-reader { overflow-wrap: anywhere; }
+.school-reader section + section { margin-top: 22px; }
+.school-reader p, .school-conversation li p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.school-reader p + p { margin-top: 8px; }
+.school-slide-nav { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 12px; }
+.school-slides section { border: 1px solid var(--border); border-radius: 14px; background: #f9f7fe; padding: 18px; }
+.school-inbox .school-filter { display: flex; flex-wrap: wrap; }
+.school-inbox .school-filter > .field { flex: 1 1 12rem; }
+.school-compose { display: grid; gap: 10px; margin-top: 16px; }
+.school-compose > button { justify-self: start; }
+.school-conversation li { min-width: 0; max-width: 86%; }
+.school-conversation li small { display: block; margin-top: 6px; color: #565e75; font-size: 12px; }
+.direct-count { margin-left: auto; border-radius: 8px; background: #eae4fb; color: #4e3b98; padding: 2px 5px; }
+.bottom-nav .direct-count { position: absolute; top: 4px; right: 4px; }
+.bottom-nav .nav-item { position: relative; }
+.school-section > .mini-link { margin-top: 12px; }
+
+@media (max-width: 900px) {
+  .topbar { padding-inline: 12px; column-gap: 4px; }
+}
+@media (max-width: 700px) {
+  .school-detail-grid, .school-inbox { grid-template-columns: 1fr; }
+  .school-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .school-filter > .field:first-child, .school-filter > .school-actions { grid-column: 1 / -1; }
+  .school-conversation li { max-width: 100%; }
+}

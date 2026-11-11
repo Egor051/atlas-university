@@ -1,0 +1,2 @@
+# Keep POSIX shell scripts executable in Linux containers from any checkout.
+*.sh text eol=lf

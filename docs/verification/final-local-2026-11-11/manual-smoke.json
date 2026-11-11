@@ -1,0 +1,93 @@
+{
+  "status": "PASS",
+  "checked_at_utc": "2026-11-11T17:04:35.087807+00:00",
+  "url": "http://127.0.0.1:8000",
+  "health": {
+    "ok": true,
+    "service": "ATLAS Campus",
+    "version": "3.5.0",
+    "build": "87835a508cb284c1"
+  },
+  "ready": true,
+  "concept": true,
+  "database": "tmp/manual-acceptance-2026-11-11/atlas.sqlite3",
+  "schema": "0009_student_units",
+  "seeded_rows": {
+    "users": 11,
+    "document_requests": 3,
+    "unit_cases": 0,
+    "direct_messages": 0,
+    "workspace_table_imports": 0,
+    "login_sessions": 0
+  },
+  "accounts": [
+    {
+      "login": "alina.demo",
+      "role": "student",
+      "read_endpoint": "/api/grades",
+      "status": 200
+    },
+    {
+      "login": "mark.demo",
+      "role": "student",
+      "read_endpoint": "/api/grades",
+      "status": 200
+    },
+    {
+      "login": "orlov.demo",
+      "role": "teacher",
+      "read_endpoint": "/api/teaching",
+      "status": 200
+    },
+    {
+      "login": "ryabinina.demo",
+      "role": "teacher",
+      "read_endpoint": "/api/teaching",
+      "status": 200
+    },
+    {
+      "login": "lastochkina.demo",
+      "role": "teacher",
+      "read_endpoint": "/api/teaching",
+      "status": 200
+    },
+    {
+      "login": "zorin.demo",
+      "role": "teacher",
+      "read_endpoint": "/api/teaching",
+      "status": 200
+    },
+    {
+      "login": "dean.demo",
+      "role": "staff",
+      "read_endpoint": "/api/staff/requests",
+      "status": 200
+    },
+    {
+      "login": "schedule.demo",
+      "role": "scheduler",
+      "read_endpoint": "/api/scheduling/options",
+      "status": 200
+    },
+    {
+      "login": "registry.demo",
+      "role": "admin",
+      "read_endpoint": "/api/registry",
+      "status": 200
+    },
+    {
+      "login": "union.demo",
+      "role": "union",
+      "read_endpoint": "/api/units/union/cases",
+      "status": 200
+    },
+    {
+      "login": "vuc.demo",
+      "role": "vuc",
+      "read_endpoint": "/api/units/vuc/learning",
+      "status": 200
+    }
+  ],
+  "chromium": "student login, union page and logout",
+  "working_atlas_db_sha256_unchanged": true
+}

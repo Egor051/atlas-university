@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from urllib.parse import urlsplit, unquote
 
 APP_ENVIRONMENTS = {'development', 'test', 'production'}
+DEMO_LOGINS = frozenset({'alina.demo', 'mark.demo', 'dean.demo', 'orlov.demo',
+                         'ryabinina.demo', 'lastochkina.demo', 'zorin.demo',
+                         'schedule.demo', 'registry.demo', 'union.demo', 'vuc.demo'})
 
 
 def env_bool(name: str, default: bool = False) -> bool:

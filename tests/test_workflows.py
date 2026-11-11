@@ -61,7 +61,11 @@ def test_additive_legacy_migration_preserves_records_and_is_repeatable():
             assert record[:4] == (101, 'Preserve me', 'ready', 1)
             assert record[4] and record[5]
             assert database.execute('SELECT COUNT(*) FROM request_events WHERE request_id=101').fetchone()[0] == 1
-            assert database.execute('SELECT version FROM schema_migrations ORDER BY version').fetchall() == [('0002_workflow',), ('0003_listing_indexes',), ('0004_full_campus',), ('0005_contest_hardening',), ('0006_audit_integrity',)]
+            assert database.execute('SELECT version FROM schema_migrations ORDER BY version').fetchall() == [
+                ('0002_workflow',), ('0003_listing_indexes',), ('0004_full_campus',), ('0005_contest_hardening',),
+                ('0006_audit_integrity',), ('0007_university_library_direct',), ('0008_academic_workspace',),
+                ('0009_student_units',),
+            ]
             assert database.execute('SELECT body,target FROM notifications WHERE id=201').fetchone() == ('Preserve notice', '/app/requests')
 
 
