@@ -76,11 +76,15 @@ def main():
                     for target in ['grades','schedule','requests']:
                         start=time.perf_counter()
                         link_selector=f'[data-route="{target}"]'
-                        visible_link=page.locator(link_selector).filter(visible=True).first
-                        if not visible_link.is_visible():
+                        shortcut=page.locator(f'.bottom-nav {link_selector}')
+                        if shortcut.is_visible():
+                            shortcut.click()
+                        else:
                             group=page.locator('.sidebar .nav-group').filter(has=page.locator(link_selector))
-                            group.locator('summary').click()
-                        visible_link.click()
+                            toggle=group.locator('.nav-group-toggle')
+                            if toggle.get_attribute('aria-expanded')=='false':
+                                toggle.click()
+                            group.locator(link_selector).click()
                         browser_ready(page)
                         # Wait for route render, not merely the previous page's ready state.
                         expect(page).to_have_url(server['base']+'/app/'+target)
