@@ -50,6 +50,7 @@
   color: var(--atlas-accent-text);
 }
 .nav-stack .nav-item .icon { width: 18px; height: 18px; }
+.nav-stack .nav-badge { background: #a83250; color: #fff; }
 .nav-stack .nav-item .nav-chevron { width: 14px; height: 14px; margin-left: auto; transition: transform 180ms ease; }
 .nav-group.is-open .nav-chevron { transform: rotate(90deg); }
 .nav-group-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 180ms ease; }
