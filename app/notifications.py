@@ -25,6 +25,8 @@ def create_deadline_reminders(db, user_id):
                    body=f'{row.title} · до {row.due_date:%d.%m.%Y}', category='deadline',
                    is_read=False, created_at=now, target=f'/app/assignments?id={row.id}',
                    event_key=f'deadline:{user_id}:{row.id}:{row.due_date.isoformat()}') for row in due]
-    result = db.execute(insert(Notification).values(values).on_conflict_do_nothing(index_elements=['event_key']))
+    statement = (insert(Notification).values(values).on_conflict_do_nothing(index_elements=['event_key'])
+                 .returning(Notification.id))
+    created = db.scalars(statement).all()
     db.commit()
-    return result.rowcount
+    return len(created)

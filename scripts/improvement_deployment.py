@@ -226,6 +226,17 @@ with SessionLocal() as db:
             report['health']=a.call('/api/health');assert a.call('/api/ready')['ok']
             assert a.call('/api/me')['group']!=b.call('/api/me')['group']
             report['checks'].append('TLS certificate verified against explicit local CA; Secure/HttpOnly/SameSite cookies')
+            deadline_id = int(sql("INSERT INTO deadlines (student_id, subject, title, due_date, is_done) "
+                                  "SELECT id, 'ATLAS verification', 'Reminder race', "
+                                  "(now() AT TIME ZONE 'Europe/Moscow')::date, false "
+                                  "FROM users WHERE login='mark.demo' RETURNING id").splitlines()[0])
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                reminder_counts = list(pool.map(lambda _: b.call('/api/notifications/deadline-reminders', {})['created'], range(2)))
+            assert min(reminder_counts) == 0 < max(reminder_counts), reminder_counts
+            reminder_target = f'/app/assignments?id={deadline_id}'
+            assert sum(item['target'] == reminder_target for item in b.call('/api/notifications?filter=deadline')) == 1
+            assert all(item['target'] != reminder_target for item in a.call('/api/notifications?filter=deadline'))
+            report['checks'].append('PostgreSQL concurrent reminders count committed inserts and store one notice for its owner')
             # Fill only synthetic sessions in this newly created test database.
             # Distinct addresses are injected solely by Caddyfile.test's local
             # trusted-proxy route, so the account cap is tested across IP locks.
