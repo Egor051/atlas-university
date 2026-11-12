@@ -1,12 +1,12 @@
 /* Account-bound durable drafts. Mutations for one draft share one queue. */
 (() => {
   'use strict';
-  let c,recovery=null,lastFresh=null,lifecycle=0;
+  let c,recovery=null,lifecycle=0;
   const pendingDrafts=new Map(),timers=new Map(),queues=new Map(),revisions=new Map();
-  const safeForms=new Set(['request','note','task','assignment','portfolio','ticket','ticket-reply','flashcard','staff-slot','staff-event','announcement','request-followup','focus']);
+  const safeForms=new Set(['request','certificate-order','note','task','assignment','portfolio','ticket','ticket-reply','flashcard','staff-slot','staff-event','announcement','request-followup','focus']);
   const accountKey=(uid,key)=>uid+':'+key;
   const stale=()=>Object.assign(new Error('Сеанс или форма изменились. Откройте форму заново.'),{stale:true});
-  function keyFor(form){const name=form.id==='request-form'?'request':form.id==='request-followup'?'request-followup':form.dataset.cForm;if(!name||name==='personal-search')return null;return (safeForms.has(name)?name:'submission:'+name)+(form.dataset.id&&Number(form.dataset.id)?':'+Number(form.dataset.id):'')+(form.dataset.recordToken?':'+form.dataset.recordToken:'');}
+  function keyFor(form){const name=form.id==='request-form'?(form.dataset.requestKind==='certificate'?'certificate-order':'request'):form.id==='request-followup'?'request-followup':form.dataset.cForm;if(!name||name==='personal-search')return null;return (safeForms.has(name)?name:'submission:'+name)+(form.dataset.id&&Number(form.dataset.id)?':'+Number(form.dataset.id):'')+(form.dataset.recordToken?':'+form.dataset.recordToken:'');}
   function owner(form){if(!form._atlasDraft){if(!c.state.user)throw stale();form._atlasDraft={uid:c.state.user.id,epoch:c.state.sessionEpoch,lifecycle,key:keyFor(form),instance:crypto.randomUUID(),restore:null,loaded:false,remoteSubmission:null};}return form._atlasDraft;}
   function assertOwner(meta){if(meta.uid!==c.state.user?.id||meta.epoch!==c.state.sessionEpoch||meta.lifecycle!==lifecycle)throw stale();}
   function queue(key,run){const task=(queues.get(key)||Promise.resolve()).catch(()=>{}).then(run);queues.set(key,task);task.finally(()=>{if(queues.get(key)===task)queues.delete(key);}).catch(()=>{});return task;}
@@ -26,8 +26,13 @@
     catch(error){meta.loaded=false;throw error;}
     if(saved.values?._submission){try{const candidate=JSON.parse(saved.values._submission);if(/^[a-f0-9]{64}$/.test(candidate.fingerprint)&&typeof candidate.key==='string')meta.remoteSubmission=Object.freeze(candidate);}catch{/* Invalid saved metadata is not a submission identity. */}}
     assertOwner(meta);if(!form.isConnected||form.dataset.draftEdited==='true'||meta.submitting||!values||!Object.keys(values).length)return;
-    if(form.id==='request-form'&&values.type&&form.elements.type.value!==values.type){form.elements.type.value=values.type;form.dispatchEvent(new Event('change',{bubbles:true}));}
-    for(const el of form.elements){if(!el.name||['password','hidden'].includes(el.type)||!(el.name in values))continue;if(['checkbox','radio'].includes(el.type))el.checked=el.type==='radio'?el.value===values[el.name]:values[el.name]==='true';else el.value=values[el.name];}
+    if(form.id==='request-form'){
+      if(form.dataset.explicitType&&values.type!==form.dataset.explicitType)return;
+      if(values.type&&Array.from(form.elements.type.options).some(option=>option.value===values.type)&&form.elements.type.value!==values.type){
+        form.elements.type.value=values.type;form.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+    }
+    for(const el of form.elements){if(!el.name||['password','hidden'].includes(el.type)||!(el.name in values)||(form.id==='request-form'&&el.name==='type'))continue;if(['checkbox','radio'].includes(el.type))el.checked=el.type==='radio'?el.value===values[el.name]:values[el.name]==='true';else el.value=values[el.name];}
     if(values._submission){try{const value=JSON.parse(values._submission);if(/^[a-f0-9]{64}$/.test(value.fingerprint)&&typeof value.key==='string')form._submission=Object.freeze(value);}catch{/* Corrupt metadata is ignored. */}}
     if(form.id==='request-form')form.dispatchEvent(new Event('change',{bubbles:true}));note(form,'Восстановлен ваш черновик. Проверьте сведения перед отправкой.');
   })().catch(error=>{meta.restore=null;throw error;});return meta.restore;}
@@ -40,12 +45,19 @@
   function bindForms(){for(const form of document.querySelectorAll('.modal form')){if(!keyFor(form)||form.dataset.draftBound)continue;form.dataset.draftBound='true';owner(form);note(form,'Черновик сохраняется в вашем кабинете на 14 дней. Не вводите реальные персональные данные.');restoreFormDraft(form).catch(error=>{if(!error.stale&&form.isConnected)note(form,error.message);});for(const type of ['input','change'])form.addEventListener(type,()=>{const meta=owner(form);if(meta.submitting)return;form.dataset.draftEdited='true';let saved;try{saved=remember(form);}catch{return;}if(!saved)return;clearTimeout(timers.get(saved.key));timers.set(saved.key,setTimeout(()=>saveFormDraft(form).catch(()=>{}),450));});}}
   async function clearFormDraft(form){const meta=owner(form);assertOwner(meta);if(!meta.key)return;const key=accountKey(meta.uid,meta.key);clearTimeout(timers.get(key));const revision=(revisions.get(key)||0)+1;revisions.set(key,revision);try{await queue(key,async()=>{assertOwner(meta);if(revisions.get(key)!==revision)return;await c.api('drafts/'+encodeURIComponent(meta.key),{method:'DELETE',quietAuth:true});assertOwner(meta);if(revisions.get(key)===revision){pendingDrafts.delete(key);delete form._submission;}});}catch(e){if(!e.stale)throw e;}}
   function captureRecovery(){const form=document.querySelector('.modal form');if(form&&c.state.user&&keyFor(form)){const meta=owner(form);recovery={userId:meta.uid,page:c.state.page,key:meta.key};try{remember(form);}catch{}}}
-  async function resumeRecovery(){const previous=recovery;recovery=null;if(!previous||c.state.user?.id!==previous.userId)return;if(previous.key==='request'){await c.newRequestModal();return;}c.toast('Ваш черновик сохранён. Откройте прежнюю форму для продолжения.');}
-  function reset(expired){lifecycle++;if(!expired){recovery=null;pendingDrafts.clear();}for(const timer of timers.values())clearTimeout(timer);timers.clear();for(const [key,revision] of revisions)revisions.set(key,revision+1);lastFresh=null;}
-  function connectivity(){const el=document.querySelector('#connection-state');if(!el)return;const offline=!navigator.onLine;el.classList.toggle('offline',offline);el.textContent=offline?'Нет сети. Показаны ранее загруженные данные.':lastFresh?'Данные обновлены '+new Intl.DateTimeFormat('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(lastFresh):'Ожидаем обновление данных';const button=document.querySelector('#refresh-current');if(button)button.disabled=offline||button.hasAttribute('aria-busy');}
+  async function resumeRecovery(){const previous=recovery;recovery=null;if(!previous||c.state.user?.id!==previous.userId)return;if(previous.key==='request'||previous.key==='certificate-order'){await c.newRequestModal(undefined,previous.key==='certificate-order'?'certificate':'request');return;}c.toast('Ваш черновик сохранён. Откройте прежнюю форму для продолжения.');}
+  function reset(expired){lifecycle++;if(!expired){recovery=null;pendingDrafts.clear();}for(const timer of timers.values())clearTimeout(timer);timers.clear();for(const [key,revision] of revisions)revisions.set(key,revision+1);}
+  function connectivity(){
+    const el=document.querySelector('#connection-state');
+    if(!el)return;
+    const offline=!navigator.onLine;
+    el.classList.toggle('offline',offline);el.hidden=!offline;
+    el.textContent=offline?'Нет сети. Показаны ранее загруженные данные.':'';
+    const button=document.querySelector('#refresh-current');
+    if(button)button.disabled=offline||button.hasAttribute('aria-busy');
+  }
   function shell(){const anchor=document.querySelector('.concept-bar');if(anchor&&!document.querySelector('#connection-state')){const strip=document.createElement('div');strip.id='connection-state';strip.className='connection-state';strip.setAttribute('role','status');anchor.after(strip);}connectivity();}
-  function markFresh(){lastFresh=new Date();connectivity();}
   function showFieldErrors(error,form){for(const old of form.querySelectorAll('[data-field-error]'))old.remove();for(const el of form.elements){el.removeAttribute('aria-invalid');if('originalDescribedby' in el.dataset){if(el.dataset.originalDescribedby)el.setAttribute('aria-describedby',el.dataset.originalDescribedby);else el.removeAttribute('aria-describedby');}}let fields=error.fields||[];if(!fields.length&&error.details?.field)fields=[{field:error.details.field}];let first;for(const issue of fields){const name=issue.field||(issue.loc||[]).filter(x=>x!=='body').join('.');const el=Array.from(form.elements).find(x=>x.name===name||x.name===name.split('.').at(-1));if(!el)continue;const message=document.createElement('span');message.className='field-error';message.dataset.fieldError='true';message.id='field-error-'+crypto.randomUUID();message.textContent=issue.msg||({'string_too_short':'Слишком короткое значение.','string_too_long':'Сократите текст.','missing':'Заполните поле.','greater_than_equal':'Значение слишком мало.','less_than_equal':'Значение слишком велико.'}[issue.type]||'Проверьте формат и допустимое значение.');el.setAttribute('aria-invalid','true');if(!('originalDescribedby' in el.dataset))el.dataset.originalDescribedby=el.getAttribute('aria-describedby')||'';el.setAttribute('aria-describedby',[el.dataset.originalDescribedby,message.id].filter(Boolean).join(' '));el.after(message);first=first||el;}if(first&&!first.disabled)first.focus();return first;}
   function init(context){c=context;document.addEventListener('input',event=>{if(event.target.hasAttribute?.('aria-invalid')){event.target.removeAttribute('aria-invalid');if('originalDescribedby' in event.target.dataset){if(event.target.dataset.originalDescribedby)event.target.setAttribute('aria-describedby',event.target.dataset.originalDescribedby);else event.target.removeAttribute('aria-describedby');}}});window.addEventListener('offline',connectivity);window.addEventListener('online',()=>{connectivity();if(c.state.user&&!document.querySelector('.modal')&&!c.state.pending&&!document.querySelector('#refresh-current')?.disabled)c.updatePage({quiet:true});const form=document.querySelector('.modal form');if(form&&c.state.user&&!c.state.pending)saveFormDraft(form).catch(()=>{});});}
-  window.ATLASImprovements={init,bindForms,saveFormDraft,restoreFormDraft,prepareFormSubmission,clearFormDraft,formSubmission,captureRecovery,resumeRecovery,reset,shell,markFresh,showFieldErrors};
+  window.ATLASImprovements={init,bindForms,saveFormDraft,restoreFormDraft,prepareFormSubmission,clearFormDraft,formSubmission,captureRecovery,resumeRecovery,reset,shell,showFieldErrors};
 })();

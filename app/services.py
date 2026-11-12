@@ -11,11 +11,13 @@ from sqlalchemy import select, update, func, case, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from .db import User, Notification, DocumentRequest, CAMPUS_TZ, campus_today, utc_now
+from .db import User, DocumentRequest, CAMPUS_TZ, campus_today, utc_now
+from .workspace import notify
 from .services_db import (ConsultationSlot, ConsultationBooking, SupportTicket,
                           TicketMessage, CampusEvent, EventRegistration, LibraryBook,
                           LibraryLoan, FinanceEntry, StudentPreference, ServiceIdempotency)
 from .receipt_codec import encode_receipt, decode_receipt
+from .storage_guards import lock_owner
 
 
 def begin_idempotent(db, request, response, user, operation, payload):
@@ -81,28 +83,28 @@ CONTACTS = [
     {'id': 6, 'name': 'Д. Зорин', 'role': 'Преподаватель', 'department': 'Факультет прикладных наук', 'subject': 'Анализ данных', 'room': 'Корпус В, В-404', 'hours': 'Пт, 15:00–16:00 · запись в кабинете', 'email': 'zorin@atlas.example'},
     {'id': 7, 'name': 'Центр карьеры', 'role': 'Учебная практика и портфолио', 'department': 'Сервисы кампуса', 'subject': '', 'room': 'Корпус Б, Б-210', 'hours': 'Пн–пт, 10:00–16:00 · МСК', 'email': 'career@atlas.example'},
     {'id': 8, 'name': 'Библиотека', 'role': 'Учебная литература и работа с источниками', 'department': 'Сервисы кампуса', 'subject': '', 'room': 'Корпус А, 1 этаж', 'hours': 'Пн–сб, 09:00–19:00 · МСК', 'email': 'library@atlas.example'},
-    {'id': 9, 'name': 'Поддержка кабинета', 'role': 'Вопросы по работе концепта', 'department': 'Цифровой кампус', 'subject': '', 'room': 'Переписка в разделе «Связь с деканатом»', 'hours': 'Демонстрационный ответ сотрудника', 'email': 'support@atlas.example'},
+    {'id': 9, 'name': 'Поддержка кабинета', 'role': 'Вопросы по работе кабинета', 'department': 'Цифровой кампус', 'subject': '', 'room': 'Переписка в разделе «Вопросы в учебный офис»', 'hours': 'Ответ в истории обращения', 'email': 'support@atlas.example'},
 ]
 
 KNOWLEDGE = [
-    {'id': 1, 'category': 'documents', 'title': 'Как заказать справку?', 'body': 'Откройте «Заявки и справки», выберите услугу и укажите цель. Номер и история сохранятся в кабинете. После решения сотрудника можно скачать конкурсный образец документа. Сроки ориентировочные.'},
+    {'id': 1, 'category': 'documents', 'title': 'Как заказать справку?', 'body': 'Откройте «Справки», выберите вид документа и заполните поля. Номер и история сохранятся в разделе «Мои справки». Когда документ будет готов, его можно открыть или скачать.'},
     {'id': 2, 'category': 'academic', 'title': 'Как подготовиться к пересдаче?', 'body': 'Посмотрите раздел «Сессия», выберите дисциплину и запишитесь на консультацию. Уточните требования у преподавателя через учебный офис. Для заявления на пересдачу используйте каталог заявок. Конкретную дату утверждает сотрудник.'},
-    {'id': 3, 'category': 'academic', 'title': 'Как сдать учебную работу?', 'body': 'Откройте «Учебные работы», выберите задание, добавьте текст и при необходимости HTTPS-ссылку. Сдача сохраняется отдельно от личной отметки выполнения в плане. Это демонстрационная передача в кабинет, без интеграции с преподавателем.'},
-    {'id': 4, 'category': 'finance', 'title': 'Стипендия и материальная поддержка', 'body': 'В разделе «Финансы» приведён вымышленный журнал. Справка о стипендии и заявление на материальную помощь доступны в каталоге. Прототип не начисляет деньги, не принимает платежи и не определяет право на выплаты.'},
-    {'id': 5, 'category': 'campus', 'title': 'Как взять книгу?', 'body': 'В библиотеке выберите доступный учебный экземпляр. Выдача на 14 дней сохраняется в «Моих книгах». Возврат освобождает экземпляр. Все названия книг, авторы и выдачи — вымышленные учебные данные.'},
-    {'id': 6, 'category': 'academic', 'title': 'Академический отпуск и индивидуальный план', 'body': 'Создайте заявление нужного вида и опишите учебный вопрос без настоящих персональных или медицинских документов. Учебный офис ответит в истории заявки. Концепт не принимает юридически значимых решений.'},
-    {'id': 7, 'category': 'campus', 'title': 'Практика, стажировки и мобильность', 'body': 'Планируйте практику через каталог заявлений, знакомьтесь с учебными мероприятиями в «Кампусе» и задавайте вопросы центру карьеры. Реальные организации и внешние сервисы не подключены.'},
-    {'id': 8, 'category': 'security', 'title': 'Кто видит мои данные?', 'body': 'Личные записи доступны только вашему студенческому аккаунту. Сотрудник отвечает на заявки и переписку, но не читает личные конспекты, оценки, расписание и финансовый журнал. Используйте только публичные вымышленные аккаунты.'},
+    {'id': 3, 'category': 'academic', 'title': 'Как сдать учебную работу?', 'body': 'Откройте «Сдача работ», выберите задание, добавьте текст и при необходимости HTTPS-ссылку. Сдача сохраняется отдельно от личной отметки выполнения в плане.'},
+    {'id': 4, 'category': 'finance', 'title': 'Стипендия и материальная поддержка', 'body': 'Начисления видны в разделе «Финансы». Справку о стипендии можно заказать в разделе «Справки», а заявление на материальную помощь подать через «Заявки». Приём платежей отключён.'},
+    {'id': 5, 'category': 'campus', 'title': 'Как взять книгу?', 'body': 'В библиотеке выберите доступный учебный экземпляр. Выдача на 14 дней сохраняется в «Моих книгах». Возврат освобождает экземпляр.'},
+    {'id': 6, 'category': 'academic', 'title': 'Академический отпуск и индивидуальный план', 'body': 'Создайте заявление нужного вида и опишите учебный вопрос без настоящих персональных или медицинских документов. Учебный офис ответит в истории заявки.'},
+    {'id': 7, 'category': 'campus', 'title': 'Практика, стажировки и мобильность', 'body': 'Планируйте практику через каталог заявлений, открывайте мероприятия в разделе «Вне учёбы» и задавайте вопросы центру карьеры.'},
+    {'id': 8, 'category': 'security', 'title': 'Кто видит мои данные?', 'body': 'Личные записи доступны только вашему студенческому аккаунту. Сотрудник отвечает на заявки и переписку, но не читает личные конспекты, оценки, расписание и финансовый журнал.'},
     {'id': 9, 'category': 'study', 'title': 'Как работает самостоятельная учёба?', 'body': 'Конспекты, карточки, личные задачи и журнал фокус-сессий сохраняются на сервере. Учебные тесты дают обратную связь и не меняют официальные оценки. Отметка модуля означает личную готовность, а не зачёт.'},
-    {'id': 10, 'category': 'support', 'title': 'Как получить ответ учебного офиса?', 'body': 'Создайте тему в «Связи с деканатом». Переписка хранится в кабинете и доступна сотруднику. После ответа придёт внутреннее уведомление. Закройте решённую тему; для нового вопроса создайте новую.'},
-    {'id': 11, 'category': 'security', 'title': 'Что означают настройки уведомлений?', 'body': 'Настройки сохраняют ваши предпочтения в концепте. Письма и push-уведомления не отправляются. Внутренние уведомления по заявкам и сообщениям остаются в кабинете независимо от настройки e-mail.'},
+    {'id': 10, 'category': 'support', 'title': 'Как получить ответ учебного офиса?', 'body': 'Создайте тему в разделе «Вопросы в учебный офис». Переписка хранится в кабинете и доступна сотруднику. После ответа придёт внутреннее уведомление. Закройте решённую тему; для нового вопроса создайте новую.'},
+    {'id': 11, 'category': 'security', 'title': 'Что означают настройки уведомлений?', 'body': 'Настройки сохраняются в вашем кабинете. Письма и push-уведомления не отправляются. Внутренние уведомления по заявкам и сообщениям остаются в кабинете независимо от настройки e-mail.'},
     {'id': 12, 'category': 'campus', 'title': 'Где находятся аудитории?', 'body': 'Учебные корпуса обозначены А, Б и В. Первая буква аудитории указывает корпус, первая цифра — этаж. Например, Б-208: корпус Б, второй этаж. Карта и адреса реального университета не используются.'},
 ]
 
 
 def create_router():
     # Import only after main has defined its security dependencies.
-    from .main import get_db, require_student, require_staff, require_same_origin, StrictBody, date_iso
+    from .main import get_db, require_user, require_student, require_staff, require_same_origin, StrictBody, date_iso
 
     router = APIRouter()
 
@@ -167,15 +169,10 @@ def create_router():
             return self
 
     class PreferencesBody(StrictBody):
-        email_notifications: StrictBool
-        deadline_reminders: StrictBool
+        email_notifications: StrictBool = False
+        deadline_reminders: StrictBool = True
         compact_mode: StrictBool
-        weekly_goal: int = Field(strict=True, ge=1, le=40)
-
-    class AnnouncementBody(TextBody):
-        title: str = Field(min_length=5, max_length=180)
-        body: str = Field(min_length=10, max_length=4000)
-        category: Literal['announcement', 'deadline'] = 'announcement'
+        weekly_goal: int | None = Field(default=None, strict=True, ge=1, le=40)
 
     def owned(db, model, row_id, user):
         row = db.scalar(select(model).where(model.id == row_id, model.student_id == user.id))
@@ -227,8 +224,9 @@ def create_router():
         if not now < start_at <= now + timedelta(days=365):
             raise HTTPException(422, 'Дата должна быть в будущем, не позднее года')
 
-    def notify(db, user_id, title, body, target):
-        db.add(Notification(student_id=user_id, title=title, body=body, category='announcement', created_at=utc_now(), is_read=False, target=target))
+    def notify_office(db, row, title):
+        for staff_id in db.scalars(select(User.id).where(User.role == 'staff')):
+            notify(db, staff_id, title, row.title, f'/app/staffmessages?id={row.id}', category='service')
 
     def slot_payload(slot, booking_id=None):
         return dict(id=slot.id, teacher=slot.teacher, subject=slot.subject, start_at=date_iso(slot.start_at), end_at=date_iso(slot.end_at), room=slot.room, capacity=slot.capacity, booked_count=slot.booked_count, my_booking_id=booking_id)
@@ -311,14 +309,14 @@ def create_router():
             raise HTTPException(409, 'Вы уже записаны на эту консультацию')
         row = ConsultationBooking(student_id=user.id, slot_id=slot_id, status='active', created_at=utc_now())
         db.add(row)
-        notify(db, user.id, 'Запись на консультацию сохранена', f'{slot.subject}: {slot.teacher}. Подробности в разделе консультаций.', '/app/consultations')
+        notify(db, user.id, 'Запись на консультацию сохранена', f'{slot.subject}: {slot.teacher}.',
+               f'/app/consultations?id={slot.id}', category='service')
         from .university_db import Teacher, TeachingAssignment
         from .workspace_db import TeacherConsultation, TeachingLoad
-        from .workspace import notify as workspace_notify
         teacher_id = db.scalar(select(Teacher.user_id).select_from(TeacherConsultation).join(TeachingLoad)
                                .join(TeachingAssignment).join(Teacher).where(TeacherConsultation.slot_id==slot_id))
         if teacher_id:
-            workspace_notify(db,teacher_id,'Новая запись на консультацию',slot.subject,'/app/teach-consultations')
+            notify(db, teacher_id, 'Новая запись на консультацию', slot.subject, '/app/teach-consultations', category='service')
         db.flush()
         db.refresh(slot)
         return commit_idempotent(db, receipt, booking_payload(db, row))
@@ -376,6 +374,7 @@ def create_router():
         db.add(row)
         db.flush()
         db.add(TicketMessage(ticket_id=row.id, actor_id=user.id, actor_role='student', actor_name=user.full_name, body=body.message, created_at=now))
+        notify_office(db, row, 'Новое обращение в учебный офис')
         db.flush()
         return commit_idempotent(db, receipt, ticket_payload(db, row, detail=True))
 
@@ -397,7 +396,9 @@ def create_router():
             raise HTTPException(409, 'Достигнут предел переписки. Создайте новую тему')
         db.add(TicketMessage(ticket_id=row.id, actor_id=user.id, actor_role=user.role, actor_name=user.full_name, body=message, created_at=utc_now()))
         if user.role == 'staff':
-            notify(db, row.student_id, 'Учебный офис ответил', f'Новый ответ в теме «{row.title}».', '/app/messages')
+            notify(db, row.student_id, 'Учебный офис ответил', row.title, f'/app/messages?id={row.id}', category='service')
+        else:
+            notify_office(db, row, 'Студент ответил в обращении')
         db.flush()
         db.refresh(row)
         return commit_idempotent(db, receipt, ticket_payload(db, row, detail=True, staff=user.role == 'staff'))
@@ -410,7 +411,7 @@ def create_router():
             db.rollback()
             raise HTTPException(409, 'Тема уже закрыта')
         if user.role == 'staff':
-            notify(db, row.student_id, 'Тема закрыта учебным офисом', f'Тема «{row.title}» закрыта. История остаётся в кабинете.', '/app/messages')
+            notify(db, row.student_id, 'Тема закрыта учебным офисом', row.title, f'/app/messages?id={row.id}', category='service')
         db.flush()
         db.refresh(row)
         return commit_idempotent(db, receipt, ticket_payload(db, row, detail=True, staff=user.role == 'staff'))
@@ -478,7 +479,8 @@ def create_router():
             raise HTTPException(409, 'Вы уже зарегистрированы')
         row = EventRegistration(student_id=user.id, event_id=event_id, status='active', created_at=utc_now())
         db.add(row)
-        notify(db, user.id, 'Регистрация на мероприятие сохранена', event.title, '/app/events')
+        notify(db, user.id, 'Регистрация на мероприятие сохранена', event.title,
+               f'/app/events?id={event.id}', category='service')
         db.flush()
         db.refresh(event)
         return commit_idempotent(db, receipt, registration_payload(db, row))
@@ -566,23 +568,25 @@ def create_router():
         conditions = [FinanceEntry.student_id == user.id] + search_catalog([FinanceEntry.description], q)
         rows, meta = page_rows(db, select(FinanceEntry).where(*conditions).order_by(FinanceEntry.date.desc(), FinanceEntry.id.desc()), limit, offset)
         sums = db.execute(select(func.coalesce(func.sum(case((FinanceEntry.direction == 'credit', FinanceEntry.amount_kopecks), else_=0)), 0), func.coalesce(func.sum(case((FinanceEntry.direction == 'debit', FinanceEntry.amount_kopecks), else_=0)), 0)).where(FinanceEntry.student_id == user.id)).one()
-        return {'items': [dict(id=row.id, date=date_iso(row.date), description=row.description, direction=row.direction, amount_kopecks=row.amount_kopecks) for row in rows], **meta, 'summary': {'credits_kopecks': sums[0], 'debits_kopecks': sums[1], 'balance_kopecks': sums[0]-sums[1], 'concept': True}, 'notice': 'Вымышленный журнал для конкурса. Платежи и банковские сервисы не подключены.'}
+        return {'items': [dict(id=row.id, date=date_iso(row.date), description=row.description, direction=row.direction, amount_kopecks=row.amount_kopecks) for row in rows], **meta, 'summary': {'credits_kopecks': sums[0], 'debits_kopecks': sums[1], 'balance_kopecks': sums[0]-sums[1], 'concept': True}, 'notice': 'Платежи и банковские сервисы не подключены.'}
 
     def preference_payload(row):
         return dict(email_notifications=row.email_notifications if row else False, deadline_reminders=row.deadline_reminders if row else True, compact_mode=row.compact_mode if row else False, weekly_goal=row.weekly_goal if row else 8)
 
     @router.get('/api/services/preferences')
-    def preferences(user: User = Depends(require_student), db: Session = Depends(get_db)):
+    def preferences(user: User = Depends(require_user), db: Session = Depends(get_db)):
         return preference_payload(db.get(StudentPreference, user.id))
 
     @router.post('/api/services/preferences')
-    def save_preferences(body: PreferencesBody, user: User = Depends(require_student), db: Session = Depends(get_db), _: None = Depends(require_same_origin)):
+    def save_preferences(body: PreferencesBody, user: User = Depends(require_user), db: Session = Depends(get_db), _: None = Depends(require_same_origin)):
+        lock_owner(db, user.id)
+        values = body.model_dump(exclude_unset=True, exclude_none=True)
         row = db.get(StudentPreference, user.id)
         if row is None:
-            row = StudentPreference(student_id=user.id, **body.model_dump())
+            row = StudentPreference(student_id=user.id, **values)
             db.add(row)
         else:
-            for key, value in body.model_dump().items():
+            for key, value in values.items():
                 setattr(row, key, value)
         db.commit()
         return preference_payload(row)
@@ -591,14 +595,5 @@ def create_router():
     def staff_overview(user: User = Depends(require_staff), db: Session = Depends(get_db)):
         counts = {status: count for status, count in db.execute(select(DocumentRequest.status, func.count()).group_by(DocumentRequest.status))}
         return {'requests': counts, 'requests_total': sum(counts.values()), 'open_tickets': db.scalar(select(func.count()).select_from(SupportTicket).where(SupportTicket.status == 'open')), 'consultations': db.scalar(select(func.count()).select_from(ConsultationSlot).where(ConsultationSlot.start_at > utc_now())), 'events': db.scalar(select(func.count()).select_from(CampusEvent).where(CampusEvent.start_at > utc_now())), 'concept': True}
-
-    @router.post('/api/staff/announcements', status_code=201)
-    def broadcast(body: AnnouncementBody, request: Request, response: Response, user: User = Depends(require_staff), db: Session = Depends(get_db), _: None = Depends(require_same_origin)):
-        receipt, replay = begin_idempotent(db, request, response, user, 'announcement-create', body.model_dump())
-        if replay is not None: return replay
-        student_ids = db.scalars(select(User.id).where(User.role == 'student')).all()
-        now = utc_now()
-        db.add_all([Notification(student_id=student_id, title=body.title, body=body.body, category=body.category, created_at=now, is_read=False, target='/app/notifications') for student_id in student_ids])
-        return commit_idempotent(db, receipt, {'sent': len(student_ids), 'concept': True})
 
     return router

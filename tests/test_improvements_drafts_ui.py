@@ -15,8 +15,8 @@ def visit(page,base,target):
     expect(page.locator('#page-content')).not_to_have_attribute('aria-busy','true')
 
 def request_form(page):
-    if page.locator('.service-card').count()==0: page.locator('[data-request-view="services"]').click()
-    page.locator('.service-card[data-type="study"]').click()
+    if page.locator('.certificate-service').count()==0: page.locator('[data-request-view="services"]').first.click()
+    page.locator('.certificate-service [data-type="study"]').click()
     expect(page.locator('#request-form')).to_be_visible()
 
 def test_nearest_lesson_selects_its_date_and_changed_banner_opens_change(frontend_page):
@@ -30,18 +30,19 @@ def test_nearest_lesson_selects_its_date_and_changed_banner_opens_change(fronten
         expect(page.locator('.lesson-row.search-match .change-comparison')).to_contain_text('Было:')
 
 def test_request_survives_expired_cookie_and_same_user_reauthentication(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'requests');request_form(page)
+    page,base=frontend_page;enter(page,base);visit(page,base,'certificates');request_form(page)
     text='Вымышленный черновик '+str(uuid.uuid4())
     page.locator('#doc-comment').fill(text)
     page.context.clear_cookies()
     page.locator('#request-form button[type=submit]').click()
     expect(page.locator('#login-form')).to_be_visible()
+    page.get_by_role('button',name='Попробовать демо',exact=True).click()
     page.locator('[data-demo="0"]').click()
     expect(page.locator('#request-form')).to_be_visible()
     expect(page.locator('#doc-comment')).to_have_value(text)
     page.locator('#request-form button[type=submit]').click()
     expect(page.locator('.request-track')).to_be_visible()
-    assert page.request.get(base+'/api/drafts/request').json()['values']=={}
+    assert page.request.get(base+'/api/drafts/certificate-order').json()['values']=={}
 
 def test_long_assignment_draft_has_compact_key_and_survives_reload(frontend_page):
     page,base=frontend_page;enter(page,base);visit(page,base,'assignments')
@@ -61,7 +62,7 @@ def test_note_draft_cannot_appear_for_another_account(frontend_page):
     form=page.locator('[data-c-form="note"]');text='Личный вымышленный текст '+str(uuid.uuid4())
     form.locator('[name="title"]').fill('Черновик Алины');form.locator('[name="body"]').fill(text)
     expect(form.locator('[data-personal-draft]')).to_contain_text('Черновик сохранён',timeout=10000)
-    page.context.clear_cookies();page.goto(base);page.locator('[data-demo="1"]').click()
+    page.context.clear_cookies();page.goto(base);page.get_by_role('button',name='Попробовать демо',exact=True).click();page.locator('[data-demo="1"]').click()
     expect(page.locator('#page-title')).to_contain_text('Марк')
     visit(page,base,'notes');page.locator('[data-c-action="note-new"]').click()
     expect(page.locator('[data-c-form="note"] [name="body"]')).not_to_have_value(text)
@@ -107,13 +108,13 @@ def test_staff_requests_clarification_and_student_adds_history_without_changing_
     page,base=frontend_page;enter(page,base)
     created=page.request.post(base+'/api/requests',data={'type':'study'},headers={'X-Requested-With':'ATLAS'}).json();rid=created['id']
     page.request.post(base+'/api/login',data={'login':'dean.demo','password':'AtlasStaff!2026-D'},headers={'X-Requested-With':'ATLAS'})
-    visit(page,base,'staff');page.locator(f'.request-row[data-id="{rid}"]').click()
+    visit(page,base,'staff');page.locator('[data-staff-kind="certificate"]').click();page.locator(f'.request-row[data-id="{rid}"]').click()
     page.locator('#staff-status').select_option('needs_info')
     page.locator('#staff-message').fill('Пожалуйста уточните назначение вымышленной справки.')
     page.locator('#staff-form button[type=submit]').click()
     expect(page.locator('.modal .request-status.needs_info')).to_be_visible()
     page.request.post(base+'/api/login',data={'login':'alina.demo','password':'AtlasDemo!2026-A'},headers={'X-Requested-With':'ATLAS'})
-    visit(page,base,'requests');page.locator(f'.request-row[data-id="{rid}"]').click()
+    visit(page,base,'certificates');page.locator(f'.request-row[data-id="{rid}"]').click()
     page.get_by_text('Уточнить сведения или попросить отозвать',exact=True).click()
     message='Вымышленные сведения для уточнения назначения.'
     page.locator('#followup-message').fill(message)

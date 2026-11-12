@@ -310,7 +310,7 @@ def publish_change(db, row, body):
     for student in students:
         notify(db, student, title, message, f"/app/schedule?date={data['day']}", student=True, category='schedule')
     for teacher in {first.teacher.user_id, old_teacher}-{None}:
-        notify(db, teacher, title, message, f"/app/teach-schedule?week={data['day']}")
+        notify(db, teacher, title, message, f"/app/teach-schedule?week={data['day']}", category='schedule')
     return {'previous': before, 'published': [class_data(event) for event in changed]}
 
 
@@ -457,7 +457,7 @@ def change_step(change_id: int, body: StepBody, user=Depends(view_schedule), db:
     recipients = {'submit': 'staff', 'agree': 'admin'}.get(body.step)
     if recipients:
         for uid in db.scalars(select(User.id).where(User.role == recipients)):
-            notify(db, uid, 'Изменение расписания ожидает решения', f'Проект №{row.id}', f'/app/schedule-changes/{row.id}')
+            notify(db, uid, 'Изменение расписания ожидает решения', f'Проект №{row.id}', f'/app/schedule-changes/{row.id}', category='schedule')
     if body.step in {'return','publish'}:
         notify(db, row.author_id, 'Проект возвращён' if body.step == 'return' else 'Расписание опубликовано',
                body.comment or f'Проект №{row.id}', f'/app/schedule-changes/{row.id}')

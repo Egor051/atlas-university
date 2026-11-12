@@ -51,7 +51,7 @@ def test_union_form_queue_clarification_decision_and_publication(frontend_page, 
     student.set_viewport_size({'width': 360, 'height': 900})
     enter(student, base, 0, '/app/union')
     student.get_by_role('button', name='Вступить в профсоюз').click()
-    student.get_by_role('checkbox', name='Подтверждаю демонстрационное действие').check()
+    student.get_by_role('checkbox', name='Подтверждаю отправку').check()
     submit(student, 'Отправить')
     expect(student).to_have_url(re.compile(r'/app/union/\d+$'))
     student_path = student.url.removeprefix(base)
@@ -103,13 +103,13 @@ def test_vuc_application_selection_and_group_result(frontend_page):
     assert dialog.locator('input[type="file"]').count() == 0
     dialog.get_by_role('checkbox', name='Образец заявления').check()
     dialog.get_by_role('checkbox', name='Образец подтверждения статуса студента').check()
-    dialog.get_by_role('checkbox', name='Подтверждаю демонстрационное действие').check()
+    dialog.get_by_role('checkbox', name='Подтверждаю отправку').check()
     submit(student, 'Отправить')
     expect(student).to_have_url(re.compile(r'/app/vuc/\d+$'))
     student_path = student.url.removeprefix(base)
     office_path = student_path.replace('/vuc/', '/vuc-office/')
-    with cabinet(student, base, 7, '/app/work-notices') as worker:
-        worker.locator('.op-row').filter(has_text='Заявление в ВУЦ').get_by_role('button', name='Открыть').click()
+    with cabinet(student, base, 7, '/app/notifications') as worker:
+        worker.locator('.notification-full').filter(has_text='Заявление в ВУЦ').get_by_role('button', name='Открыть').click()
         expect(worker).to_have_url(base + office_path)
         step(worker, 'Взять на проверку', 'Проверяется')
         step(worker, 'Передать на решение', 'Рассмотрение решения')

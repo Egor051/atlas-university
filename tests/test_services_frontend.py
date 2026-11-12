@@ -25,6 +25,7 @@ def go(page, address, route, title):
 
 
 def enter_staff(page):
+    page.get_by_role('button',name='Попробовать демо',exact=True).click()
     page.locator("button[data-demo='2']").click()
     page.wait_for_url('**/app/staff')
     expect(page.locator('#page-title')).to_have_text('Учебный офис')
@@ -118,7 +119,7 @@ def test_real_ticket_student_staff_notification_and_terminal_history(frontend_pa
     staff_reply = 'Учебный офис: порядок сдачи указан в карточке задания '+marker
     page.goto(address)
     enter_demo(page, 0, 'Алина')
-    go(page, address, 'messages', 'Связь с офисом')
+    go(page, address, 'messages', 'Вопросы в учебный офис')
     page.locator("[data-c-action='ticket-new']").click()
     form = page.locator("form[data-c-form='ticket']")
     form.locator('[name=title]').fill(title)
@@ -135,7 +136,7 @@ def test_real_ticket_student_staff_notification_and_terminal_history(frontend_pa
     leave_demo(page)
 
     enter_staff(page)
-    go(page, address, 'staffmessages', 'Диалоги студентов')
+    go(page, address, 'staffmessages', 'Вопросы студентов')
     page.locator('#campus-query').fill(marker)
     page.locator(f"[data-c-action='ticket-open'][data-id='{ticket_id}']").click()
     expect(page.locator('.campus-conversation')).to_contain_text(student_reply)
@@ -154,9 +155,8 @@ def test_real_ticket_student_staff_notification_and_terminal_history(frontend_pa
     notice = page.locator('.notification-full').filter(has=page.get_by_role('heading', name='Учебный офис ответил', exact=True)).filter(has_text=title).first
     expect(notice).to_be_visible()
     notice.locator("[data-action='open-notice']").click()
-    page.wait_for_url('**/app/messages')
-    expect(page.locator('#page-title')).to_have_text('Связь с офисом')
-    page.locator(f"[data-c-action='ticket-open'][data-id='{ticket_id}']").click()
+    page.wait_for_url(f'**/app/messages?id={ticket_id}')
+    expect(page.locator('#page-title')).to_have_text('Вопросы в учебный офис')
     conversation = page.locator('.campus-conversation')
     expect(conversation).to_contain_text(initial)
     expect(conversation).to_contain_text(student_reply)
@@ -176,7 +176,7 @@ def test_real_staff_publishing_and_persistent_own_preferences(frontend_page):
     announcement_title = 'Объявление браузера '+marker
     page.goto(address)
     enter_staff(page)
-    go(page, address, 'staffdesk', 'Пульт сопровождения')
+    go(page, address, 'staffdesk', 'Сводка учебного офиса')
 
     page.locator("[data-c-action='staff-slot']").click()
     form = page.locator("form[data-c-form='staff-slot']")
@@ -197,11 +197,16 @@ def test_real_staff_publishing_and_persistent_own_preferences(frontend_page):
     event = submit(page, 'staff-event', '/api/staff/events', 201)
     expect(page.locator('.modal')).to_have_count(0)
 
-    page.locator("[data-c-action='staff-announcement']").click()
-    form = page.locator("form[data-c-form='announcement']")
+    page.get_by_role('button', name='Управление объявлениями', exact=True).last.click()
+    expect(page.locator('#page-title')).to_have_text('Управление объявлениями')
+    page.get_by_role('button', name='Создать объявление', exact=True).click()
+    form = page.locator('form[data-announcement-editor]')
     form.locator('[name=title]').fill(announcement_title)
     form.locator('[name=body]').fill('Публикация внутреннего объявления всем вымышленным студентам '+marker)
-    announcement = submit(page, 'announcement', '/api/staff/announcements', 201)
+    with post_response(page, '/api/staff/announcements') as published:
+        form.get_by_role('button', name='Опубликовать', exact=True).click()
+    assert published.value.status == 201, published.value.text()
+    announcement = published.value.json()
     assert announcement['sent'] >= 2
     expect(page.locator('.modal')).to_have_count(0)
     leave_demo(page)
@@ -218,16 +223,16 @@ def test_real_staff_publishing_and_persistent_own_preferences(frontend_page):
 
     go(page, address, 'settings', 'Настройки')
     form = page.locator("form[data-c-form='preferences']")
-    form.locator('[name=weekly_goal]').fill('14')
+    expect(form.locator('[name=weekly_goal]')).to_have_count(0)
     form.locator('[name=compact_mode]').check()
     form.locator('[name=email_notifications]').check()
     form.locator('[name=deadline_reminders]').uncheck()
     result = submit(page, 'preferences', '/api/services/preferences')
-    assert result == dict(email_notifications=True, deadline_reminders=False, compact_mode=True, weekly_goal=14)
+    assert result['email_notifications'] and not result['deadline_reminders'] and result['compact_mode']
     expect(page.locator('body')).to_have_class('compact-campus')
     page.reload()
     form = page.locator("form[data-c-form='preferences']")
-    expect(form.locator('[name=weekly_goal]')).to_have_value('14')
+    expect(form.locator('[name=weekly_goal]')).to_have_count(0)
     expect(form.locator('[name=compact_mode]')).to_be_checked()
     expect(form.locator('[name=email_notifications]')).to_be_checked()
     expect(form.locator('[name=deadline_reminders]')).not_to_be_checked()
@@ -236,7 +241,6 @@ def test_real_staff_publishing_and_persistent_own_preferences(frontend_page):
     enter_demo(page, 1, 'Марк')
     go(page, address, 'settings', 'Настройки')
     form = page.locator("form[data-c-form='preferences']")
-    expect(form.locator('[name=weekly_goal]')).to_have_value('10')
     expect(form.locator('[name=compact_mode]')).not_to_be_checked()
     expect(form.locator('[name=email_notifications]')).not_to_be_checked()
     expect(page.locator('body')).not_to_have_class('compact-campus')

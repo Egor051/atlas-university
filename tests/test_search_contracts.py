@@ -26,7 +26,7 @@ def test_search_grade_and_deadline_ids_belong_to_the_returned_destination(accoun
             assert all(row['target'] == target and row['id'] in own_ids for row in matches)
 
 
-def test_notification_detail_requires_student_role_and_does_not_accept_staff():
+def test_notification_detail_requires_authentication_and_owner():
     with client() as anonymous, client() as staff:
         for path in ['/api/notifications/1', '/api/notifications/2147483647']:
             response = anonymous.get(path)
@@ -34,7 +34,7 @@ def test_notification_detail_requires_student_role_and_does_not_accept_staff():
             assert 'no-store' in response.headers.get('cache-control', '')
         sign_in(staff, 'dean.demo', 'AtlasStaff!2026-D')
         for path in ['/api/notifications/1', '/api/notifications/2147483647']:
-            assert staff.get(path).status_code == 403
+            assert staff.get(path).status_code == 404
 
 
 def test_notification_detail_idor_query_injection_and_read_side_effects():

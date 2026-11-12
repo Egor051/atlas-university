@@ -113,12 +113,19 @@ def test_direct_concurrent_replay_permissions_read_boundary_and_notice(accounts)
     assert results[0].json() == results[1].json()
     path = start + '/' + str(results[0].json()['dialog_id'])
     assert teacher.get('/api/direct/unread').json()['unread_count'] >= 1
+    dialog_target = path.replace('/api/direct/dialogs', '/app/direct')
+    teacher_notices = [row for row in teacher.get('/api/notifications?filter=direct').json()
+                       if row['target'] == dialog_target]
+    assert len(teacher_notices) == 1 and not teacher_notices[0]['is_read']
+    assert staff.get(f"/api/notifications/{teacher_notices[0]['id']}").status_code == 404
     for nonparticipant in (other, staff):
         assert nonparticipant.get(path).status_code == 404
         assert nonparticipant.post(path + '/messages', json={'message': 'Текст'}, headers=HEAD).status_code == 404
         assert nonparticipant.post(path + '/read', json={'through_id': results[0].json()['message_id']}, headers=HEAD).status_code == 404
         assert path.rsplit('/', 1)[1] not in {str(item['id']) for item in nonparticipant.get(start).json()['items']}
     assert teacher.get(path).json()['messages'][-1]['body'] == body['message']
+    assert teacher.post(path + '/read', json={'through_id': results[0].json()['message_id']}, headers=HEAD).status_code == 200
+    assert teacher.get(f"/api/notifications/{teacher_notices[0]['id']}").json()['is_read']
     first = teacher.post(path + '/messages', json={'message': 'Пройдите вершины в порядке очереди.'}, headers=HEAD)
     second = teacher.post(path + '/messages', json={'message': 'Проверьте также несвязный граф.'}, headers=HEAD)
     assert first.status_code == second.status_code == 201

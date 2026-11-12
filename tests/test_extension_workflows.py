@@ -43,6 +43,13 @@ def test_every_catalog_service_validates_comment_and_is_owned():
         catalog = student.get('/api/requests/types').json()
         assert len(catalog) == len(DOC_TYPES) == 22
         for service in catalog:
+            if service.get('available') is False:
+                body = {'type': service['id'], 'details': {'commissioner': 'north'}}
+                assert student.post('/api/requests', json=body, headers=HEADERS).status_code == 403
+                response = other.post('/api/requests', json=body, headers=HEADERS)
+                assert response.status_code == 201, response.text
+                assert student.get(f'/api/requests/{response.json()["id"]}').status_code == 404
+                continue
             if service.get('requires_comment') or service['id'] == 'statement':
                 response = student.post('/api/requests', json={'type': service['id'], 'comment': 'short'}, headers=HEADERS)
                 assert response.status_code == 422, service

@@ -90,6 +90,7 @@ def browser_ready(page):
 
 def browser_login(page,base,account=0):
     page.goto(base,wait_until='networkidle')
+    page.get_by_role('button',name='Попробовать демо',exact=True).click()
     page.locator(f'[data-demo="{account}"]').click()
     browser_ready(page)
 

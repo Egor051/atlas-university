@@ -12,7 +12,7 @@ WIDTHS = (360, 390, 768, 1440)
 WORKSPACES = [
     (0, 'student', ['home','schedule','grades','assignments','notifications']),
     (3, 'teacher', ['teacher','teaching','teaching/1?tab=grades','teaching/1?tab=attendance','teaching/1?tab=works',
-                    'teaching/1?tab=report','teach-schedule','teach-consultations','tables?dataset=grades','work-notices']),
+                    'teaching/1?tab=report','teach-schedule','teach-consultations','tables?dataset=grades','notifications']),
     (2, 'dean', ['staff','staffdesk','schedule-changes','timetable-admin','registry']),
     (4, 'dispatcher', ['timetable-admin','schedule-changes','registry','registry/1','tables?dataset=rooms']),
     (5, 'admin', ['registry','registry?tab=students','registry?tab=loads','timetable-admin','schedule-changes','tables']),
@@ -101,8 +101,8 @@ def main():
     if args.phase!='academic':
         actors[0][2].extend(['union','union?tab=content','union?tab=cases',
                             'vuc','vuc?tab=learning','vuc?tab=content','vuc?tab=cases'])
-        actors.extend([(6,'union', ['union-office','union-office?tab=content','union-office?tab=report','work-notices']),
-                       (7,'vuc', ['vuc-office','vuc-office?tab=content','vuc-office?tab=learning','vuc-office?tab=report','work-notices'])])
+        actors.extend([(6,'union', ['union-office','union-office?tab=content','union-office?tab=report','notifications']),
+                       (7,'vuc', ['vuc-office','vuc-office?tab=content','vuc-office?tab=learning','vuc-office?tab=report','notifications'])])
     axe = (ROOT/'node_modules/axe-core/axe.min.js').read_text(encoding='utf-8')
     try:
         with isolated_server() as server, sync_playwright() as browsers:
@@ -139,11 +139,12 @@ def main():
                         page.set_viewport_size({'width':width,'height':900})
                         for route in routes:
                             url=server['base']+'/app/'+route
-                            page.goto(url,wait_until='domcontentloaded')
+                            page.goto(url,wait_until='networkidle')
                             browser_ready(page)
                             assert page.url==url,(actor,url,page.url)
                             if route in expected:
-                                page.get_by_text(expected[route],exact=True).first.wait_for()
+                                target = page.locator('[data-messenger-messages]') if route.startswith('direct/') else page
+                                target.get_by_text(expected[route],exact=True).first.wait_for()
                             try:
                                 report['geometry'].append(dict(engine=engine,actor=actor,route=route,**geometry(page)))
                             except AssertionError as error:

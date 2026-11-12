@@ -18,8 +18,9 @@ pytestmark = pytest.mark.skipif(os.environ.get('ATLAS_RUN_BROWSER_TESTS') != '1'
 
 def open_quizzes(page):
     target = page.locator('.nav-stack [data-route="quizzes"]')
-    if not target.is_visible():
-        target.locator('xpath=ancestor::details[contains(@class,"nav-group")]').locator('summary').click()
+    group = page.locator('[data-nav-group="learning"] .nav-group-toggle')
+    if group.get_attribute('aria-expanded') == 'false':
+        group.click()
     target.click()
     expect(page.locator('#page-title')).to_have_text('Самопроверка')
 

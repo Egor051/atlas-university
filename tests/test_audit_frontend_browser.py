@@ -45,6 +45,7 @@ def test_failed_durable_draft_stops_primary_post_and_preserves_input(frontend_pa
 
 def test_request_locks_before_draft_await_and_cannot_close(frontend_page):
     page,base=frontend_page;enter(page,base);visit(page,base,'requests');form=request_form(page)
+    form.locator('[name=comment]').fill('Обращение для проверки блокировки формы при отправке.')
     held=[]
     def delay(route):
         if route.request.method=='PUT':
@@ -60,7 +61,7 @@ def test_request_locks_before_draft_await_and_cannot_close(frontend_page):
     expect(page.locator('#page-title')).to_have_text('Мой профиль')
 
 def test_request_server_field_error_focuses_after_controls_are_unlocked(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'requests');form=request_form(page)
+    page,base=frontend_page;enter(page,base);visit(page,base,'certificates');form=request_form(page)
     copies=form.locator('[name=copies]')
     copies.evaluate('node=>{node.add(new Option("Недопустимый тестовый вариант","4"));node.value="4";}')
     form.locator('[name=comment]').fill('Вымышленный комментарий для проверки возврата к ошибочному полю.')
@@ -70,7 +71,7 @@ def test_request_server_field_error_focuses_after_controls_are_unlocked(frontend
     copies.select_option('1');expect(copies).not_to_have_attribute('aria-invalid','true')
 
 def test_followup_server_field_error_focuses_after_controls_are_unlocked(frontend_page):
-    page,base=frontend_page;enter(page,base);rid=page.request.post(base+'/api/requests',headers=HEAD,data={'type':'study'}).json()['id'];visit(page,base,'requests')
+    page,base=frontend_page;enter(page,base);rid=page.request.post(base+'/api/requests',headers=HEAD,data={'type':'study'}).json()['id'];visit(page,base,'certificates')
     page.locator(f'.request-row[data-id="{rid}"]').click();page.get_by_text('Уточнить сведения или попросить отозвать',exact=True).click()
     form=page.locator('#request-followup');form.evaluate('node=>node.noValidate=true');message=form.locator('[name=message]');message.fill('Коротко')
     form.locator('[type=submit]').click();expect(message).to_have_attribute('aria-invalid','true');expect(message).to_be_enabled();expect(message).to_be_focused();expect(message).to_have_value('Коротко')
@@ -141,7 +142,7 @@ def test_history_paging_preserves_unsent_clarification(campus_page):
     created=page.request.post(base+'/api/requests',headers=HEAD,data={'type':'study'}).json();rid=created['id']
     with closing(sqlite3.connect(db)) as connection,connection:
         connection.executemany('INSERT INTO request_events(request_id,status,message,actor_role,actor_name,created_at) VALUES (?,?,?,?,?,?)',[(rid,'submitted',f'History audit event {i:03}','system','Система','2026-11-10 10:00:00') for i in range(120)])
-    visit(page,base,'requests');page.locator(f'[data-action="request-details"][data-id="{rid}"]').click()
+    visit(page,base,'certificates');page.locator(f'[data-action="request-details"][data-id="{rid}"]').click()
     page.get_by_text('Уточнить сведения или попросить отозвать',exact=True).click();text='Уточнение сохраняется при просмотре другой страницы истории.'
     page.locator('#followup-message').fill(text)
     history=page.locator('[data-request-history]');history.locator('xpath=ancestor::details').locator('summary').click()
@@ -186,7 +187,7 @@ def test_request_list_uses_moscow_creation_day_and_rejected_contrast(campus_page
     page,base,db=campus_page;rid=page.request.post(base+'/api/requests',headers=HEAD,data={'type':'study'}).json()['id']
     with closing(sqlite3.connect(db)) as connection,connection:
         connection.execute("UPDATE document_requests SET created_at='2026-11-10 22:30:00',status='rejected' WHERE id=?",(rid,))
-    visit(page,base,'requests');row=page.locator(f'.request-row[data-id="{rid}"]')
+    visit(page,base,'certificates');row=page.locator(f'.request-row[data-id="{rid}"]')
     expect(row.locator('.request-row-main small')).to_contain_text('11 нояб.')
     badge=row.locator('.request-status.rejected');expect(badge).to_be_visible()
     ratio=badge.evaluate(r'''node=>{const c=getComputedStyle(node),lum=s=>{const v=s.match(/[\d.]+/g).slice(0,3).map(Number).map(x=>x/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return .2126*v[0]+.7152*v[1]+.0722*v[2]};const a=lum(c.color),b=lum(c.backgroundColor);return(Math.max(a,b)+.05)/(Math.min(a,b)+.05)}''')
@@ -205,19 +206,20 @@ def test_staff_summary_counts_needs_info_and_all_consultation_pages(campus_page)
     expect(stats.nth(0).locator('b')).to_have_text(str(active));expect(stats.nth(2).locator('b')).to_have_text(str(total));assert total>20
     expect(page.locator('.campus-log > article')).to_have_count(20)
 
-def test_downloads_are_affinity_guarded_and_legacy_drafts_are_discoverable(frontend_page,tmp_path):
+def test_settings_hides_export_but_existing_drafts_restore(frontend_page):
     page,base=frontend_page;enter(page,base);visit(page,base,'settings')
-    link=page.get_by_role('link',name='Скачать черновики',exact=True);expect(page.get_by_text('Мои черновики',exact=True)).to_be_visible()
-    calls=[];page.on('request',lambda r:calls.append(r.all_headers().get('x-atlas-user')) if '/api/drafts/export' in r.url else None)
-    with page.expect_download() as download:link.click()
-    target=tmp_path/'drafts.json';download.value.save_as(target);assert 'items' in __import__('json').loads(target.read_text(encoding='utf-8'));assert calls==['1']
-    assert page.request.post(base+'/api/login',headers=HEAD,data={'login':'mark.demo','password':'AtlasDemo!2026-M'}).status==200
-    link.click();expect(page.locator('#login-form')).to_be_visible();assert calls==['1','1']
+    expect(page.get_by_role('link',name='Скачать черновики',exact=True)).to_have_count(0)
+    draft={'title':'Сохранённый черновик','body':'Текст ранее сохранённого конспекта'}
+    assert page.request.put(base+'/api/drafts/note',headers=HEAD,data={'values':draft}).ok
+    assert any(row['values']==draft for row in page.request.get(base+'/api/drafts/export').json()['items'])
+    visit(page,base,'notes')
+    form=new_note(page)
+    expect(form.locator('[name=body]')).to_have_value(draft['body'])
 
 @pytest.mark.parametrize('width',[360,390,1440])
 def test_revised_forms_and_history_have_no_horizontal_overflow(frontend_page,width):
     page,base=frontend_page;page.set_viewport_size({'width':width,'height':900});enter(page,base)
-    for section in ['requests','calendar','tasks','notes','events','library']:
+    for section in ['requests','certificates','calendar','tasks','notes','events','library']:
         visit(page,base,section);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(section,width)
     form=new_note(page) if page.url.endswith('/notes') else None
     visit(page,base,'notes');form=new_note(page)

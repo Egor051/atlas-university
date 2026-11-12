@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import Field, field_validator
 from sqlalchemy import select, delete, func
 from sqlalchemy.orm import Session
-from .db import LoginSession, DocumentRequest, Deadline, Notification, Grade, utc_now
+from .db import LoginSession, DocumentRequest, Deadline, Notification, Grade, request_kind, utc_now
 from .campus_db import PortfolioItem
 from .services import begin_idempotent, commit_idempotent
 from .storage_guards import lock_owner, update_personal, delete_personal
@@ -16,8 +16,7 @@ from .storage_guards import lock_owner, update_personal, delete_personal
 
 def create_router():
     from .main import (get_db, require_student, require_user, require_same_origin,
-                       StrictBody, date_iso, COOKIE_NAME, text_search, search_text,
-                       notification_payload)
+                       StrictBody, date_iso, COOKIE_NAME, text_search, search_text)
     router = APIRouter()
 
     class PortfolioBody(StrictBody):
@@ -113,17 +112,10 @@ def create_router():
             condition = text_search(title, term) | text_search(content, term)
             rows = db.scalars(select(model).where(model.student_id == user.id, condition).order_by(model.id.desc()).limit(8)).all()
             for row in rows:
-                results.append({'id': row.id, 'title': getattr(row, title.key), 'snippet': str(getattr(row, content.key) or '')[:160], 'target': target, 'category': category})
+                certificate = model is DocumentRequest and request_kind(row.type) == 'certificate'
+                results.append({'id': row.id, 'title': getattr(row, title.key), 'snippet': str(getattr(row, content.key) or '')[:160],
+                                'target': 'certificates' if certificate else target, 'category': 'Справка' if certificate else category})
         return {'items': results}
-
-    @router.get('/api/notifications/{notification_id}')
-    def notification_detail(notification_id: int, user=Depends(require_student), db: Session = Depends(get_db)):
-        row = db.scalar(select(Notification).where(Notification.id == notification_id,
-                                                    Notification.student_id == user.id))
-        if row is None:
-            raise HTTPException(404, 'Уведомление не найдено')
-        # Reading a search result must not implicitly mark it read.
-        return notification_payload(row)
 
     @router.get('/api/account/sessions')
     def sessions(request: Request, user=Depends(require_user), db: Session = Depends(get_db)):

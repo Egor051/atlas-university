@@ -13,7 +13,7 @@ def mark(api): sign_in(api,'mark.demo','AtlasDemo!2026-M')
 def test_version_and_build_have_one_source():
     with client() as api:
         health=api.get('/api/health').json(); config=api.get('/api/config').json()
-        assert health['version']==config['version']==VERSION=='3.5.0'
+        assert health['version']==config['version']==VERSION=='3.6.0'
         assert health['build']==config['build'] and len(health['build'])==16
         assert api.get('/static/improvements.js').status_code==200
 

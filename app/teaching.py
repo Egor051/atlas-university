@@ -139,6 +139,9 @@ def save_attendance(db, user, load, body, *, apply=True):
     after = attendance_data(row)
     identity = {'student_id': body.student_id, 'day': body.day.isoformat()}
     recorded(db, user, 'teaching', load.id, 'attendance', {**identity, **before}, {**identity, **after})
+    if before['status'] != after['status']:
+        notify(db, body.student_id, 'Изменилась отметка о посещении',
+               f'{load.discipline.title} · {body.day:%d.%m.%Y}', '/app/attendance')
     return after
 
 

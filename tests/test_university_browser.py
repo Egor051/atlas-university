@@ -14,6 +14,7 @@ PROFILE = '/app/university/digital/systems/mikhail-orlov'
 
 def enter(page, base, actor, destination='/'):
     page.goto(base + destination)
+    page.get_by_role('button',name='Попробовать демо',exact=True).click()
     page.locator(f'[data-demo="{actor}"]').click()
     expect(page.locator('#page-title')).to_be_visible()
 
@@ -21,6 +22,7 @@ def enter(page, base, actor, destination='/'):
 def test_department_teacher_file_and_private_reply(frontend_page, tmp_path):
     student, base = frontend_page
     student.set_viewport_size({'width': 360, 'height': 900})
+    student.clock.install()
     enter(student, base, 0, '/app/university')
     student.get_by_role('link', name='Институт цифровых технологий', exact=True).click()
     student.get_by_role('link', name='Кафедра информационных систем', exact=True).click()
@@ -61,10 +63,17 @@ def test_department_teacher_file_and_private_reply(frontend_page, tmp_path):
         teacher.locator('.topbar [data-route=direct]').click()
         teacher.get_by_role('link', name='Алина Ветрова').click()
         expect(teacher).to_have_url(url)
+        expect(teacher.get_by_role('navigation', name='Диалоги')).to_be_visible()
         expect(teacher.locator('.school-conversation')).to_contain_text('для графа')
         teacher.get_by_label('Сообщение', exact=True).fill('Для BFS подходит очередь FIFO.')
         teacher.get_by_role('button', name='Отправить').click()
         expect(teacher.locator('.school-conversation')).to_contain_text('очередь FIFO')
+        expect(student.get_by_role('navigation', name='Диалоги')).to_be_hidden()
+        student.get_by_label('Сообщение', exact=True).fill('Начатый ответ')
+        student.clock.fast_forward(21_000)
+        expect(student.locator('.school-conversation')).to_contain_text('очередь FIFO')
+        expect(student.get_by_label('Сообщение', exact=True)).to_have_value('Начатый ответ')
+        expect(student.get_by_role('link', name='К списку диалогов')).to_be_visible()
         student.goto(base + '/app/notifications')
         notification = student.locator('.notification-full').filter(has_text='Новое личное сообщение').first
         expect(notification).to_contain_text('Михаил Орлов')
@@ -76,6 +85,7 @@ def test_department_teacher_file_and_private_reply(frontend_page, tmp_path):
         assert student.evaluate('document.documentElement.scrollWidth <= innerWidth')
         other = other_context.new_page()
         other.goto(url)
+        other.get_by_role('button',name='Попробовать демо',exact=True).click()
         other.locator('[data-demo="1"]').click()
         expect(other.locator('.error-state')).to_contain_text('Диалог не найден')
         expect(other.locator('.school-conversation')).to_have_count(0)

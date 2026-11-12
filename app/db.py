@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone, date
 from sqlalchemy import create_engine, ForeignKey, Integer, String, DateTime, Date, Boolean, Text, UniqueConstraint, event, inspect, select, text, Index
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 from argon2 import PasswordHasher
+from .certificate_catalog import APPENDIX_4, APPENDIX_4_NAME, CERTIFICATE_CODES, CERTIFICATE_DETAILS, OFFICE
 from .config import DEMO_LOGINS, settings
 from .session_security import as_utc
 from .storage_guards import lock_owner
@@ -140,6 +141,7 @@ class Notification(Base):
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     target: Mapped[str | None] = mapped_column(String(100), nullable=True)
     request_id: Mapped[int | None] = mapped_column(ForeignKey('document_requests.id'), nullable=True)
+    event_key: Mapped[str | None] = mapped_column(String(120), nullable=True)
 
 
 class RequestEvent(Base):
@@ -182,11 +184,12 @@ Index('ix_requests_status_created', DocumentRequest.status, DocumentRequest.crea
 Index('ix_requests_due_status', DocumentRequest.due_at, DocumentRequest.status)
 Index('ix_notifications_student_created', Notification.student_id, Notification.created_at)
 Index('ix_notifications_student_read_created', Notification.student_id, Notification.is_read, Notification.created_at)
+Index('uq_notifications_event_key', Notification.event_key, unique=True)
 
 DOC_TYPES = [
-    {'id':'study','name':'Справка об обучении','eta':'1–2 рабочих дня', 'description':'Подтверждение обучения для вымышленного сценария.', 'category':'documents'},
+    {'id':'study','name':'Справка об обучении','eta':'1–2 рабочих дня', 'description':'Подтверждение текущего статуса студента по месту требования.', 'category':'documents'},
     {'id':'transcript','name':'Выписка об успеваемости','eta':'до 3 рабочих дней', 'description':'Текущие оценки и зачёты по вашим дисциплинам.', 'category':'documents'},
-    {'id':'scholarship','name':'Справка о стипендии','eta':'1–2 рабочих дня', 'description':'Демонстрационный ответ о стипендиальном обеспечении.', 'category':'finance'},
+    {'id':'scholarship','name':'Справка о стипендии','eta':'1–2 рабочих дня', 'description':'Запрос сведений о стипендии.', 'category':'finance'},
     {'id':'statement','name':'Обращение в деканат','eta':'до 5 рабочих дней', 'description':'Вопрос или заявление в свободной форме.', 'category':'other'},
     {'id':'academic_leave','name':'Академический отпуск','eta':'до 5 рабочих дней', 'description':'Заявление на отпуск: укажите причину и желаемый период.', 'category':'academic','requires_comment':True},
     {'id':'resume','name':'Выход из академического отпуска','eta':'до 5 рабочих дней', 'description':'Обращение о возобновлении обучения и индивидуальном плане.', 'category':'academic','requires_comment':True},
@@ -197,17 +200,25 @@ DOC_TYPES = [
     {'id':'elective','name':'Выбор факультатива','eta':'до 5 рабочих дней', 'description':'Заявление на дополнительную дисциплину.', 'category':'academic','requires_comment':True},
     {'id':'practice','name':'Направление на практику','eta':'до 5 рабочих дней', 'description':'Согласуйте место, программу и сроки практики.', 'category':'academic','requires_comment':True},
     {'id':'dormitory','name':'Место в общежитии','eta':'до 5 рабочих дней', 'description':'Заявление на заселение или продление проживания.', 'category':'campus','requires_comment':True},
-    {'id':'social_support','name':'Материальная поддержка','eta':'до 5 рабочих дней', 'description':'Вымышленное обращение о помощи и сопровождении.', 'category':'finance','requires_comment':True},
-    {'id':'tuition','name':'Вопрос об оплате обучения','eta':'до 5 рабочих дней', 'description':'Уточнение демонстрационной финансовой ленты.', 'category':'finance','requires_comment':True},
-    {'id':'tax','name':'Справка об оплате обучения','eta':'до 3 рабочих дней', 'description':'Образец ответа по расходам. Не для налоговой подачи.', 'category':'documents'},
-    {'id':'student_card','name':'Восстановление студенческого','eta':'до 5 рабочих дней', 'description':'Сообщите об утрате вымышленного пропуска.', 'category':'documents','requires_comment':True},
+    {'id':'social_support','name':'Материальная поддержка','eta':'до 5 рабочих дней', 'description':'Обращение о помощи и сопровождении.', 'category':'finance','requires_comment':True},
+    {'id':'tuition','name':'Вопрос об оплате обучения','eta':'до 5 рабочих дней', 'description':'Уточнение сведений об оплате.', 'category':'finance','requires_comment':True},
+    {'id':'tax','name':'Справка об оплате обучения','eta':'до 3 рабочих дней', 'description':'Запрос сведений о расходах на обучение для личного учёта.', 'category':'documents'},
+    {'id':'student_card','name':'Восстановление студенческого','eta':'до 5 рабочих дней', 'description':'Сообщите об утрате студенческого билета.', 'category':'documents','requires_comment':True},
     {'id':'name_change','name':'Исправление сведений профиля','eta':'до 5 рабочих дней', 'description':'Передайте сотруднику запрос на уточнение данных.', 'category':'other','requires_comment':True},
     {'id':'accessibility','name':'Особые условия обучения','eta':'до 5 рабочих дней', 'description':'Запрос доступного формата или индивидуального сопровождения. Без медицинских данных.', 'category':'campus','requires_comment':True},
     {'id':'mobility','name':'Академическая мобильность','eta':'до 5 рабочих дней', 'description':'Консультация по обмену и перезачёту дисциплин.', 'category':'academic','requires_comment':True},
     {'id':'graduation','name':'Выпуск и итоговая аттестация','eta':'до 5 рабочих дней', 'description':'Вопрос по ВКР, итоговому экзамену и выпускным документам.', 'category':'academic','requires_comment':True},
-    {'id':'military','name':'Справка для воинского учёта','eta':'до 3 рабочих дней', 'description':'Конкурсный образец без реквизитов официального документа.', 'category':'documents'},
+    {'id':APPENDIX_4,'name':APPENDIX_4_NAME,'eta':'до 3 рабочих дней', 'description':'Подтверждение обучения по очной форме для представления в военный комиссариат.', 'category':'documents'},
 ]
-DOC_NAMES = {x['id']:x['name'] for x in DOC_TYPES}
+DOC_TYPES = [{**service, 'department': OFFICE,
+              'kind': 'certificate' if service['id'] in CERTIFICATE_CODES else 'request',
+              **CERTIFICATE_DETAILS.get(service['id'], {})} for service in DOC_TYPES]
+DOC_NAMES = {**{x['id']: x['name'] for x in DOC_TYPES}, 'military': 'Справка для воинского учёта'}
+CERTIFICATE_NAMES = frozenset(DOC_NAMES[code] for code in CERTIFICATE_CODES)
+
+
+def request_kind(type_name):
+    return 'certificate' if type_name in CERTIFICATE_NAMES else 'request'
 
 
 def add_business_days(start: date, count: int) -> date:
@@ -221,7 +232,7 @@ def add_business_days(start: date, count: int) -> date:
 
 def request_due_date(type_name: str, start: date) -> date:
     short = {'study', 'scholarship'}
-    regular = {'transcript', 'tax', 'military'}
+    regular = {'transcript', 'tax', 'military', APPENDIX_4}
     key = next((key for key, name in DOC_NAMES.items() if name == type_name), 'statement')
     count = 2 if key in short else 3 if key in regular else 5
     return add_business_days(start, count)
@@ -235,7 +246,7 @@ def migrate_database():
     """
     # Register additive extension tables before metadata creation. These imports
     # do not create a connection, run DDL or seed data by themselves.
-    from . import learning_db, services_db, campus_db, improvement_db, university_db, workspace_db, units_db  # noqa: F401
+    from . import learning_db, services_db, campus_db, improvement_db, university_db, workspace_db, units_db, announcements_db, certificates  # noqa: F401
     with engine.begin() as connection:
         if engine.dialect.name == 'postgresql':
             connection.execute(text('SELECT pg_advisory_xact_lock(2026110601)'))
@@ -252,7 +263,8 @@ def migrate_database():
             if name not in columns:
                 connection.exec_driver_sql(f'ALTER TABLE document_requests ADD COLUMN {name} {sql_type}')
         columns = {column['name'] for column in inspect(connection).get_columns('notifications')}
-        for name, sql_type in [('target', 'VARCHAR(100)'), ('request_id', 'INTEGER REFERENCES document_requests(id)')]:
+        for name, sql_type in [('target', 'VARCHAR(100)'), ('request_id', 'INTEGER REFERENCES document_requests(id)'),
+                               ('event_key', 'VARCHAR(120)')]:
             if name not in columns:
                 connection.exec_driver_sql(f'ALTER TABLE notifications ADD COLUMN {name} {sql_type}')
         for model in (DocumentRequest, Notification, LoginSession):
@@ -289,6 +301,15 @@ def migrate_database():
             connection.execute(SchemaMigration.__table__.insert().values(version='0008_academic_workspace', applied_at=utc_now()))
         if '0009_student_units' not in versions:
             connection.execute(SchemaMigration.__table__.insert().values(version='0009_student_units', applied_at=utc_now()))
+        if '0010_campus_announcements' not in versions:
+            connection.execute(SchemaMigration.__table__.insert().values(version='0010_campus_announcements', applied_at=utc_now()))
+        if '0011_certificate_issues' not in versions:
+            certificates.migrate_certificate_drafts(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0011_certificate_issues', applied_at=utc_now()))
+        if '0012_global_notifications' not in versions:
+            from .notification_migration import upgrade_notifications
+            upgrade_notifications(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0012_global_notifications', applied_at=utc_now()))
 
 
 def seed_demo(session=None):
@@ -376,11 +397,15 @@ def initialize_database():
                 from .university_seed import seed_university
                 from .workspace_seed import seed_workspace
                 from .units_seed import seed_units
+                from .certificates import seed_certificate_enrollment
+                from .announcements_db import seed_announcements
                 seed_learning(db)
                 seed_services(db)
                 seed_university(db)
                 seed_workspace(db)
                 seed_units(db)
+                seed_certificate_enrollment(db)
+                seed_announcements(db)
                 db.flush()
     elif settings.app_env == 'production':
         with SessionLocal() as db:

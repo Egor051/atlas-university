@@ -25,11 +25,13 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 
+from .certificate_catalog import APPENDIX_4, APPENDIX_4_FORM, APPENDIX_4_NAME, COMMISSIONER_OPTIONS, OFFICE
+from .certificates import CertificateIssue, appendix_4_enrollment, appendix_4_html, enrollment_rows, get_destination, prepare_appendix_4, public_service
 from .db import (SessionLocal, User, LoginSession, Lesson, LessonChange, Grade,
-                 Deadline, DocumentRequest, Notification, DOC_TYPES, DOC_NAMES,
+                 Deadline, DocumentRequest, Notification, DOC_TYPES, DOC_NAMES, CERTIFICATE_NAMES,
                  RequestEvent, RequestIdempotency, LoginAttempt,
                  password_hasher, initialize_database, CAMPUS_TZ, campus_today,
-                 utc_now, request_due_date, engine)
+                 utc_now, request_due_date, request_kind, engine)
 from .config import DEMO_LOGINS, settings
 from .version import VERSION, build_id
 from .session_security import as_utc, validate_expected_actor, PasswordAdmission
@@ -177,7 +179,11 @@ def date_iso(v):
     return v.isoformat() if v else None
 
 def request_payload(r: DocumentRequest):
-    return dict(id=r.id,type=r.type,comment=r.comment,details=json.loads(r.details or '{}'),status=r.status,
+    details = json.loads(r.details or '{}')
+    if r.type == APPENDIX_4_NAME and 'commissioner' in details:
+        details['commissioner'] = COMMISSIONER_OPTIONS.get(details['commissioner'], details['commissioner'])
+    return dict(id=r.id,type=r.type,comment=r.comment,details=details,status=r.status,
+                kind=request_kind(r.type), department=OFFICE,
                 created_at=date_iso(r.created_at),updated_at=date_iso(r.updated_at),
                 version=r.version, staff_message=r.staff_message,
                 due_at=date_iso(r.due_at), document_url=f'/api/requests/{r.id}/document' if r.status == 'ready' else None)
@@ -391,7 +397,8 @@ def deadline_payload(d):
 
 
 RequestFilter = Literal['all', 'active', 'overdue', 'submitted', 'review', 'processing', 'needs_info', 'ready', 'rejected']
-NotificationFilter = Literal['all', 'unread', 'schedule', 'deadline', 'request', 'announcement', 'direct', 'academic', 'union', 'vuc']
+NotificationFilter = Literal['all', 'unread', 'schedule', 'deadline', 'request', 'announcement', 'direct', 'academic', 'material', 'service', 'union', 'vuc']
+NOTIFICATION_CATEGORIES = ('schedule', 'deadline', 'request', 'announcement', 'direct', 'academic', 'material', 'service', 'union', 'vuc')
 
 
 def text_search(column, value):
@@ -419,6 +426,21 @@ def request_counts(db, scope):
     }
     row = db.execute(select(func.count(DocumentRequest.id).label('all'), *[func.coalesce(func.sum(case((condition, 1), else_=0)), 0).label(name) for name, condition in expressions.items()]).where(*scope)).mappings().one()
     return {name: int(value) for name, value in row.items()}
+
+
+RequestKind = Literal['all', 'request', 'certificate']
+
+
+def request_kind_scope(kind):
+    if kind == 'certificate':
+        return [DocumentRequest.type.in_(CERTIFICATE_NAMES)]
+    if kind == 'request':
+        return [DocumentRequest.type.not_in(CERTIFICATE_NAMES)]
+    return []
+
+
+def request_target(type_name):
+    return '/app/certificates' if request_kind(type_name) == 'certificate' else '/app/requests'
 
 
 def request_list_conditions(scope, filter_name, search, staff=False):
@@ -467,12 +489,13 @@ def toggle_deadline(deadline_id: int, body: DeadlineToggleBody, user: User = Dep
     return deadline_payload(row)
 
 @app.get('/api/requests/types')
-def request_types(user:User=Depends(require_student)):
-    return DOC_TYPES
+def request_types(kind: RequestKind = 'all', user: User = Depends(require_student), db: Session = Depends(get_db)):
+    eligible = appendix_4_enrollment(db, user) is not None if kind != 'request' else False
+    return [public_service(service, eligible) for service in DOC_TYPES if kind == 'all' or service['kind'] == kind]
 
 @app.get('/api/requests')
-def requests_list(response: Response, paginated: bool = False, offset: int = Query(0, ge=0, le=2147483647), limit: int = Query(200, ge=1, le=200), filter: RequestFilter = 'all', q: str = Query('', max_length=100), user:User=Depends(require_student),db:Session=Depends(get_db)):
-    scope = [DocumentRequest.student_id == user.id]
+def requests_list(response: Response, paginated: bool = False, offset: int = Query(0, ge=0, le=2147483647), limit: int = Query(200, ge=1, le=200), filter: RequestFilter = 'all', q: str = Query('', max_length=100), kind: RequestKind = 'all', user:User=Depends(require_student),db:Session=Depends(get_db)):
+    scope = [DocumentRequest.student_id == user.id, *request_kind_scope(kind)]
     conditions = request_list_conditions(scope, filter, q)
     total = db.scalar(select(func.count()).select_from(DocumentRequest).where(*conditions))
     counts = request_counts(db, scope)
@@ -502,6 +525,7 @@ SERVICE_FIELDS = {
     'study': {'purpose':('Для чего нужна справка',120),'copies':('Количество экземпляров',1)},
     'transcript': {'period':('Учебный период',80),'format':('Формат результата',40)},
     'retake': {'subject':('Дисциплина',130),'preferred_date':('Желаемая дата',10)},
+    APPENDIX_4: {'commissioner': ('Военный комиссариат', 20)},
 }
 
 def validate_service_details(service,details,user,db,*,validate_time=True):
@@ -523,8 +547,8 @@ def validate_service_details(service,details,user,db,*,validate_time=True):
 def new_request(body:NewRequestBody,request:Request,response:Response,user:User=Depends(require_student),db:Session=Depends(get_db),_:None=Depends(require_same_origin)):
     comment=body.comment.strip()
     details=validate_service_details(body.type,body.details,user,db,validate_time=False)
-    service = next(t for t in DOC_TYPES if t['id'] == body.type)
-    if (body.type == 'statement' or service.get('requires_comment')) and len(comment)<10:
+    service = next((t for t in DOC_TYPES if t['id'] == body.type), None)
+    if (body.type == 'statement' or (service and service.get('requires_comment'))) and len(comment)<10:
         raise HTTPException(422,'Опишите вопрос хотя бы в 10 символах')
     key = request.headers.get('Idempotency-Key')
     if key is not None and not re.fullmatch(r'[A-Za-z0-9_-]{8,100}', key):
@@ -541,6 +565,12 @@ def new_request(body:NewRequestBody,request:Request,response:Response,user:User=
             return request_payload(db.get(DocumentRequest, previous.request_id))
     # A completed retry is valid even when its originally chosen date has passed.
     validate_service_details(body.type,details,user,db)
+    if service is None:
+        raise HTTPException(422, 'Для нового заказа выберите справку по приложению № 4')
+    if body.type == APPENDIX_4:
+        if appendix_4_enrollment(db, user) is None:
+            raise HTTPException(403, 'В учебном реестре вашего аккаунта нет подтверждённых сведений для этой формы')
+        get_destination(details)
     now=utc_now()
     row=DocumentRequest(student_id=user.id,type=DOC_NAMES[body.type],comment=comment,details=json.dumps(details,ensure_ascii=False),
                         status='submitted',created_at=now,updated_at=now,
@@ -548,7 +578,15 @@ def new_request(body:NewRequestBody,request:Request,response:Response,user:User=
     db.add(row)
     db.flush()
     db.add(RequestEvent(request_id=row.id, status='submitted',message='Заявка принята и передана в учебный офис.',actor_role='student',actor_name=user.full_name,created_at=now))
-    db.add(Notification(student_id=user.id,title='Заявка отправлена',body=f'{DOC_NAMES[body.type]} — заявка №{row.id} принята. Статус можно отслеживать в разделе «Заявки».',category='request',created_at=now,is_read=False,target='/app/requests',request_id=row.id))
+    is_certificate = service['kind'] == 'certificate'
+    section = 'Справки' if is_certificate else 'Заявки'
+    db.add(Notification(student_id=user.id,title='Справка заказана' if is_certificate else 'Заявка отправлена',body=f'{row.type} — заявка №{row.id} принята. Статус можно отслеживать в разделе «{section}».',category='request',created_at=now,is_read=False,target=request_target(row.type),request_id=row.id))
+    from .workspace import notify
+
+    for staff_id in db.scalars(select(User.id).where(User.role == 'staff')):
+        notice = notify(db, staff_id, 'Новый заказ справки' if is_certificate else 'Новая заявка',
+                        f'{row.type} · №{row.id}', f'/app/staff?kind={service["kind"]}', category='request')
+        notice.request_id = row.id
     if key:
         db.add(RequestIdempotency(student_id=user.id, key=key, payload_hash=payload_hash, request_id=row.id))
     try:
@@ -565,7 +603,7 @@ def new_request(body:NewRequestBody,request:Request,response:Response,user:User=
 
 
 @app.get('/api/requests/{request_id}/document')
-def request_document(request_id: int, user: User = Depends(require_student), db: Session = Depends(get_db)):
+def request_document(request_id: int, preview: bool = False, user: User = Depends(require_student), db: Session = Depends(get_db)):
     row = db.scalar(select(DocumentRequest).where(DocumentRequest.id == request_id, DocumentRequest.student_id == user.id))
     if not row:
         raise HTTPException(404, 'Заявка не найдена')
@@ -573,8 +611,12 @@ def request_document(request_id: int, user: User = Depends(require_student), db:
         raise HTTPException(409, 'Документ станет доступен после готовности заявки')
     esc = html.escape
     nonce = secrets.token_urlsafe(18)
-    if row.type == DOC_NAMES['study']:
-        content = f'<p>В рамках вымышленного сценария подтверждается, что <strong>{esc(user.full_name)}</strong> обучается на {user.course} курсе по направлению «{esc(user.program)}», группа {esc(user.group_name)}.</p>'
+    heading = row.type
+    if row.type == APPENDIX_4_NAME:
+        heading = APPENDIX_4_FORM
+        content = appendix_4_html(db.get(CertificateIssue, row.id))
+    elif row.type == DOC_NAMES['study']:
+        content = f'<p>Подтверждается, что <strong>{esc(user.full_name)}</strong> обучается на {user.course} курсе по направлению «{esc(user.program)}», группа {esc(user.group_name)}.</p>'
     elif row.type == DOC_NAMES['transcript']:
         rows = db.scalars(select(Grade).where(Grade.student_id == user.id).order_by(Grade.id)).all()
         content = '<table><thead><tr><th>Дисциплина</th><th>Баллы</th><th>Аттестация</th></tr></thead><tbody>' + ''.join(f'<tr><td>{esc(g.subject)}</td><td>{g.current if g.current is not None else "—"}/{g.max_grade}</td><td>{esc(g.assessment)}</td></tr>' for g in rows) + '</tbody></table>'
@@ -582,16 +624,18 @@ def request_document(request_id: int, user: User = Depends(require_student), db:
         content = '<p>Демонстрационная справка о стипендии. Суммы вымышленной финансовой ленты не подтверждают реальное начисление или выплату. Образец не имеет юридической силы.</p>'
     else:
         content = f'<h2>Обращение</h2><p class="multiline">{esc(row.comment)}</p>'
-    if row.details and row.details!='{}':
+    if row.type != APPENDIX_4_NAME and row.details and row.details!='{}':
         labels={'purpose':'Назначение','copies':'Экземпляры','period':'Учебный период','format':'Формат','subject':'Дисциплина','preferred_date':'Желаемая дата'}
         content+='<h2>Сведения заявки</h2><dl>'+''.join('<dt>'+esc(labels.get(k,k))+'</dt><dd>'+esc(v)+'</dd>' for k,v in json.loads(row.details).items())+'</dl>'
-    document = f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>АТЛАС · образец №{row.id}</title><style nonce="{nonce}">body{{margin:0;background:#f2f3f8;color:#202338;font:16px/1.65 system-ui,sans-serif}}main{{max-width:760px;margin:40px auto;padding:40px;background:white;border:1px solid #dce0eb}}.warning{{padding:16px;border:2px solid #ad4024;color:#8d301a;font-weight:700}}small{{color:#596174}}h1{{font-size:28px}}h2{{font-size:19px}}table{{width:100%;border-collapse:collapse}}th,td{{text-align:left;padding:10px;border-bottom:1px solid #dce0eb}}.multiline{{white-space:pre-wrap;overflow-wrap:anywhere}}footer{{margin-top:40px;padding-top:20px;border-top:1px solid #dce0eb}}@media(max-width:600px){{main{{margin:0;padding:20px}}th,td{{font-size:13px;padding:6px}}}}@page{{size:A4;margin:16mm}}td,th,dd{{overflow-wrap:anywhere}}tr,footer{{break-inside:avoid}}@media print{{body{{background:white}}main{{margin:0;border:0;padding:0}}}}</style></head><body><main><div class="warning">КОНКУРСНЫЙ ОБРАЗЕЦ · ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ</div><p><strong>АТЛАС / цифровой кампус</strong><br><small>Неофициальный концепт. Не является документом образовательной организации.</small></p><h1>{esc(row.type)}</h1><p>Заявка №{row.id} · подготовлена {row.updated_at.astimezone(CAMPUS_TZ).strftime('%d.%m.%Y') if row.updated_at.tzinfo else row.updated_at.replace(tzinfo=timezone.utc).astimezone(CAMPUS_TZ).strftime('%d.%m.%Y')}</p><p><strong>{esc(user.full_name)}</strong><br>{esc(user.faculty)}<br>{esc(user.program)} · {esc(user.group_name)}<br>Вымышленный номер: {esc(user.student_number)}</p>{content}<h2>Ответ учебного офиса</h2><p class="multiline">{esc(row.staff_message)}</p><footer>Этот образец показывает полный путь заявки в прототипе. Юридической силы не имеет. Реальная подпись, печать и интеграция с вузом отсутствуют.<br><small>Можно сохранить в PDF через печать браузера.</small></footer></main></body></html>'''
-    return HTMLResponse(document, headers={'Content-Disposition': f'attachment; filename="atlas-document-{row.id}.html"', 'Content-Security-Policy': f"default-src 'none'; script-src 'none'; style-src 'nonce-{nonce}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; sandbox"})
+    identity = '' if row.type == APPENDIX_4_NAME else f'<p><strong>{esc(user.full_name)}</strong><br>{esc(user.faculty)}<br>{esc(user.program)} · {esc(user.group_name)}<br>Учебный номер: {esc(user.student_number)}</p>'
+    document = f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>АТЛАС · образец №{row.id}</title><style nonce="{nonce}">body{{margin:0;background:#f2f3f8;color:#202338;font:16px/1.65 system-ui,sans-serif}}main{{max-width:760px;margin:40px auto;padding:40px;background:white;border:1px solid #dce0eb}}.warning{{padding:16px;border:2px solid #ad4024;color:#8d301a;font-weight:700}}small{{color:#596174}}h1{{font-size:28px}}h2{{font-size:19px}}table{{width:100%;border-collapse:collapse}}th,td{{text-align:left;padding:10px;border-bottom:1px solid #dce0eb}}.multiline{{white-space:pre-wrap;overflow-wrap:anywhere}}footer{{margin-top:40px;padding-top:20px;border-top:1px solid #dce0eb}}@media(max-width:600px){{main{{margin:0;padding:20px}}th,td{{font-size:13px;padding:6px}}}}@page{{size:A4;margin:16mm}}td,th,dd{{overflow-wrap:anywhere}}tr,footer{{break-inside:avoid}}@media print{{body{{background:white}}main{{margin:0;border:0;padding:0}}}}</style></head><body><main><div class="warning">КОНКУРСНЫЙ ОБРАЗЕЦ · ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ</div><p><strong>АТЛАС / цифровой кампус</strong><br><small>Неофициальный концепт. Не является документом образовательной организации.</small></p><h1>{esc(heading)}</h1><p>Заявка №{row.id} · подготовлена {as_utc(row.updated_at).astimezone(CAMPUS_TZ):%d.%m.%Y}</p>{identity}{content}<h2>Ответ учебного офиса</h2><p class="multiline">{esc(row.staff_message)}</p><footer>Этот образец показывает полный путь заявки в прототипе. Юридической силы не имеет. Реальная подпись, печать и интеграция с вузом отсутствуют.<br><small>Можно сохранить в PDF через печать браузера.</small></footer></main></body></html>'''
+    disposition = 'inline' if preview else 'attachment'
+    return HTMLResponse(document, headers={'Content-Disposition': f'{disposition}; filename="atlas-document-{row.id}.html"', 'Content-Security-Policy': f"default-src 'none'; script-src 'none'; style-src 'nonce-{nonce}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; sandbox"})
 
 @app.get('/api/notifications')
-def notifications(response: Response, paginated: bool = False, offset: int = Query(0, ge=0, le=2147483647), limit: int = Query(200, ge=1, le=200), filter: NotificationFilter = 'all', q: str = Query('', max_length=100), user:User=Depends(require_student),db:Session=Depends(get_db)):
+def notifications(response: Response, paginated: bool = False, offset: int = Query(0, ge=0, le=2147483647), limit: int = Query(200, ge=1, le=200), filter: NotificationFilter = 'all', q: str = Query('', max_length=100), user: User = Depends(require_user), db: Session = Depends(get_db)):
     scope = [Notification.student_id == user.id]
-    expressions = {'unread': Notification.is_read.is_(False), **{category: Notification.category == category for category in ['schedule', 'deadline', 'request', 'announcement', 'direct', 'academic', 'union', 'vuc']}}
+    expressions = {'unread': Notification.is_read.is_(False), **{category: Notification.category == category for category in NOTIFICATION_CATEGORIES}}
     values = db.execute(select(func.count(Notification.id).label('all'), *[func.coalesce(func.sum(case((condition, 1), else_=0)), 0).label(name) for name, condition in expressions.items()]).where(*scope)).mappings().one()
     counts = {name: int(value) for name, value in values.items()}
     conditions = list(scope)
@@ -604,15 +648,39 @@ def notifications(response: Response, paginated: bool = False, offset: int = Que
     rows=db.scalars(select(Notification).where(*conditions).order_by(Notification.created_at.desc(),Notification.id.desc()).offset(offset).limit(limit)).all()
     return list_response([notification_payload(n) for n in rows], total, offset, limit, counts, paginated, response, counts['unread'])
 
-@app.post('/api/notifications/{notification_id}/read')
-def read_notification(notification_id:int,user:User=Depends(require_student),db:Session=Depends(get_db),_:None=Depends(require_same_origin)):
-    row=db.scalar(select(Notification).where(Notification.id==notification_id,Notification.student_id==user.id))
-    if not row: raise HTTPException(404,'Уведомление не найдено')
-    row.is_read=True;db.commit()
-    return {'ok':True}
+@app.get('/api/notifications/unread')
+def unread_notifications(user: User = Depends(require_user), db: Session = Depends(get_db)):
+    count = db.scalar(select(func.count()).select_from(Notification).where(
+        Notification.student_id == user.id, Notification.is_read.is_(False)))
+    return {'unread_count': count}
+
+
+@app.post('/api/notifications/deadline-reminders', dependencies=[Depends(require_same_origin)])
+def refresh_deadline_reminders(user: User = Depends(require_student), db: Session = Depends(get_db)):
+    from .notifications import create_deadline_reminders
+    return {'created': create_deadline_reminders(db, user.id)}
+
+
+def owned_notification(db, user, notification_id):
+    row = db.scalar(select(Notification).where(Notification.id == notification_id, Notification.student_id == user.id))
+    if row is None:
+        raise HTTPException(404, 'Уведомление не найдено')
+    return row
+
+
+@app.get('/api/notifications/{notification_id}')
+def notification_detail(notification_id: int, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    return notification_payload(owned_notification(db, user, notification_id))
+
+
+@app.post('/api/notifications/{notification_id}/read', dependencies=[Depends(require_same_origin)])
+def read_notification(notification_id: int, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    owned_notification(db, user, notification_id).is_read = True
+    db.commit()
+    return {'ok': True}
 
 @app.post('/api/notifications/read-all')
-def read_all_notifications(user:User=Depends(require_student),db:Session=Depends(get_db),_:None=Depends(require_same_origin)):
+def read_all_notifications(user:User=Depends(require_user),db:Session=Depends(get_db),_:None=Depends(require_same_origin)):
     db.query(Notification).filter(Notification.student_id==user.id).update({'is_read':True})
     db.commit();return {'ok':True}
 
@@ -637,10 +705,11 @@ def dashboard(user:User=Depends(require_student),db:Session=Depends(get_db)):
             'next_lesson': next_lesson, 'timezone': 'Europe/Moscow', 'server_now': now.isoformat()}
 
 @app.get('/api/staff/requests')
-def staff_requests(response: Response, paginated: bool = False, offset: int = Query(0, ge=0, le=2147483647), limit: int = Query(200, ge=1, le=200), filter: RequestFilter = 'all', q: str = Query('', max_length=100), user:User=Depends(require_staff),db:Session=Depends(get_db)):
-    conditions = request_list_conditions([], filter, q, staff=True)
+def staff_requests(response: Response, paginated: bool = False, offset: int = Query(0, ge=0, le=2147483647), limit: int = Query(200, ge=1, le=200), filter: RequestFilter = 'all', q: str = Query('', max_length=100), kind: RequestKind = 'all', user:User=Depends(require_staff),db:Session=Depends(get_db)):
+    scope = request_kind_scope(kind)
+    conditions = request_list_conditions(scope, filter, q, staff=True)
     total = db.scalar(select(func.count()).select_from(DocumentRequest).join(User, DocumentRequest.student_id == User.id).where(*conditions))
-    counts = request_counts(db, [])
+    counts = request_counts(db, scope)
     rows=db.execute(select(DocumentRequest,User).join(User,DocumentRequest.student_id==User.id).where(*conditions).order_by(DocumentRequest.created_at.desc(),DocumentRequest.id.desc()).offset(offset).limit(limit)).all()
     items = [{**request_payload(r),'student_name':u.full_name,'group':u.group_name} for r,u in rows]
     return list_response(items, total, offset, limit, counts, paginated, response)
@@ -652,13 +721,19 @@ def staff_request_details(request_id: int, history_limit:int=Query(100,ge=1,le=2
     if not row:
         raise HTTPException(404, 'Заявка не найдена')
     student = db.get(User, row.student_id)
-    return {**request_with_history(row, db, history_limit=history_limit, history_offset=history_offset), 'student_name': student.full_name, 'group': student.group_name}
+    payload = {**request_with_history(row, db, history_limit=history_limit, history_offset=history_offset),
+               'student_name': student.full_name, 'group': student.group_name}
+    if row.type == APPENDIX_4_NAME:
+        issue = db.get(CertificateIssue, row.id) if row.status == 'ready' else None
+        payload['certificate_enrollment'] = enrollment_rows(issue.data if issue else appendix_4_enrollment(db, student))
+    return payload
 
 
 class StaffStatusBody(StrictBody):
     status: Literal['submitted','review','processing','needs_info','ready','rejected']
     message: str = Field(default='', max_length=2000)
     expected_version: int | None = Field(default=None, ge=1)
+    confirmed_enrollment: StrictBool = False
 
 @app.post('/api/staff/requests/{request_id}/status')
 def staff_update(request_id:int,body:StaffStatusBody,user:User=Depends(require_staff),db:Session=Depends(get_db),_:None=Depends(require_same_origin)):
@@ -671,12 +746,20 @@ def staff_update(request_id:int,body:StaffStatusBody,user:User=Depends(require_s
     if body.status in {'needs_info','ready', 'rejected'} and len(message) < 10:
         raise HTTPException(422, 'Добавьте ответ или причину отклонения: не менее 10 символов')
     now = utc_now()
+    issue = None
+    if body.status == 'ready' and row.type == APPENDIX_4_NAME:
+        if body.expected_version is None:
+            raise HTTPException(422, 'Укажите текущую версию заявки')
+        issue = prepare_appendix_4(db, row, user, body.confirmed_enrollment, now)
     result = db.execute(update(DocumentRequest).where(DocumentRequest.id == row.id, DocumentRequest.version == row.version, DocumentRequest.status == row.status).values(status=body.status,staff_message=message or row.staff_message,updated_at=now,version=row.version+1).execution_options(synchronize_session=False))
     if result.rowcount != 1:
         db.rollback()
         raise HTTPException(409, 'Заявка уже изменена другим сотрудником. Обновите данные.')
+    if issue is not None:
+        db.add(issue)
     db.add(RequestEvent(request_id=row.id,status=body.status,message=message or f'Статус: {STATUS_NAMES[body.status]}.',actor_role='staff',actor_name=user.full_name,created_at=now))
-    db.add(Notification(student_id=row.student_id,title='Статус заявки изменился',body=f'{row.type}, №{row.id}: {STATUS_NAMES[body.status]}. {message}',category='request',created_at=now,is_read=False,target='/app/requests',request_id=row.id))
+    title = 'Справка готова' if body.status == 'ready' and request_kind(row.type) == 'certificate' else 'Статус заявки изменился'
+    db.add(Notification(student_id=row.student_id,title=title,body=f'{row.type}, №{row.id}: {STATUS_NAMES[body.status]}. {message}',category='request',created_at=now,is_read=False,target=request_target(row.type),request_id=row.id))
     db.commit()
     db.refresh(row)
     return request_with_history(row, db)
@@ -698,7 +781,8 @@ def static_files(filename:str, v: str = ''):
     allowed={'app.js':'text/javascript','campus.js':'text/javascript','improvements.js':'text/javascript',
              'university.js':'text/javascript','campus.css':'text/css','style.css':'text/css','usability.css':'text/css',
              'university.css':'text/css','operations.css':'text/css','operations.js':'text/javascript',
-             'units.js':'text/javascript','favicon.svg':'image/svg+xml'}
+             'units.js':'text/javascript','announcements.js':'text/javascript','announcements.css':'text/css',
+             'shell.css':'text/css','favicon.svg':'image/svg+xml'}
     if filename not in allowed: raise HTTPException(404)
     cache = 'public, max-age=31536000, immutable' if v == build_id() else 'no-cache'
     return FileResponse(APP_DIR/'static'/filename,media_type=allowed[filename],headers={'Cache-Control': cache})
@@ -722,6 +806,7 @@ from .scheduling import router as scheduling_router
 from .references import router as registry_router
 from .table_imports import router as tables_router
 from .units import router as units_router
+from .announcements import router as announcements_router
 app.include_router(university_router())
 app.include_router(direct_router())
 app.include_router(workspace_router())
@@ -730,6 +815,7 @@ app.include_router(scheduling_router)
 app.include_router(registry_router)
 app.include_router(tables_router)
 app.include_router(units_router)
+app.include_router(announcements_router)
 install_quota(app)
 # Install last so headers also cover early quota, CSRF and actor-affinity
 # rejections. Starlette wraps newly added middleware around the existing stack.

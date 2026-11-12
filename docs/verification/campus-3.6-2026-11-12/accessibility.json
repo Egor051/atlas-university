@@ -1,0 +1,539 @@
+{
+  "verified_at": "2026-11-12T18:24:52.415835+03:00",
+  "scope": "Automated axe-core on real local Chromium. Not a full WCAG certification or screen-reader/device audit.",
+  "source": "https://github.com/dequelabs/axe-core",
+  "screens": [
+    {
+      "screen": "login-1440",
+      "violations": [],
+      "incomplete": [],
+      "passes": 39,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "home-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 14
+        }
+      ],
+      "passes": 42,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "schedule-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 41,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "grades-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 47,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "plan-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 44,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "requests-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 42,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "notifications-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 42,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "profile-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 44,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "schedule-empty-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 41,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "plan-done-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 44,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "search-1440",
+      "violations": [],
+      "incomplete": [],
+      "passes": 32,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "error-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 41,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "new-request-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 2
+        }
+      ],
+      "passes": 32,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "staff-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 1
+        }
+      ],
+      "passes": 45,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "staff-detail-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 8
+        }
+      ],
+      "passes": 33,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "document-ready-1440",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 4
+        }
+      ],
+      "passes": 30,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "login-360",
+      "violations": [],
+      "incomplete": [],
+      "passes": 39,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "home-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 13
+        }
+      ],
+      "passes": 42,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "schedule-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 3
+        }
+      ],
+      "passes": 41,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "grades-360",
+      "violations": [],
+      "incomplete": [],
+      "passes": 47,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "plan-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 44,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "requests-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        }
+      ],
+      "passes": 42,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "notifications-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 42,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "profile-360",
+      "violations": [],
+      "incomplete": [],
+      "passes": 44,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "schedule-empty-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        }
+      ],
+      "passes": 41,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "plan-done-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        }
+      ],
+      "passes": 44,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "search-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 4
+        }
+      ],
+      "passes": 32,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "error-360",
+      "violations": [],
+      "incomplete": [],
+      "passes": 41,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "new-request-360",
+      "violations": [],
+      "incomplete": [],
+      "passes": 33,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "staff-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 2
+        }
+      ],
+      "passes": 45,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "staff-detail-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 6
+        }
+      ],
+      "passes": 34,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    },
+    {
+      "screen": "document-ready-360",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "count": 3
+        }
+      ],
+      "passes": 31,
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      }
+    }
+  ],
+  "violating_nodes": 0,
+  "status": "PASS"
+}

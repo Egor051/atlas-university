@@ -30,37 +30,38 @@ def test_mobile_core_is_one_tap_and_other_sections_are_grouped(frontend_page, wi
     page.set_viewport_size({'width': width, 'height': 800})
     enter(page, base)
     navigation = page.locator('.bottom-nav')
-    for label in ['Главная', 'Расписание', 'Оценки', 'Заявки', 'Разделы']:
+    for label in ['Главная', 'Расписание', 'Оценки', 'Заявки']:
         expect(navigation.get_by_role('button', name=label, exact=True)).to_be_visible()
     navigation.get_by_role('button', name='Оценки', exact=True).click()
     expect(page.locator('#page-title')).to_have_text('Успеваемость')
-    navigation.get_by_role('button', name='Разделы', exact=True).click()
-    expect(page.locator('.hub-group[open]')).to_have_count(1)
-    page.locator('.hub-group').filter(has_text='Планирование').locator('summary').click()
-    page.locator('.campus-hub-link[data-route="notes"]').click()
+    menu = navigation.get_by_role('button', name='Открыть меню', exact=True)
+    menu.click()
+    expect(page.locator('.nav-group.is-open')).to_have_count(1)
+    page.locator('[data-nav-group="planning"] .nav-group-toggle').click()
+    page.locator('.nav-stack [data-route="notes"]').click()
     expect(page.locator('#page-title')).to_have_text('Конспекты')
-    expect(navigation.get_by_role('button', name='Разделы', exact=True)).to_have_attribute('aria-current', 'location')
+    expect(menu).to_have_attribute('aria-expanded', 'false')
     page.keyboard.press('Control+k')
     page.locator('#search-input').fill('оценки')
     expect(page.locator('#search-results [data-route="grades"]')).to_be_visible()
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
 
 
-def test_existing_requests_precede_catalogue_and_service_search_crosses_categories(frontend_page):
+def test_certificate_history_precedes_searchable_certificate_catalog(frontend_page):
     page, base = frontend_page
     page.set_viewport_size({'width': 360, 'height': 800})
     enter(page, base)
-    visit(page, base, 'requests')
+    visit(page, base, 'certificates')
     expect(page.locator('.request-row').first).to_be_visible()
-    expect(page.locator('.service-card')).to_have_count(0)
+    expect(page.locator('.certificate-service')).to_have_count(0)
     assert page.locator('.request-row').first.bounding_box()['y'] < 650
     page.locator('[data-request-view="services"]').click()
     page.locator('#service-search').fill('стипендии')
-    service = page.locator('.service-card[data-type="scholarship"]')
+    service = page.locator('.certificate-service [data-type="scholarship"]')
     expect(service).to_be_visible()
     service.click()
     expect(page.locator('#doc-type')).to_have_value('scholarship')
-    expect(page.locator('#selected-service')).to_contain_text('Ориентир')
+    expect(page.locator('#selected-service')).to_contain_text('Учебный офис')
 
 
 def test_dirty_form_survives_escape_and_network_failure_then_saves(frontend_page):
@@ -97,11 +98,11 @@ def test_search_opens_request_and_marks_exact_grade_and_deadline(frontend_page):
                                data={'type': 'study', 'comment': marker})
     assert result.status == 201
     request_id = result.json()['id']
-    visit(page, base, 'requests')
-    page.locator('[data-request-view="services"]').click()
+    visit(page, base, 'certificates')
+    page.locator('[data-request-view="services"][aria-pressed]').click()
     page.keyboard.press('Control+k')
     page.locator('#search-input').fill(marker)
-    page.locator(f'[data-search-target="requests"][data-search-id="{request_id}"]').click()
+    page.locator(f'[data-search-target="certificates"][data-search-id="{request_id}"]').click()
     expect(page.get_by_role('dialog')).to_have_attribute('aria-label', f'Заявка № {request_id}')
     expect(page.locator('.detail-block .user-text', has_text=marker)).to_be_visible()
     page.locator('.close-btn').click()

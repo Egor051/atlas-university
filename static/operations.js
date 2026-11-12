@@ -7,7 +7,6 @@
     {id:'teaching',label:'Группы и дисциплины',icon:'graduation',hint:'Списки, оценки, посещаемость, задания и отчёт',roles:['teacher']},
     {id:'teach-schedule',label:'Мои занятия',icon:'calendar',hint:'Расписание преподавателя по неделям',roles:['teacher']},
     {id:'teach-consultations',label:'Мои консультации',icon:'clock',hint:'Время приёма и записи студентов',roles:['teacher']},
-    {id:'work-notices',label:'Рабочие уведомления',icon:'bell',hint:'Изменения расписания, заявки и новые работы',roles:[...workers,'union','vuc']},
     {id:'timetable-admin',label:'Расписание занятий',icon:'calendar',hint:'Опубликованные занятия и проекты переноса',roles:offices},
     {id:'schedule-changes',label:'Проекты расписания',icon:'plan',hint:'Подготовка, согласование и утверждение',roles:offices},
     {id:'registry',label:'Аудитории и группы',icon:'pin',hint:'Аудиторный фонд, группы, нагрузка и состав',roles:offices},
@@ -67,7 +66,7 @@
       return {...(Object.hasOwn(teachTabs,query.tab)?{tab:query.tab}:{}),
               ...(validDay(query.day)?{day:query.day}:{}),...(int(query.offset)?{offset:Number(query.offset)}:{})};
     }
-    if(['schedule-changes','work-notices'].includes(page)&&int(query.offset))return {offset:Number(query.offset)};
+    if(page==='schedule-changes'&&int(query.offset))return {offset:Number(query.offset)};
     if(page==='tables'){
       return {...(datasetIds.includes(query.dataset)?{dataset:query.dataset}:{}),
               ...(int(query.scope)?{scope:Number(query.scope)}:{}),...(validDay(query.day)?{day:query.day}:{})};
@@ -76,7 +75,6 @@
   }
 
   async function load(page,parts,query){
-    if(page==='work-notices')return c.api(url('workspace/notices',query));
     if(page==='teach-schedule')return c.api(url('teaching/schedule',query));
     if(page==='teach-consultations'){
       const [data,loads]=await Promise.all([c.api('teaching/consultations'),c.api('teaching')]);
@@ -151,7 +149,7 @@
   function teaching(data){
     if(data.work)return workDetails(data);
     if(!data.students)return title('Группы и дисциплины','Назначения преподавателя.',
-      link('/app/teach-schedule','Мои занятия','outline-button')+link('/app/work-notices','Уведомления','outline-button'))+
+      link('/app/teach-schedule','Мои занятия','outline-button')+link('/app/notifications','Уведомления','outline-button'))+
       list(data.items,x=>row(link('/app/teaching/'+x.id,x.discipline,'school-card-link'),p(x.group)));
     const selected=q().tab||'roster', base='/app/teaching/'+data.id;
     const heading=title(data.discipline,'Группа '+data.group)+tabs('Работа с группой',teachTabs,selected,tab=>url(base,{tab}));
@@ -299,15 +297,9 @@
       ${r.prior?p('Эта таблица уже импортирована.') : r.fingerprint?button('apply-table','Подтвердить импорт'):''}`;
   }
 
-  function notices(data){
-    return title('Рабочие уведомления',data.unread?'Непрочитанных: '+data.unread:'Все уведомления прочитаны')+
-      list(data.items,n=>row(esc(n.title),p(n.body)+`<small>${c.stamp(n.created_at)} МСК${n.is_read?'':' · Новое'}</small>`,
-        button('notice','Открыть',n.id)))+pageLinks('/app/work-notices',data,30);
-  }
-
   function render(page,data){
     const renderers={teaching,'teach-schedule':()=>timetable(data,page),'teach-consultations':consultations,
-      'timetable-admin':()=>timetable(data,page),'schedule-changes':changes,registry,tables:tablePage,'work-notices':notices};
+      'timetable-admin':()=>timetable(data,page),'schedule-changes':changes,registry,tables:tablePage};
     return renderers[page](data);
   }
 
@@ -491,19 +483,7 @@
     }
     if(['new-ref','edit-ref'].includes(action))return refForm(action,id,data);
     if(action==='apply-table')return applyTable();
-    if(action==='notice')return openNotice(id);
     return teacherForm(action,id,data);
-  }
-
-  async function openNotice(id){
-    const epoch=c.state.sessionEpoch,href=c.state.routeHref;
-    try{
-      const result=await request('workspace/notices/'+id+'/read','POST');
-      if(epoch!==c.state.sessionEpoch||href!==c.state.routeHref)return;
-      const target=new URL(result.target,location.origin);
-      const [prefix,page,...parts]=target.pathname.split('/').filter(Boolean);
-      if(target.origin===location.origin&&prefix==='app')await c.route(page,{parts,context:Object.fromEntries(target.searchParams)});
-    }catch(error){if(!error.stale)c.toast(error.message);}
   }
 
   function init(context){

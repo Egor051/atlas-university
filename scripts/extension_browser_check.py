@@ -21,11 +21,11 @@ from browser_check import ROOT, start_server, stop_server
 
 SCREENSHOTS = ROOT / 'screenshots'
 REPORT = ROOT / 'docs' / 'verification' / 'extension-browser-report.json'
-STUDENT_PAGES = ['home', 'schedule', 'grades', 'plan', 'requests', 'notifications', 'profile',
-                 'campus', 'courses', 'assignments', 'exams', 'attendance', 'calendar', 'tasks',
+STUDENT_PAGES = ['home', 'schedule', 'grades', 'plan', 'requests', 'certificates', 'notifications', 'profile',
+                 'announcements', 'courses', 'assignments', 'exams', 'attendance', 'calendar', 'tasks',
                  'notes', 'flashcards', 'quizzes', 'focus', 'consultations', 'messages', 'library',
                  'events', 'finance', 'contacts', 'knowledge', 'portfolio', 'settings']
-STAFF_PAGES = ['staff', 'staffdesk', 'staffmessages', 'settings', 'profile']
+STAFF_PAGES = ['staff', 'staffdesk', 'staffmessages', 'announcement-admin', 'settings', 'profile']
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
 TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
@@ -87,6 +87,7 @@ class Acceptance:
 
     def login(self, page, base, account):
         page.goto(base, wait_until='networkidle')
+        page.get_by_role('button',name='Попробовать демо',exact=True).click()
         page.locator(f'[data-demo="{account}"]').click()
         self.ready(page)
 
@@ -312,7 +313,6 @@ class Acceptance:
         def focus():
             self.visit(page, base, 'focus')
             previous = page.context.request.get(base + '/api/learning/focus-sessions').json()['summary']
-            goal = page.context.request.get(base + '/api/services/preferences').json()['weekly_goal']
             page.locator('#focus-duration').select_option('5')
             page.locator('[data-c-action="timer-start"]').click()
             expect(page.locator('[data-c-action="timer-start"]')).to_contain_text('Пауза')
@@ -329,11 +329,11 @@ class Acceptance:
             assert row['minutes'] == 17
             page.reload(wait_until='networkidle'); self.ready(page)
             expect(page.locator('.campus-log')).to_contain_text(self.token + ' фокус')
-            expect(page.locator('.campus-goal b')).to_have_text(f'{previous["week_minutes"] + 17} / {goal * 60} минут')
+            expect(page.locator('.campus-metric', has_text='мин. на этой неделе').locator('b')).to_have_text(str(previous["week_minutes"] + 17))
             page.locator('details.disclosure summary',has_text='Мой журнал').click()
             self.confirm(page, 'focus-delete', row['id'], f'learning/focus-sessions/{row["id"]}/delete')
             expect(page.locator('.campus-log')).not_to_contain_text(self.token + ' фокус')
-        self.case('Focus timer UI start, pause, reset, persisted manual log, weekly goal and delete', page, focus)
+        self.case('Focus timer UI start, pause, reset, persisted manual log, weekly total and delete', page, focus)
 
     def run(self):
         SCREENSHOTS.mkdir(exist_ok=True)

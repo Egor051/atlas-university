@@ -12,9 +12,9 @@ import traceback
 from playwright.sync_api import sync_playwright,expect
 from improvement_runtime import ROOT,DEFAULT_REPORTS,isolated_server,browser_ready,browser_login,browser_visit,geometry,report_start,save_report
 
-STUDENT=['home','schedule','grades','plan','requests','notifications','profile','campus','courses','assignments','exams',
+STUDENT=['home','schedule','grades','plan','requests','certificates','notifications','profile','announcements','courses','assignments','exams',
          'attendance','calendar','tasks','notes','flashcards','quizzes','focus','consultations','messages','library','events','finance','contacts','knowledge','portfolio','settings']
-STAFF=['staff','staffdesk','staffmessages','profile','settings']
+STAFF=['staff','staffdesk','staffmessages','announcement-admin','profile','settings']
 
 
 def main():
@@ -46,9 +46,9 @@ def main():
                         browser_visit(a,server['base'],'home')
                         a.screenshot(path=str(shots/f'{engine}-{width}-home.png'),full_page=True,animations='disabled')
                     a.set_viewport_size({'width':360,'height':800})
-                    browser_visit(a,server['base'],'requests')
+                    browser_visit(a,server['base'],'certificates')
                     a.locator('[data-request-view="services"]').first.click()
-                    a.locator('.service-card[data-type="study"]').click()
+                    a.locator('.certificate-service [data-type="study"]').click()
                     a.locator('#doc-comment').fill('Вымышленная заявка из настоящего браузерного сценария приёмки.')
                     # New per-service fields can be required; exercise visible labels with safe synthetic content.
                     for node in a.locator('#request-form input[required], #request-form textarea[required]').all():
@@ -66,6 +66,7 @@ def main():
                     expect(a.locator('.detail-summary')).to_be_visible()
                     assert b.request.get(server['base']+f'/api/requests/{request_id}').status==404
                     browser_visit(staff,server['base'],'staff')
+                    staff.locator('[data-staff-kind="certificate"]').click()
                     staff.locator('#staff-search').fill(str(request_id))
                     staff.locator(f'.request-row[data-id="{request_id}"]').wait_for()
                     staff.locator(f'.request-row[data-id="{request_id}"]').click()
@@ -77,7 +78,7 @@ def main():
                         if status!='ready':expect(staff.locator('#staff-form')).to_have_attribute('data-version',str(version+1))
                         else:expect(staff.locator('#staff-form')).to_have_count(0)
                     if a.locator('.modal').count():a.locator('.modal .close-btn').click()
-                    browser_visit(a,server['base'],'requests')
+                    browser_visit(a,server['base'],'certificates')
                     a.locator('[data-request-filter="ready"]').click()
                     a.locator(f'.request-row[data-id="{request_id}"]').click()
                     expect(a.locator('.staff-answer')).to_contain_text('Вымышленный ответ')

@@ -49,6 +49,7 @@ def run(phase):
                         for width, height in WIDTHS:
                             page.set_viewport_size({'width': width, 'height': height})
                             page.screenshot(path=str(destination / f'{width}-login.png'), full_page=True)
+                    page.get_by_role('button',name='Попробовать демо',exact=True).click()
                     page.locator(f'[data-demo="{account}"]').click()
                     ready(page)
                     for width, height in WIDTHS:

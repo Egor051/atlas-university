@@ -205,7 +205,7 @@ def add_history(db,actor,row,action,message):
 
 def notify_operators(db,unit,row,title):
     for uid in db.scalars(select(User.id).where(User.role==unit)):
-        notify(db,uid,title,f'{CASE_NAMES[row.kind]} №{row.id}',case_path(unit,row.id,office=True))
+        notify(db,uid,title,f'{CASE_NAMES[row.kind]} №{row.id}',case_path(unit,row.id,office=True),category=unit)
 
 
 def membership(db,uid):

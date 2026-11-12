@@ -58,11 +58,21 @@ def test_services_require_login_and_separate_roles():
         for path in paths:
             assert anonymous.get('/api/services/'+path).status_code == 401
             assert student.get('/api/services/'+path).status_code == 200
-            assert staff.get('/api/services/'+path).status_code == 403
+            assert staff.get('/api/services/'+path).status_code == (200 if path == 'preferences' else 403)
         for path in ['overview', 'tickets', 'consultations', 'events']:
             assert anonymous.get('/api/staff/'+path).status_code == 401
             assert student.get('/api/staff/'+path).status_code == 403
             assert staff.get('/api/staff/'+path).status_code == 200
+
+        path = '/api/services/preferences'
+        student_before = student.get(path).json()
+        staff_before = staff.get(path).json()
+        changed = staff.post(path, json={'compact_mode': not staff_before['compact_mode']}, headers=HEADERS)
+        assert changed.status_code == 200
+        assert changed.json()['compact_mode'] is not staff_before['compact_mode']
+        assert staff.get(path).json() == changed.json()
+        assert student.get(path).json() == student_before
+        assert staff.post(path, json={'compact_mode': staff_before['compact_mode']}, headers=HEADERS).json() == staff_before
 
 
 def test_contacts_search_and_finance_are_fictional_and_isolated():

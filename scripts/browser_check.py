@@ -114,6 +114,7 @@ def layout(page, name):
 
 def login(page, base, account):
     page.goto(base, wait_until='networkidle')
+    page.get_by_role('button',name='Попробовать демо',exact=True).click()
     page.locator(f'[data-demo="{account}"]').click()
     ready(page)
 
@@ -143,7 +144,9 @@ def run():
                     if width == 390:
                         screenshot(page, 'mobile-login')
                 page.set_viewport_size({'width': 1440, 'height': 1000})
-                page.locator('[data-demo="0"]').click()
+                page.locator('#login-name').fill('alina.demo')
+                page.locator('#login-password').fill('AtlasDemo!2026-A')
+                page.locator('#login-password').press('Enter')
                 ready(page)
                 passed('Login through the real form and authenticated dashboard')
 
@@ -191,17 +194,17 @@ def run():
                 page.locator(f'[data-deadline="{task["id"]}"]').uncheck()
                 passed('Task completion persists after reload; undo works')
 
-                visit(page, base, 'requests')
+                visit(page, base, 'certificates')
                 page.locator('[data-request-view="services"]').first.click()
-                page.locator('.service-card[data-type="study"]').click()
+                page.locator('.certificate-service [data-type="study"]').click()
                 expect(page.locator('.skip-link')).to_have_attribute('inert','')
                 comment='Для демонстрации: справка по месту требования. Все данные вымышлены.'
                 page.locator('#doc-comment').fill(comment)
                 layout(page,'request-form-360')
                 screenshot(page,'mobile-request-form')
                 page.keyboard.press('Escape')
-                expect(page.locator('.service-card[data-type="study"]')).to_be_focused()
-                page.locator('.service-card[data-type="study"]').click()
+                expect(page.locator('.certificate-service [data-type="study"]')).to_be_focused()
+                page.locator('.certificate-service [data-type="study"]').click()
                 expect(page.locator('#doc-comment')).to_have_value(comment)
                 submit=page.locator('#request-form button[type="submit"]')
                 submit.focus()
@@ -225,6 +228,7 @@ def run():
                 passed('Second student has a separate profile, grades, requests and cannot open first student result')
 
                 login(staff,base,2)
+                staff.locator('[data-staff-kind="certificate"]').click()
                 staff.locator('#staff-search').fill(str(request_id))
                 staff.locator(f'.request-row[data-id="{request_id}"]').wait_for()
                 staff.locator(f'.request-row[data-id="{request_id}"]').click()
@@ -251,13 +255,13 @@ def run():
                 passed('Staff searches requests, follows allowed transitions and sends a real response/notification')
 
                 page.locator('.close-btn').click()
-                visit(page,base,'requests')
+                visit(page,base,'certificates')
                 page.locator('[data-request-filter="ready"]').click()
                 page.locator(f'.request-row[data-id="{request_id}"]').click()
                 expect(page.locator('.staff-answer')).to_contain_text('Образец справки подготовлен')
                 expect(page.locator('.request-history>li')).to_have_count(4)
                 with page.expect_download() as download:
-                    page.locator('a[href*="/document"]').click()
+                    page.locator('a[href*="/document"][download]').click()
                 document=Path(download.value.path()).read_text(encoding='utf-8')
                 assert 'Алина Ветрова' in document and 'Марк Северин' not in document
                 assert 'конкурс' in document.lower() and 'вымышлен' in document.lower()

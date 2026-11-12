@@ -12,6 +12,8 @@ from sqlalchemy.orm import Session, defer, joinedload
 from .db import User, utc_now
 from .services import begin_idempotent, commit_idempotent
 from .university_db import Department, Discipline, Faculty, Teacher, TeachingAssignment, TeachingMaterial, TeachingSlot
+from .workspace import notify
+from .workspace_db import GroupMember, TeachingLoad
 
 MaterialKind = Literal['lecture', 'guide', 'slides', 'practice', 'lab', 'extra']
 Slug = Annotated[str, Path(min_length=1, max_length=60, pattern=r'^[a-z0-9-]+$')]
@@ -305,6 +307,11 @@ def create_router():
                                publisher_id=user.id, created_at=now, updated_at=now)
         db.add(row)
         db.flush()
+        recipients = db.scalars(select(GroupMember.student_id).join(TeachingLoad, TeachingLoad.group_id == GroupMember.group_id)
+                                .where(TeachingLoad.assignment_id == assignment.id).distinct()).all()
+        for student_id in recipients:
+            notify(db, student_id, 'Опубликован учебный материал', row.title,
+                   f'/app/materials/{row.id}', category='material')
         result = material_card(row, user)
         return commit_idempotent(db, receipt, result)
 

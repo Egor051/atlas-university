@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from .db import Notification, User, utc_now
 from .storage_guards import lock_owner
 from .university_db import Teacher, TeachingAssignment
-from .workspace_db import GroupMember, OperationEvent, TeachingLoad, WorkspaceNotice
+from .workspace_db import GroupMember, OperationEvent, TeachingLoad
 
 
 def lock_workspace(db, actor_id):
@@ -25,9 +25,10 @@ def recorded(db, actor, area, object_id, action, before=None, after=None):
 
 
 def notify(db, user_id, title, body, target, *, student=False, category='academic'):
-    values = dict(title=title, body=body, target=target, is_read=False, created_at=utc_now())
-    db.add(Notification(student_id=user_id, category=category, **values) if student else
-           WorkspaceNotice(user_id=user_id, **values))
+    row = Notification(student_id=user_id, title=title, body=body, target=target,
+                       category=category, is_read=False, created_at=utc_now())
+    db.add(row)
+    return row
 
 
 def load_query():
@@ -75,15 +76,16 @@ def create_router():
 
     @router.get('/notices')
     def notices(offset: int = Query(0, ge=0, le=2147483647), user=Depends(require_user), db: Session = Depends(get_db)):
-        scope = WorkspaceNotice.user_id == user.id
-        rows = db.scalars(select(WorkspaceNotice).where(scope).order_by(WorkspaceNotice.id.desc()).offset(offset).limit(31)).all()
-        unread = db.scalar(select(func.count()).select_from(WorkspaceNotice).where(scope, WorkspaceNotice.is_read.is_(False)))
+        scope = Notification.student_id == user.id
+        rows = db.scalars(select(Notification).where(scope).order_by(Notification.created_at.desc(), Notification.id.desc())
+                          .offset(offset).limit(31)).all()
+        unread = db.scalar(select(func.count()).select_from(Notification).where(scope, Notification.is_read.is_(False)))
         return dict(items=[dict(id=row.id, title=row.title, body=row.body, target=row.target, is_read=row.is_read,
                                 created_at=date_iso(row.created_at)) for row in rows[:30]], unread=unread, more=len(rows)>30, offset=offset)
 
     @router.post('/notices/{notice_id}/read', dependencies=[Depends(require_same_origin)])
     def read(notice_id: int, user=Depends(require_user), db: Session = Depends(get_db)):
-        row = db.scalar(select(WorkspaceNotice).where(WorkspaceNotice.id == notice_id, WorkspaceNotice.user_id == user.id))
+        row = db.scalar(select(Notification).where(Notification.id == notice_id, Notification.student_id == user.id))
         if row is None:
             raise HTTPException(404, 'Уведомление не найдено')
         row.is_read = True

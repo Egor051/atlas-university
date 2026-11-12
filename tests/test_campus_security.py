@@ -78,7 +78,7 @@ def test_all_extension_routes_require_sessions_and_all_mutations_check_source():
                     rejected = student.request(method, path, json={}, headers={**HEADERS, 'Origin': 'https://evil.invalid'})
                     assert rejected.status_code == 403, (method, path, rejected.text)
             if route.path.startswith(('/api/learning/', '/api/services/', '/api/campus/')) and 'GET' in route.methods:
-                assert staff.get(path).status_code == 403, path
+                assert staff.get(path).status_code == (200 if path == '/api/services/preferences' else 403), path
         for route in app.routes:
             if not route.path.startswith('/api/staff/'):
                 continue

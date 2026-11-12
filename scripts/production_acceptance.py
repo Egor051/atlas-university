@@ -28,7 +28,8 @@ STUDENTS = [
 ]
 STAFF = ("dean.demo", "AtlasStaff!2026-D")
 PAGES = [
-    "home", "schedule", "grades", "plan", "requests", "notifications",
+    "home", "schedule", "grades", "plan", "requests", "certificates", "notifications",
+    "announcements", "announcement-admin", "direct",
     "profile", "campus", "courses", "assignments", "exams", "attendance",
     "calendar", "tasks", "notes", "flashcards", "quizzes", "focus",
     "consultations", "messages", "library", "events", "finance", "contacts",
@@ -37,7 +38,7 @@ PAGES = [
 STUDENT_READS = [
     "/api/dashboard", "/api/schedule", "/api/grades", "/api/deadlines",
     "/api/requests/types", "/api/requests?paginated=true&limit=3",
-    "/api/notifications?paginated=true&limit=3", "/api/learning/courses",
+    "/api/notifications?paginated=true&limit=3", "/api/announcements", "/api/direct/dialogs", "/api/learning/courses",
     "/api/learning/assignments", "/api/learning/exams", "/api/learning/attendance",
     "/api/learning/tasks", "/api/learning/notes", "/api/learning/flashcards",
     "/api/learning/quizzes", "/api/learning/quiz-attempts", "/api/learning/focus-sessions",
@@ -49,7 +50,7 @@ STUDENT_READS = [
 ]
 STAFF_READS = [
     "/api/staff/requests?paginated=true&limit=3", "/api/staff/overview",
-    "/api/staff/tickets", "/api/staff/consultations", "/api/staff/events",
+    "/api/staff/tickets", "/api/staff/consultations", "/api/staff/events", "/api/staff/announcements",
 ]
 
 
@@ -192,12 +193,14 @@ def run(args, report):
                  and "frame-ancestors 'none'" in headers.get("Content-Security-Policy", ""))
     for page in PAGES:
         public.call("/app/" + page)
-    for asset in ("app.js", "campus.js", "improvements.js", "style.css", "usability.css", "campus.css"):
+    for asset in ("app.js", "campus.js", "improvements.js", "style.css", "usability.css", "campus.css",
+                  "announcements.js", "announcements.css", "shell.css", "university.js", "university.css"):
         public.call("/static/" + asset)
     for path in ("/.env", "/.git/HEAD", "/compose.yaml", "/Dockerfile", "/docs", "/redoc", "/openapi.json"):
         public.call(path, expected=404)
     for path in ("/api/me", "/api/grades", "/api/schedule", "/api/requests", "/api/notifications",
-                 "/api/staff/requests", "/api/learning/notes", "/api/services/finance", "/api/drafts/export"):
+                 "/api/staff/requests", "/api/learning/notes", "/api/services/finance", "/api/drafts/export",
+                 "/api/announcements", "/api/direct/dialogs"):
         public.call(path, expected=401)
     _, cross_origin_headers = public.call("/api/me", headers={"Origin": "https://untrusted.invalid"},
                                           expected=401, return_headers=True)
@@ -217,9 +220,10 @@ def run(args, report):
             student.call(path, expected=403)
     for path in STAFF_READS:
         staff.call(path)
-    for path in ("/api/grades", "/api/schedule", "/api/requests", "/api/notifications",
+    for path in ("/api/grades", "/api/schedule", "/api/requests",
                  "/api/learning/notes", "/api/services/finance"):
         staff.call(path, expected=403)
+    staff.call("/api/notifications")
     alina.call("/api/me", headers={"X-ATLAS-User": str(users[1]["id"])}, expected=409)
     if args.isolated:
         for method_headers in ({"Origin": "https://untrusted.invalid"}, {"Sec-Fetch-Site": "same-site"},

@@ -88,6 +88,7 @@ def frontend_page(frontend_browser, frontend_server):
 
 
 def enter_demo(page, index, first_name):
+    page.get_by_role('button',name='Попробовать демо',exact=True).click()
     page.locator(f"button[data-demo='{index}']").click()
     page.wait_for_url("**/app/home")
     expect(page.locator("#page-title")).to_contain_text(first_name)
@@ -142,6 +143,7 @@ def test_late_unauthorized_old_request_does_not_clear_new_session(frontend_page)
     page.route(re.compile(r".*/api/notifications(?:\?.*)?$"), delay_first_notification_read)
     page.goto(address)
     enter_demo(page, 0, "Алина")
+    page.locator('.topbar [data-route="notifications"]').click()
     wait_for_held_response(page, held)
     leave_demo(page)
     enter_demo(page, 1, "Марк")
@@ -170,6 +172,7 @@ def test_delayed_dashboard_response_never_replaces_new_student_data(frontend_pag
 
     page.route('**/api/dashboard', delay_first_dashboard)
     page.goto(address)
+    page.get_by_role('button',name='Попробовать демо',exact=True).click()
     page.locator("button[data-demo='0']").click()
     page.wait_for_url('**/app/home')
     wait_for_held_response(page, held)
@@ -194,9 +197,9 @@ def test_ambiguous_submission_reuses_key_when_session_storage_is_blocked(fronten
     """)
     page.goto(address)
     enter_demo(page, 0, "Алина")
-    page.locator('.nav-group summary').filter(has_text='Сервисы деканата').click()
+    page.get_by_role('button', name='Заявки и документы').click()
     page.locator(".nav-stack [data-route='requests']").click()
-    expect(page.locator("#page-title")).to_have_text("Заявки и справки")
+    expect(page.locator("#page-title")).to_have_text("Заявки")
     page.locator(".page-actions [data-action='new-request']").click()
     comment = "Browser lost-response regression " + uuid.uuid4().hex
     page.locator("#doc-comment").fill(comment)

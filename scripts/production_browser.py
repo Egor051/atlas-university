@@ -25,9 +25,18 @@ from improvement_runtime import ROOT, browser_login, browser_visit, geometry, is
 
 
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
-KEY_SCREENS = {"home", "schedule", "requests", "staff"}
+KEY_SCREENS = {"home", "schedule", "requests", "certificates", "announcements", "direct", "staff", "announcement-admin"}
+FEATURE_CONTROLS = {
+    "home": ".announcement-timeline",
+    "certificates": '.page-actions [data-action="new-request"]',
+    "announcements": "[data-announcement-filters]",
+    "announcement-admin": '[data-announcement-action="new"]',
+    "direct": ".messenger",
+    "notifications": '[data-action="read-all"]',
+}
 WEBKIT_CAPTURE_STYLE_MESSAGE = ("Refused to apply a stylesheet because its hash, its nonce, "
                                 "or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.")
+WEBKIT_VIEWPORT_MESSAGE = 'Viewport argument key "interactive-widget" not recognized and ignored.'
 
 
 def now():
@@ -111,10 +120,13 @@ class Acceptance:
             # Keep this diagnostic and classify it only inside the screenshot call.
             capture_style = (engine == "webkit" and page in self.capturing and url == safe_url(page.url)
                              and message.text == WEBKIT_CAPTURE_STYLE_MESSAGE)
+            # WebKit 26 falls back to its default virtual keyboard viewport policy.
+            viewport_fallback = (engine == "webkit" and message.text == WEBKIT_VIEWPORT_MESSAGE)
             item["expected_initial_unauthenticated_401"] = expected
             item["playwright_webkit_capture_style"] = capture_style
+            item["webkit_viewport_fallback"] = viewport_fallback
             self.report["console_errors"].append(item)
-            if not expected and not capture_style:
+            if not expected and not capture_style and not viewport_fallback:
                 self.report["unexpected_console_errors"].append(item)
 
         page.on("pageerror", lambda error: self.report["browser_errors"].append({
@@ -169,6 +181,8 @@ class Acceptance:
         self.check(f"{engine} {actor} {route} stays on its route",
                    urlsplit(page.url).path.rstrip("/") == "/app/" + route)
         self.layout(page, engine, actor, route)
+        if route in FEATURE_CONTROLS:
+            expect(page.locator(FEATURE_CONTROLS[route])).to_be_visible()
         if route in KEY_SCREENS:
             self.capture(page, engine, actor, route)
 
@@ -195,15 +209,15 @@ class Acceptance:
         if not self.args.isolated or urlsplit(base).hostname != "127.0.0.1":
             raise RuntimeError("The write workflow requires the runner's disposable server")
         # A leftover draft even on a disposable server would affect the scenario.
-        saved = a.request.get(base + "/api/drafts/request")
+        saved = a.request.get(base + "/api/drafts/certificate-order")
         self.check(engine + " draft preflight HTTP", saved.status == 200)
         self.check(engine + " existing request draft is empty", not saved.json().get("values"))
         marker = f"Локальная браузерная приёмка {self.token} {engine}."
         for page in (a, b, staff):
             page.set_viewport_size({"width": 360, "height": 800})
-        browser_visit(a, base, "requests")
+        browser_visit(a, base, "certificates")
         a.locator('[data-request-view="services"]').first.click()
-        a.locator('.service-card[data-type="study"]').click()
+        a.locator('.certificate-service [data-type="study"]').click()
         form = a.locator("#request-form")
         expect(form).to_be_visible()
         # Wait for real server draft restoration before typing, as in regression
@@ -231,6 +245,7 @@ class Acceptance:
             denied = b.request.get(base + path)
             self.check(engine + " second student denied " + path, denied.status == 404, status=denied.status)
         browser_visit(staff, base, "staff")
+        staff.locator('[data-staff-kind="certificate"]').click()
         staff.locator("#staff-search").fill(str(request_id))
         row = staff.locator(f'.request-row[data-id="{request_id}"]')
         expect(row).to_be_visible()
@@ -255,7 +270,7 @@ class Acceptance:
             self.capture(staff, engine, "staff", "request-" + status)
         if a.locator(".modal").count():
             a.locator(".modal .close-btn").click()
-        browser_visit(a, base, "requests")
+        browser_visit(a, base, "certificates")
         a.locator('[data-request-filter="ready"]').click()
         row = a.locator(f'.request-row[data-id="{request_id}"]')
         expect(row).to_be_visible()
@@ -322,13 +337,14 @@ class Acceptance:
                 denied = page.request.get(self.args.url + path)
                 self.check(engine + " " + actor + " role denied " + path, denied.status == 403, status=denied.status)
             for width, height in WIDTHS:
-                for page, routes, actor in ((a, STUDENT, "alina"), (staff, STAFF, "staff")):
+                for page, routes, actor in ((a, [*STUDENT, "direct"], "alina"),
+                                            (staff, [*STAFF, "notifications", "direct"], "staff")):
                     page.set_viewport_size({"width": width, "height": height})
                     for route in routes:
                         self.case(f"{engine} {actor} {width}px {route}",
                             lambda page=page, actor=actor, route=route: self.read_page(page, engine, actor, route),
                             page=page, engine=engine, actor=actor)
-            for route in ("home", "schedule", "grades", "requests"):
+            for route in ("home", "schedule", "grades", "requests", "certificates", "announcements", "direct", "notifications"):
                 self.case(f"{engine} mark 360px {route}", lambda route=route: self.read_page(b, engine, "mark", route),
                           page=b, engine=engine, actor="mark")
             self.case(engine + " calendar export", lambda: self.calendar(a, engine),

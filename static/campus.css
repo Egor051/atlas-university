@@ -157,8 +157,6 @@
 .campus-agenda-entry small { font-size: 9px; color: #78628c; }
 .campus-agenda-entry b { font-size: 11px; color: #3b304c; line-height: 1.6; }
 .campus-agenda-entry span { font-size: 10px; color: #7b7188; line-height: 1.6; }
-.compact-campus .campus-tile { padding: 16px; gap: 8px; }
-.compact-campus .campus-grid { gap: 12px; }
 @media (max-width: 1250px) {
   .campus-hub-grid,.campus-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .campus-agenda { grid-template-columns: repeat(3,minmax(0,1fr)); }

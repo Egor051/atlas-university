@@ -9,6 +9,7 @@ from .improvements import reserve_write
 from .services import begin_idempotent, commit_idempotent
 from .storage_guards import lock_owner
 from .university_db import DirectContact, DirectDialog, DirectMessage
+from .workspace import notify
 
 MAX_DIALOGS = 60
 MAX_MESSAGES = 2000
@@ -150,15 +151,11 @@ def create_router():
             if count >= MAX_MESSAGES:
                 raise HTTPException(409, 'Достигнут предел сообщений в диалоге. История доступна для чтения.')
             row.updated_at = now
-        notice_id = None
-        if user.role != 'student':
-            notice = Notification(student_id=row.student_id, title='Новое личное сообщение',
-                                  body=f'{user.full_name} ответил(а) в личной переписке.',
-                                  category='direct', created_at=now, is_read=False, target=f'/app/direct/{row.id}')
-            db.add(notice)
-            db.flush()
-            notice_id = notice.id
-        new = DirectMessage(dialog_id=row.id, sender_id=user.id, body=message, created_at=now, notification_id=notice_id)
+        recipient = row.contact_id if user.role == 'student' else row.student_id
+        notice = notify(db, recipient, 'Новое личное сообщение', f'Отправитель: {user.full_name}',
+                        f'/app/direct/{row.id}', category='direct')
+        db.flush()
+        new = DirectMessage(dialog_id=row.id, sender_id=user.id, body=message, created_at=now, notification_id=notice.id)
         db.add(new)
         db.flush()
         # The receipt needs only the stable IDs, not a second copy of the message.
@@ -187,10 +184,9 @@ def create_router():
             raise HTTPException(404, 'Сообщение не найдено')
         scope = (DirectMessage.dialog_id == row.id, DirectMessage.id <= body.through_id)
         result = db.execute(update(DirectMessage).where(*scope, *unread_condition(user)).values(read_at=utc_now()))
-        if user.role == 'student':
-            notifications = select(DirectMessage.notification_id).where(*scope, DirectMessage.notification_id.is_not(None))
-            db.execute(update(Notification).where(Notification.student_id == user.id, Notification.id.in_(notifications))
-                       .values(is_read=True))
+        notifications = select(DirectMessage.notification_id).where(*scope, DirectMessage.notification_id.is_not(None))
+        db.execute(update(Notification).where(Notification.student_id == user.id, Notification.id.in_(notifications))
+                   .values(is_read=True))
         db.commit()
         return {'read_count': result.rowcount}
 

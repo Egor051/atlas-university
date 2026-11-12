@@ -188,7 +188,7 @@
     if(data.detail)return caseDetail(page,data);
     const header=ui.title(data.office?(data.unit==='vuc'?'Кабинет ВУЦ':'Кабинет профсоюза'):names[data.unit],
       data.office?'Заявления и материалы подразделения':data.unit==='union'?
-        'Членство, поддержка и студенческие инициативы':'Демонстрационный приём, учебный календарь и результаты');
+        'Членство, поддержка и студенческие инициативы':'Приём, расписание и результаты');
     const navigation=ui.tabs('Разделы подразделения',tabOptions(page),data.tab,key=>tabPath(page,key));
     const renderers={overview,content:publications,cases:()=>caseList(page,data),learning:()=>learning(page,data),report};
     return header+navigation+renderers[data.tab](data);
@@ -198,13 +198,13 @@
     const program=data.programs?.find(item=>item.id===id);
     const event=data.publications?.find(item=>item.id===id);
     const confirmation=['join','leave','apply','event'].includes(kind);
-    const details=kind==='apply'?`<fieldset class="unit-checklist"><legend>Демонстрационные образцы</legend>
+    const details=kind==='apply'?`<fieldset class="unit-checklist"><legend>Сведения для подачи</legend>
       ${Object.entries(data.checklist).map(([key,label])=>checkbox(key,label)).join('')}</fieldset>`:
-      confirmation?'':ui.area('message','Опишите вымышленную ситуацию или вопрос','',1200);
-    const instruction=kind==='apply'?'Отметьте учебные образцы. Для демонстрационной заявки достаточно флажков.':
-      program?.title||event?.title||'Заявление относится к конкурсному концепту.';
+      confirmation?'':ui.area('message','Опишите ситуацию или вопрос','',1200);
+    const instruction=kind==='apply'?'Отметьте готовые документы. Загрузка файлов не требуется.':
+      program?.title||event?.title||'Заполните поля и отправьте заявление.';
     const fields=(program?`<p>${esc(program.title)}</p>`:'')+details+
-      (confirmation?checkbox('confirmed','Подтверждаю демонстрационное действие'):'');
+      (confirmation?checkbox('confirmed','Подтверждаю отправку'):'');
     const save=values=>{
       const payload={kind,...(confirmation?{confirmed:values.confirmed==='on'}:{message:values.message})};
       if(kind==='event')payload.publication_id=id;
@@ -220,7 +220,7 @@
 
   function caseForm(action,data){
     const item=data.detail, base='units/'+data.unit+'/cases/'+item.id;
-    if(action==='followup')return ui.modal('Добавить уточнение','Опишите вымышленную ситуацию.',
+    if(action==='followup')return ui.modal('Добавить уточнение','Уточните сведения по заявлению.',
       ui.area('message','Уточнение','',1200),values=>ui.request(base+'/followup','POST',{...values,version:item.version}),
       undefined,'Отправить');
     const status=action.slice('step-'.length);

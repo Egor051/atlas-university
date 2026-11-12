@@ -64,13 +64,13 @@ def main():
                         cdp.send('Network.emulateNetworkConditions',{'offline':False,'latency':150,'downloadThroughput':1600000/8,'uploadThroughput':750000/8,'connectionType':'cellular4g'})
                         cdp.send('Emulation.setCPUThrottlingRate',{'rate':4})
                     started=time.perf_counter();page.goto(server['base'],wait_until='networkidle')
-                    expect(page.locator('[data-demo="0"]')).to_be_visible()
+                    expect(page.get_by_role('button',name='Попробовать демо',exact=True)).to_be_visible()
                     cold_ms=(time.perf_counter()-started)*1000
                     cold=page.evaluate('''() => ({...window.__atlasLab,resources:performance.getEntriesByType('resource').map(r=>({name:new URL(r.name).pathname,transferSize:r.transferSize,encodedBodySize:r.encodedBodySize,duration:r.duration}))})''')
                     # Repeated cold contexts would exercise login rate protection; one server per profile
                     # uses two distinct accounts and at most five attempts per account.
                     account=(run+(1 if profile=='mobile_lab' else 0))%2
-                    start=time.perf_counter();page.locator(f'[data-demo="{account}"]').click();browser_ready(page)
+                    start=time.perf_counter();page.get_by_role('button',name='Попробовать демо',exact=True).click();page.locator(f'[data-demo="{account}"]').click();browser_ready(page)
                     auth_ms=(time.perf_counter()-start)*1000
                     actions=[]
                     for target in ['grades','schedule','requests']:

@@ -107,11 +107,13 @@ def test_complete_role_boundary_including_new_resources():
                             json={"status": "review", "message": "Недопустимая попытка."}).status_code == 403
         for url in ["/api/schedule", "/api/schedule/export", "/api/grades", "/api/deadlines",
                     "/api/dashboard", "/api/requests", "/api/requests/types", "/api/requests/1",
-                    "/api/requests/1/document", "/api/notifications"]:
+                    "/api/requests/1/document"]:
             assert staff.get(url).status_code == 403, url
         assert staff.post("/api/requests", headers=HEADERS, json={"type": "study"}).status_code == 403
         assert staff.post("/api/deadlines/1/toggle", headers=HEADERS, json={"is_done": True}).status_code == 403
-        assert staff.post("/api/notifications/read-all", headers=HEADERS).status_code == 403
+        assert staff.get("/api/notifications").status_code == 200
+        assert staff.post("/api/notifications/read-all").status_code == 403
+        assert staff.post("/api/notifications/read-all", headers=HEADERS).status_code == 200
 
 
 def test_request_details_and_document_idor_do_not_reveal_status_or_owner():
