@@ -5,7 +5,7 @@ import re
 import pytest
 from playwright.sync_api import expect
 
-from test_frontend_contracts import frontend_browser, frontend_page, frontend_server
+from test_frontend_contracts import frontend_browser, frontend_page, frontend_server, wait_for_held_response
 
 pytestmark = pytest.mark.skipif(os.environ.get('ATLAS_RUN_BROWSER_TESTS') != '1',
                                 reason='Opt-in isolated real Chromium')
@@ -72,7 +72,32 @@ def test_department_teacher_file_and_private_reply(frontend_page, tmp_path):
         student.get_by_label('Сообщение', exact=True).fill('Начатый ответ')
         student.clock.fast_forward(21_000)
         expect(student.locator('.school-conversation')).to_contain_text('очередь FIFO')
-        expect(student.get_by_label('Сообщение', exact=True)).to_have_value('Начатый ответ')
+        composer = student.get_by_label('Сообщение', exact=True)
+        expect(composer).to_have_value('Начатый ответ')
+        original_composer = composer.element_handle()
+        student.get_by_role('button', name='Отправить').click()
+        expect(student.locator('.school-conversation')).to_contain_text('Начатый ответ')
+        expect(composer).to_have_value('')
+        assert original_composer.evaluate('node => node.isConnected')
+        expect(composer).to_be_focused()
+
+        held = []
+
+        def hold_reply(route):
+            held.append((route, route.fetch(timeout=5000)))
+
+        student.route(re.compile('/api/direct/dialogs/[0-9]+/messages$'), hold_reply, times=1)
+        composer.fill('Уточнение к ответу')
+        student.get_by_role('button', name='Отправить').click()
+        wait_for_held_response(student, held)
+        route, response = held[0]
+        assert response.status == 201
+        composer.fill('Следующий черновик')
+        route.fulfill(response=response)
+        expect(student.locator('.messenger-bubble.mine').filter(has_text='Уточнение к ответу')).to_have_count(1)
+        expect(composer).to_have_value('Следующий черновик')
+        assert original_composer.evaluate('node => node.isConnected')
+        expect(composer).to_be_focused()
         expect(student.get_by_role('link', name='К списку диалогов')).to_be_visible()
         student.goto(base + '/app/notifications')
         notification = student.locator('.notification-full').filter(has_text='Новое личное сообщение').first

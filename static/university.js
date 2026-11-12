@@ -303,7 +303,7 @@
 
   async function submit(form){
     if(c.state.pending)return;
-    const epoch=c.state.sessionEpoch, type=form.dataset.schoolForm, errorBox=c.$('[data-school-error]',form);
+    const epoch=c.state.sessionEpoch, href=c.state.routeHref, type=form.dataset.schoolForm, errorBox=c.$('[data-school-error]',form);
     const {endpoint,method,body}=mutation(form);
     let headers;
     if(method==='POST'){
@@ -315,7 +315,10 @@
     c.state.pending++;errorBox.hidden=true;
     const controls=Array.from(form.elements).filter(control=>type!=='message'||control.type==='submit');
     const messageInput=type==='message'?form.elements.message:null;
-    if(messageInput)messageInput.readOnly=true;
+    const inCurrentThread=messageInput&&form.dataset.mode==='dialog'&&c.state.routeParts[0]===form.dataset.target&&!c.state.routeContext.before;
+    const submittedText=messageInput?.value;
+    if(inCurrentThread)messageInput.focus({preventScroll:true});
+    else if(messageInput)messageInput.readOnly=true;
     controls.forEach(control=>{control.disabled=true;});
     let result;
     try{result=await c.api(endpoint,{method,body,headers});}
@@ -326,20 +329,24 @@
       if(epoch===c.state.sessionEpoch){
         c.state.pending=Math.max(0,c.state.pending-1);
         controls.forEach(control=>{control.disabled=false;});
-        if(messageInput)messageInput.readOnly=false;
+        if(messageInput&&!inCurrentThread)messageInput.readOnly=false;
       }
     }
     if(!result||epoch!==c.state.sessionEpoch)return;
     receipts.delete(endpoint);
     if(type==='message'){
-      drafts.delete(form.dataset.mode+':'+form.dataset.target);
+      const draftKey=form.dataset.mode+':'+form.dataset.target;
+      if(!inCurrentThread||drafts.get(draftKey)===submittedText)drafts.delete(draftKey);
       c.toast('Сообщение отправлено.');
-      if(c.state.routeParts[0]!==String(result.dialog_id)||c.state.routeContext.before){
-        const {q,offset}=c.state.routeContext;
-        await c.route('direct',{parts:[String(result.dialog_id)],context:{q,offset},replace:form.dataset.mode==='recipient'||Boolean(c.state.routeContext.before)});
+      if(href!==c.state.routeHref||!form.isConnected)return;
+      if(inCurrentThread){
+        if(messageInput.value===submittedText)messageInput.value='';
+        await pollConversation({afterSend:true});
+        return;
       }
-      else await c.updatePage({quiet:true});
-      if(epoch===c.state.sessionEpoch&&c.state.page==='direct')c.$('#direct-message')?.focus({preventScroll:true});
+      const {q,offset,before}=c.state.routeContext, dialogId=String(result.dialog_id);
+      await c.route('direct',{parts:[dialogId],context:{q,offset},replace:form.dataset.mode==='recipient'||Boolean(before)});
+      if(epoch===c.state.sessionEpoch&&c.state.page==='direct'&&c.state.routeParts[0]===dialogId)c.$('#direct-message')?.focus({preventScroll:true});
       return;
     }
     c.closeModal({force:true});
@@ -414,24 +421,24 @@
     finally{button.disabled=false;}
   }
 
-  function pollConversation(){
+  function pollConversation({afterSend=false}={}){
     const data=c.state.data.direct;
-    if(c.state.page!=='direct'||!data||historyPoll||c.state.pending||c.state.routeContext.before)return;
-    const epoch=c.state.sessionEpoch, href=c.state.routeHref;
-    const current=()=>epoch===c.state.sessionEpoch&&href===c.state.routeHref&&c.state.data.direct===data&&!c.state.pending;
+    if(c.state.page!=='direct'||!data||(historyPoll&&!afterSend)||c.state.pending||c.state.routeContext.before)return;
+    const epoch=c.state.sessionEpoch, href=c.state.routeHref, loadingId=c.state.loadingId;
     const {q,offset}=c.state.routeContext;
     const request=Promise.all([
       c.api(path('direct/dialogs',{q,offset}),{quietAuth:true}),
       data.mode==='dialog'?c.api('direct/dialogs/'+data.id,{quietAuth:true}):null,
     ]).then(([inbox,latest])=>{
-      if(!current())return;
+      if(historyPoll!==request||epoch!==c.state.sessionEpoch||href!==c.state.routeHref||
+        loadingId!==c.state.loadingId||c.state.data.direct!==data||c.state.pending)return;
       const list=c.$('[data-messenger-items]');
       if(list&&!list.contains(document.activeElement)&&JSON.stringify(data.inbox.items)!==JSON.stringify(inbox.items)){
         data.inbox=inbox;list.innerHTML=dialogRows(data);
       }
       const history=c.$('[data-messenger-history]');
       if(!history||!latest)return;
-      const bottom=atEnd(history), through=data.read_through;
+      const bottom=afterSend||atEnd(history), through=data.read_through;
       const previousFirst=data.messages[0]?.id, latestFirst=latest.messages[0]?.id;
       const older=data.messages.filter(row=>row.id<latestFirst);
       const next=[...older,...latest.messages];
@@ -441,12 +448,15 @@
         data.messages=next;
         if(previousFirst===undefined||!older.length)data.older_before=latest.older_before;
         c.$('[data-messenger-messages]',history).innerHTML=messages(data);
-        if(bottom)history.scrollTop=history.scrollHeight;
-        if(through!==latest.read_through)c.$('[data-messenger-update]').textContent='В переписке появились новые сообщения.';
+        if(!afterSend&&through!==latest.read_through)c.$('[data-messenger-update]').textContent='В переписке появились новые сообщения.';
       }
-      if(bottom)markThreadRead(data);
+      if(bottom){
+        if(changed||afterSend)history.scrollTop=history.scrollHeight;
+        markThreadRead(data);
+      }
     }).catch(()=>{}).finally(()=>{if(historyPoll===request)historyPoll=null;});
     historyPoll=request;
+    return request;
   }
 
   function init(context){
