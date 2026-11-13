@@ -1,0 +1,59 @@
+/* Shared ATLAS palette. Components consume the same roles in both themes. */
+:root {
+  color-scheme: light dark;
+  --atlas-page: light-dark(#f5f6fa, #151420);
+  --atlas-surface: light-dark(#fff, #211f2e);
+  --atlas-surface-alt: light-dark(#f6f4fb, #2b273b);
+  --atlas-elevated: light-dark(#fff, #292639);
+  --atlas-control: light-dark(#fff, #1b1928);
+  --ink: light-dark(#25263c, #f4effc);
+  --text: light-dark(#4e5368, #d9d2e6);
+  --muted: light-dark(#62677b, #b9b1c8);
+  --border: light-dark(#e1e3ee, #423d53);
+  --atlas-divider: var(--border);
+  --atlas-control-border: light-dark(#8d859e, #807591);
+  --atlas-focus: light-dark(#674ec2, #c3afff);
+
+  --primary: light-dark(#5843af, #cabaff);
+  --atlas-accent-text: light-dark(#514199, #e2d6ff);
+  --atlas-accent-surface: light-dark(#ede9fb, #3a3055);
+  --atlas-accent-border: light-dark(#8a76c0, #a38bd6);
+  --atlas-accent-mark: light-dark(#7058b5, #b49ae9);
+  --atlas-action: light-dark(#6153d7, #6c50c3);
+  --atlas-action-hover: light-dark(#5142c2, #785acb);
+  --atlas-action-pressed: light-dark(#4738ac, #6044b5);
+  --atlas-on-action: #fff;
+  --atlas-badge: #a83250;
+
+  --atlas-info-surface: light-dark(#e9f0fc, #27374d);
+  --atlas-info-text: light-dark(#355583, #bdd7ff);
+  --atlas-info-mark: light-dark(#426dad, #93b9ef);
+  --atlas-success-surface: light-dark(#e8f3ed, #233a33);
+  --atlas-success-text: light-dark(#2b644e, #b2e6cb);
+  --atlas-success-border: light-dark(#bfdacf, #486b5d);
+  --atlas-success-mark: light-dark(#437e63, #8bc6a8);
+  --atlas-warning-surface: light-dark(#fff2df, #3a2b22);
+  --atlas-warning-text: light-dark(#74501f, #f6d4a3);
+  --atlas-warning-border: light-dark(#e5cca2, #795c40);
+  --atlas-warning-mark: light-dark(#9c641d, #e3b47b);
+  --atlas-danger-surface: light-dark(#fbeaf0, #432731);
+  --atlas-danger-text: light-dark(#8e2d46, #ffc0cf);
+  --atlas-danger-border: light-dark(#e6bcc8, #865867);
+  --atlas-danger-mark: light-dark(#ae3854, #ef90a6);
+  --atlas-rose-mark: light-dark(#a35386, #e3a0ca);
+
+  --atlas-progress-track: light-dark(#e8e4ef, #433d53);
+  --atlas-scrim: light-dark(#20192b75, #0b0915b3);
+  --atlas-shadow-color: light-dark(#25203726, #08071065);
+  --shadow: 0 5px 24px var(--atlas-card-shadow);
+  --atlas-card-shadow: light-dark(#2520370a, #08071038);
+  --atlas-toast: light-dark(#32283f, #392e50);
+  --atlas-toast-text: #f7eefc;
+  --atlas-brand-surface: light-dark(#ddd5ed, #2b233d);
+  --atlas-brand-decoration: light-dark(#f0eaf8, #514264);
+  --atlas-brand-ink: light-dark(#4a355a, #f2eaf9);
+  --atlas-brand-accent: light-dark(#765991, #c9adea);
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }

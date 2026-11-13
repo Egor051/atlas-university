@@ -9,6 +9,7 @@ import re
 import secrets
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timedelta, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
@@ -602,8 +603,16 @@ def new_request(body:NewRequestBody,request:Request,response:Response,user:User=
     return request_payload(row)
 
 
+@lru_cache(maxsize=1)
+def document_preview_style():
+    palette = (APP_DIR / 'static' / 'theme.css').read_text(encoding='utf-8')
+    styles = (APP_DIR / 'static' / 'document-preview.css').read_text(encoding='utf-8')
+    return palette + styles
+
+
 @app.get('/api/requests/{request_id}/document')
-def request_document(request_id: int, preview: bool = False, user: User = Depends(require_student), db: Session = Depends(get_db)):
+def request_document(request_id: int, preview: bool = False, theme: Literal['light', 'dark', 'system'] | None = None,
+                     user: User = Depends(require_student), db: Session = Depends(get_db)):
     row = db.scalar(select(DocumentRequest).where(DocumentRequest.id == request_id, DocumentRequest.student_id == user.id))
     if not row:
         raise HTTPException(404, 'Заявка не найдена')
@@ -629,6 +638,9 @@ def request_document(request_id: int, preview: bool = False, user: User = Depend
         content+='<h2>Сведения заявки</h2><dl>'+''.join('<dt>'+esc(labels.get(k,k))+'</dt><dd>'+esc(v)+'</dd>' for k,v in json.loads(row.details).items())+'</dl>'
     identity = '' if row.type == APPENDIX_4_NAME else f'<p><strong>{esc(user.full_name)}</strong><br>{esc(user.faculty)}<br>{esc(user.program)} · {esc(user.group_name)}<br>Учебный номер: {esc(user.student_number)}</p>'
     document = f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>АТЛАС · образец №{row.id}</title><style nonce="{nonce}">body{{margin:0;background:#f2f3f8;color:#202338;font:16px/1.65 system-ui,sans-serif}}main{{max-width:760px;margin:40px auto;padding:40px;background:white;border:1px solid #dce0eb}}.warning{{padding:16px;border:2px solid #ad4024;color:#8d301a;font-weight:700}}small{{color:#596174}}h1{{font-size:28px}}h2{{font-size:19px}}table{{width:100%;border-collapse:collapse}}th,td{{text-align:left;padding:10px;border-bottom:1px solid #dce0eb}}.multiline{{white-space:pre-wrap;overflow-wrap:anywhere}}footer{{margin-top:40px;padding-top:20px;border-top:1px solid #dce0eb}}@media(max-width:600px){{main{{margin:0;padding:20px}}th,td{{font-size:13px;padding:6px}}}}@page{{size:A4;margin:16mm}}td,th,dd{{overflow-wrap:anywhere}}tr,footer{{break-inside:avoid}}@media print{{body{{background:white}}main{{margin:0;border:0;padding:0}}}}</style></head><body><main><div class="warning">КОНКУРСНЫЙ ОБРАЗЕЦ · ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ</div><p><strong>АТЛАС / цифровой кампус</strong><br><small>Неофициальный концепт. Не является документом образовательной организации.</small></p><h1>{esc(heading)}</h1><p>Заявка №{row.id} · подготовлена {as_utc(row.updated_at).astimezone(CAMPUS_TZ):%d.%m.%Y}</p>{identity}{content}<h2>Ответ учебного офиса</h2><p class="multiline">{esc(row.staff_message)}</p><footer>Этот образец показывает полный путь заявки в прототипе. Юридической силы не имеет. Реальная подпись, печать и интеграция с вузом отсутствуют.<br><small>Можно сохранить в PDF через печать браузера.</small></footer></main></body></html>'''
+    if preview:
+        document = document.replace('<html lang="ru">', f'<html lang="ru" data-theme="{theme or "system"}">', 1)
+        document = document.replace('</style></head>', document_preview_style() + '</style></head>', 1)
     disposition = 'inline' if preview else 'attachment'
     return HTMLResponse(document, headers={'Content-Disposition': f'{disposition}; filename="atlas-document-{row.id}.html"', 'Content-Security-Policy': f"default-src 'none'; script-src 'none'; style-src 'nonce-{nonce}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; sandbox"})
 
@@ -782,7 +794,8 @@ def static_files(filename:str, v: str = ''):
              'university.js':'text/javascript','campus.css':'text/css','style.css':'text/css','usability.css':'text/css',
              'university.css':'text/css','operations.css':'text/css','operations.js':'text/javascript',
              'units.js':'text/javascript','announcements.js':'text/javascript','announcements.css':'text/css',
-             'shell.css':'text/css','viewport.js':'text/javascript','favicon.svg':'image/svg+xml'}
+             'shell.css':'text/css','viewport.js':'text/javascript','theme.css':'text/css','theme.js':'text/javascript',
+             'favicon.svg':'image/svg+xml'}
     if filename not in allowed: raise HTTPException(404)
     cache = 'public, max-age=31536000, immutable' if v == build_id() else 'no-cache'
     return FileResponse(APP_DIR/'static'/filename,media_type=allowed[filename],headers={'Cache-Control': cache})

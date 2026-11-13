@@ -1,0 +1,12 @@
+/* Only the in-browser preview uses the campus palette. */
+@media screen {
+  body { color: var(--ink); background: var(--atlas-page); }
+  main { background: var(--atlas-surface); border-color: var(--border); }
+  small { color: var(--muted); }
+  th, td { border-color: var(--border); }
+  .warning {
+    color: var(--atlas-warning-text);
+    background: var(--atlas-warning-surface);
+    border-color: var(--atlas-warning-mark);
+  }
+}

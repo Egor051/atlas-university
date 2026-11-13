@@ -12,23 +12,23 @@
 .school-section > h2, .school-reader h2 { margin: 0 0 12px; font-size: 17px; }
 .school-detail-grid { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
 .school-detail-grid .school-section { margin: 0; }
-.school-section p, .school-reader p { color: #49516a; line-height: 1.6; }
+.school-section p, .school-reader p { color: var(--muted); line-height: 1.6; }
 .school-tile { overflow-wrap: anywhere; }
 .school-tile h2 { margin: 0; font-size: 15px; }
-.school-card-link { color: #504294; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
-.school-meta { color: #565e75; font-size: 12px; }
+.school-card-link { color: var(--atlas-accent-text); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.school-meta { color: var(--text); font-size: 12px; }
 .school-list { list-style: none; margin: 0; padding: 0; }
 .school-list li { padding: 10px 0; overflow-wrap: anywhere; }
 .school-list li + li { border-top: 1px solid var(--border); }
 .school-list li > p { margin: 3px 0 0; }
 .school-list .mini-link { margin-top: 4px; }
-.school-material-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: #49516a; margin: 0 0 14px; }
+.school-material-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--text); margin: 0 0 14px; }
 .school-reader { overflow-wrap: anywhere; }
 .school-reader section + section { margin-top: 22px; }
 .school-reader p { white-space: pre-wrap; overflow-wrap: anywhere; }
 .school-reader p + p { margin-top: 8px; }
 .school-slide-nav { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 12px; }
-.school-slides section { border: 1px solid var(--border); border-radius: 14px; background: #f9f7fe; padding: 18px; }
+.school-slides section { border: 1px solid var(--border); border-radius: 14px; background: var(--atlas-surface-alt); padding: 18px; }
 .messenger {
   display: grid;
   grid-template-columns: minmax(15rem, 1fr) minmax(0, 2fr);
@@ -36,16 +36,16 @@
   min-width: 0;
   height: clamp(25rem, 69dvh, 53rem);
   color: var(--ink);
-  background: var(--atlas-surface, var(--card));
+  background: var(--atlas-surface);
   overflow: hidden;
 }
-.messenger-inbox { min-width: 0; overflow: auto; overscroll-behavior: contain; padding: var(--atlas-card-pad, 16px); border-inline-end: 1px solid var(--atlas-divider, var(--border)); }
+.messenger-inbox { min-width: 0; overflow: auto; overscroll-behavior: contain; padding: var(--atlas-card-pad, 16px); border-inline-end: 1px solid var(--atlas-divider); }
 .messenger-inbox .school-filter { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-bottom: var(--atlas-gap, 12px); }
 .messenger-inbox .school-filter .field { flex: 1 1 9rem; }
 .messenger-items { display: grid; gap: 3px; }
 .messenger-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: var(--atlas-row-pad, 10px); border-radius: 10px; min-height: 44px; color: inherit; text-decoration: none; }
-.messenger-item:hover, .messenger-item[aria-current="page"] { background: var(--atlas-accent-surface, #f1edfc); }
-.messenger-avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; flex: none; background: var(--atlas-accent-surface, #eee8fb); color: var(--atlas-accent-text, #4d3a98); font-weight: 700; font-size: 12px; }
+.messenger-item:hover, .messenger-item[aria-current="page"] { background: var(--atlas-accent-surface); }
+.messenger-avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; flex: none; background: var(--atlas-accent-surface); color: var(--atlas-accent-text); font-weight: 700; font-size: 12px; }
 .messenger-person, .messenger-meta { display: grid; gap: 3px; min-width: 0; }
 .messenger-person b { overflow-wrap: anywhere; }
 .messenger-person small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
@@ -55,7 +55,7 @@
 .messenger-contacts summary { padding: var(--atlas-row-pad, 10px) 0; cursor: pointer; }
 .messenger-placeholder { place-self: center; margin: var(--atlas-card-pad, 16px); text-align: center; }
 .messenger-thread { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.messenger-header { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: var(--atlas-row-pad, 12px) var(--atlas-card-pad, 16px); border-bottom: 1px solid var(--atlas-divider, var(--border)); }
+.messenger-header { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: var(--atlas-row-pad, 12px) var(--atlas-card-pad, 16px); border-bottom: 1px solid var(--atlas-divider); }
 .messenger-header h2 { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
 .messenger-header p { margin: 0; color: var(--muted); }
 .messenger-back { display: none; }
@@ -63,15 +63,15 @@
 .messenger-history:focus-visible { outline-offset: -2px; }
 .messenger-messages { display: flex; flex-direction: column; gap: var(--atlas-row-pad, 10px); list-style: none; margin: 0; padding: 0; }
 .messenger-day { align-self: center; color: var(--muted); font-size: 12px; }
-.messenger-bubble { min-width: 0; max-width: 86%; align-self: flex-start; border-radius: 12px; padding: var(--atlas-row-pad, 10px) 12px; background: var(--atlas-surface-alt, #f3f4f8); }
-.messenger-bubble.mine { align-self: flex-end; background: var(--atlas-accent-surface, #eee8fb); }
+.messenger-bubble { min-width: 0; max-width: 86%; align-self: flex-start; border-radius: 12px; padding: var(--atlas-row-pad, 10px) 12px; background: var(--atlas-surface-alt); }
+.messenger-bubble.mine { align-self: flex-end; background: var(--atlas-accent-surface); }
 .messenger-bubble p { margin: 0; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
 .messenger-bubble footer { display: flex; flex-wrap: wrap; gap: 4px 8px; justify-content: flex-end; margin-top: 4px; color: var(--muted); font-size: 12px; }
 .messenger-older { display: block; margin: 0 auto 8px; }
-.school-compose { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; margin-top: auto; padding: var(--atlas-row-pad, 10px) var(--atlas-card-pad, 16px); border-top: 1px solid var(--atlas-divider, var(--border)); }
+.school-compose { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; margin-top: auto; padding: var(--atlas-row-pad, 10px) var(--atlas-card-pad, 16px); border-top: 1px solid var(--atlas-divider); }
 .school-compose textarea { display: block; min-height: var(--atlas-control-height, 44px); max-height: 22dvh; resize: vertical; }
 .school-compose > .inline-error { grid-column: 1 / -1; grid-row: 2; }
-.direct-count { margin-left: auto; border-radius: 8px; background: #eae4fb; color: #4e3b98; padding: 2px 5px; }
+.direct-count { margin-left: auto; border-radius: 8px; background: var(--atlas-accent-surface); color: var(--atlas-accent-text); padding: 2px 5px; }
 .bottom-nav .direct-count { position: absolute; top: 4px; right: 4px; }
 .bottom-nav .nav-item { position: relative; }
 .school-section > .mini-link { margin-top: 12px; }
@@ -102,7 +102,7 @@
     z-index: 21;
     inset: auto 0 var(--atlas-keyboard-inset, 0px);
     margin: 0;
-    background: var(--atlas-surface, var(--card));
+    background: var(--atlas-surface);
   }
   [data-atlas-keyboard] .messenger-thread-view .school-compose textarea {
     max-height: max(var(--atlas-control-height, 44px), calc(var(--atlas-visible-height, 100dvh) / 4));

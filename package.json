@@ -4,7 +4,7 @@
   "private": true,
   "description": "Development-only accessibility checks. The application has no browser dependencies.",
   "scripts": {
-    "check": "node --check static/app.js && node --check static/viewport.js && node --check static/campus.js && node --check static/improvements.js && node --check static/university.js && node --check static/operations.js && node --check static/units.js && node --check static/announcements.js"
+    "check": "node --check static/theme.js && node --check static/app.js && node --check static/viewport.js && node --check static/campus.js && node --check static/improvements.js && node --check static/university.js && node --check static/operations.js && node --check static/units.js && node --check static/announcements.js"
   },
   "devDependencies": {
     "axe-core": "4.14.0"

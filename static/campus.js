@@ -222,6 +222,15 @@
   function portfolio(d){return title('portfolio','Ваши проекты, дополнительное обучение, практика и достижения.',primary('portfolio-new','Добавить запись'))+`<div class="campus-button-row campus-spaced"><a class="outline-button" href="/api/campus/portfolio/export" download>${icon('download')} Скачать портфолио</a></div>`+toolbar('portfolio')+grid(filtered(d,'portfolio'),x=>`<article class="card campus-tile" data-campus-record-id="${Number(x.id)}"><div class="campus-tile-top">${pill(portfolioKinds.find(([v])=>v===x.kind)?.[1]||x.kind)}<time>${c.dateFmt(x.day,{day:'numeric',month:'short',year:'numeric'})}</time></div><h2>${esc(x.title)}</h2>${textDetails(x.description)}${external(x.url)}<div class="campus-tile-bottom">${action('portfolio-edit','Изменить',x.id)}${action('portfolio-delete','Удалить',x.id)}</div></article>`,'Соберите свой первый результат','Добавьте проект, практику или учебное достижение.')+info('Записи добавляет сам пользователь. АТЛАС не проверяет квалификацию и не выдаёт официальные сертификаты.');}
   function settings(d){
     const p=d.preferences,student=c.state.user.role==='student';
+    const themeMode=window.ATLASTheme.mode;
+    const themes=[['light','Светлая'],['dark','Тёмная'],['system','Системная']];
+    const appearance=`<fieldset class="theme-settings" aria-describedby="theme-hint">
+      <legend>Тема оформления</legend>
+      <div class="theme-choices">${themes.map(([value,label])=>`<label>
+        <input type="radio" name="atlas-theme" value="${value}" data-theme-choice ${themeMode===value?'checked':''} />
+        ${label}</label>`).join('')}</div>
+      <p class="hint" id="theme-hint">Системная тема следует настройкам устройства. Выбор применяется сразу и сохраняется в этом браузере.</p>
+    </fieldset>`;
     const toggles=[['compact_mode','Компактный вид']];
     if(student)toggles.push(['deadline_reminders','Напоминания о сроках'],['email_notifications','Почтовые уведомления (сохранить предпочтение)']);
     const form=`<form data-c-form="preferences"><div class="campus-checks">${toggles.map(([key,label])=>`<label><input name="${key}" type="checkbox" ${p[key]?'checked':''} />${esc(label)}</label>`).join('')}</div>
@@ -230,7 +239,7 @@
       <div class="modal-actions"><button class="primary-button" type="submit">${icon('check')} Сохранить настройки</button></div>
     </form>`;
     const sessions=`<div class="campus-log">${items(d.sessions).map(x=>`<article><span class="campus-hub-icon">${icon('shield')}</span><div><b>${x.is_current?'Текущий сеанс':'Другой сеанс'} · № ${Number(x.id)}</b><p>Действует до ${c.stamp(x.expires_at)} МСК</p></div>${x.is_current?pill('Вы здесь','success'):''}</article>`).join('')}</div>${action('revoke-sessions','Завершить остальные сеансы')}`;
-    return title('settings','Настройте вид кабинета и управляйте активными сеансами.')+section('Вид и уведомления',form)+section('Активные сеансы',sessions);
+    return title('settings','Настройте вид кабинета и управляйте активными сеансами.')+section('Вид и уведомления',appearance+form)+section('Активные сеансы',sessions);
   }
   function calendar(d){
     const entries=[];for(const day of d.schedule.days)for(const x of day.items)entries.push({day:day.date,time:x.start,title:x.title,body:`${x.room} · ${x.teacher}`,target:'schedule',id:x.id,subject:x.title,kind:'Пара'});

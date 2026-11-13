@@ -723,7 +723,7 @@
       const details=Object.entries(r.details||{}).map(([key,value])=>({label:labels[key]||key,value}));
       const result=!staff&&r.document_url?`<div class="document-result"><div><b>Результат готов</b>
         <p>${r.kind==='certificate'?'Подготовленный документ без подписи и печати.':'В результате сохранён ответ учебного офиса.'}</p></div>
-        ${r.kind==='certificate'?`<a class="outline-button" href="${esc(r.document_url)}?preview=true" target="_blank" rel="noopener noreferrer">Открыть</a>`:''}
+        ${r.kind==='certificate'?`<a class="outline-button" href="${esc(r.document_url)}?preview=true" data-document-preview target="_blank" rel="noopener noreferrer">Открыть</a>`:''}
         <a class="primary-button" href="${esc(r.document_url)}" download>${icon('download')} Скачать</a></div>`:'';
       const summary=`<div class="detail-summary"><span class="file-glyph">${icon('file')}</span><div><h3>${esc(r.type)}</h3>
         <p>${staff?`${esc(r.student_name||'')} · ${esc(r.group||'')}<br>`:''}Создана ${stamp(r.created_at)} МСК · ${esc(r.department)}</p></div>${badge(r)}</div>
@@ -976,6 +976,12 @@
   }
   document.addEventListener('submit',e=>{const form=e.target;if(!['login-form','request-form','staff-form','request-followup'].includes(form.id))return;e.preventDefault();if(form.id==='login-form')submitLogin(form);if(form.id==='request-form')submitRequest(form);if(form.id==='staff-form')submitStaff(form);if(form.id==='request-followup')submitFollowup(form);});
   document.addEventListener('click',async e=>{
+    const preview=e.target.closest('[data-document-preview]');
+    if(preview){
+      const url=new URL(preview.href);
+      url.searchParams.set('theme',window.ATLASTheme.mode);
+      preview.href=url.href;
+    }
     const download=e.target.closest('a[download][href^="/api/"]');if(download){e.preventDefault();if(download.getAttribute('aria-busy')!=='true')await downloadFile(download);return;}
     const result=e.target.closest('[data-search-target]');if(result){await openSearchResult(result.dataset.searchTarget,Number(result.dataset.searchId));return;}
     const to=e.target.closest('[data-route], a[data-app-link]');
