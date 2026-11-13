@@ -3,7 +3,7 @@
   body { color: var(--ink); background: var(--atlas-page); }
   main { background: var(--atlas-surface); border-color: var(--border); }
   small { color: var(--muted); }
-  th, td { border-color: var(--border); }
+  th, td, footer { border-color: var(--border); }
   .warning {
     color: var(--atlas-warning-text);
     background: var(--atlas-warning-surface);

@@ -100,6 +100,7 @@ def test_certificate_preview_uses_current_theme_and_prints_on_light_paper(fronte
     expect(document.locator('.warning')).to_contain_text('ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ')
     assert 'theme=dark' in document.url
     expect(document.locator('body')).to_have_css('background-color', DARK)
+    expect(document.locator('footer')).to_have_css('border-top-color', 'rgb(66, 61, 83)')
     document.emulate_media(media='print')
     expect(document.locator('body')).to_have_css('background-color', 'rgb(255, 255, 255)')
     document.close()

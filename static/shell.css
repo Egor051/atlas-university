@@ -201,12 +201,16 @@
   color: var(--text);
   cursor: pointer;
 }
-.theme-choices label:hover, .theme-choices label:has(:checked) {
+.theme-choices label:hover {
+  border-color: var(--atlas-accent-border);
+  background: var(--atlas-surface-alt);
+}
+.theme-choices label:has(:checked) {
   border-color: var(--atlas-accent-border);
   background: var(--atlas-accent-surface);
   color: var(--atlas-accent-text);
+  font-weight: 650;
 }
-.theme-choices label:has(:checked) { font-weight: 650; }
 .theme-choices input { width: 16px; height: 16px; margin: 0; flex: none; }
 .theme-choices label:has(:focus-visible) { outline: 2px solid var(--atlas-focus); outline-offset: 2px; }
 .theme-choices input:focus-visible { outline: none; }
