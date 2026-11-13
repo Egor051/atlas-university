@@ -142,3 +142,73 @@ def test_publish_edit_delete_from_teacher_cabinet(frontend_page):
     teacher.get_by_role('dialog').get_by_role('button', name='Удалить', exact=True).click()
     expect(updated).to_have_count(0)
     assert teacher.evaluate('document.documentElement.scrollWidth <= innerWidth')
+
+
+@pytest.mark.parametrize('keyboard_mode', ['visual', 'layout'])
+def test_mobile_thread_swipe_and_keyboard_viewport(frontend_browser, frontend_server, keyboard_mode):
+    browser, base = frontend_browser, frontend_server
+    with browser.new_context(viewport={'width': 390, 'height': 820}, is_mobile=True, has_touch=True) as context:
+        mobile = context.new_page()
+        session = context.new_cdp_session(mobile)
+        enter(mobile, base, 0, PROFILE)
+        mobile.get_by_role('link', name='Написать преподавателю').click()
+        composer = mobile.get_by_label('Сообщение', exact=True)
+        composer.fill('Проверка прокрутки короткой переписки')
+        send = mobile.get_by_role('button', name='Отправить')
+        send.tap()
+        bubble = mobile.locator('.messenger-bubble').last
+        expect(bubble).to_contain_text('Проверка прокрутки')
+        composer.blur()
+        mobile.evaluate('window.scrollTo(0, 0)')
+
+        def swipe_up_on_bubble():
+            box = bubble.bounding_box()
+            x, y = int(box['x'] + box['width'] / 2), int(box['y'] + box['height'] / 2)
+            session.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': x, 'y': y}]})
+            for delta in range(16, 145, 16):
+                session.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': x, 'y': y - delta}]})
+            session.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
+
+        swipe_up_on_bubble()
+        mobile.wait_for_function('scrollY > 24')
+        mobile.reload()
+        expect(bubble).to_contain_text('Проверка прокрутки')
+
+        composer.fill('Новый ответ при открытой клавиатуре')
+        if keyboard_mode == 'visual':
+            mobile.evaluate('''() => {
+                Object.defineProperties(visualViewport, {
+                    height: {configurable: true, value: 235},
+                    offsetTop: {configurable: true, value: 36},
+                });
+                visualViewport.dispatchEvent(new Event('resize'));
+            }''')
+        else:
+            mobile.set_viewport_size({'width': 390, 'height': 235})
+        expect(mobile.locator('html')).to_have_attribute('data-atlas-keyboard', '')
+        expect(mobile.locator('.bottom-nav')).to_be_hidden()
+        for element in (composer, send):
+            assert element.evaluate('''node => {
+                const box = node.getBoundingClientRect();
+                return box.top >= visualViewport.offsetTop &&
+                    box.bottom <= visualViewport.offsetTop + visualViewport.height + 1;
+            }''')
+        box = send.bounding_box()
+        x, y = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+        assert send.evaluate('(button, [x, y]) => button.contains(document.elementFromPoint(x, y))', [x, y])
+        with mobile.expect_response(re.compile('/api/direct/dialogs/[0-9]+/messages$')) as response:
+            mobile.mouse.click(x, y)
+        assert response.value.ok
+        expect(mobile.locator('.messenger-bubble').last).to_contain_text('Новый ответ при открытой клавиатуре')
+        expect(composer).to_be_focused()
+
+        if keyboard_mode == 'visual':
+            mobile.evaluate('''() => {
+                delete visualViewport.height;
+                delete visualViewport.offsetTop;
+                visualViewport.dispatchEvent(new Event('resize'));
+            }''')
+        else:
+            mobile.set_viewport_size({'width': 390, 'height': 820})
+        expect(mobile.locator('html')).not_to_have_attribute('data-atlas-keyboard', '')
+        expect(mobile.locator('.bottom-nav')).to_be_visible()

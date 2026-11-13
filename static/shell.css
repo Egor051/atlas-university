@@ -135,6 +135,24 @@
 }
 .login-submit { margin-top: 12px; }
 .demo-trigger { width: 100%; margin-top: 12px; justify-content: center; }
+
+@media (max-width: 650px) {
+  .login-panel { min-height: 0; }
+}
+
+[data-atlas-keyboard] .login-page {
+  min-height: var(--atlas-visible-height, 100dvh);
+  padding-bottom: var(--atlas-keyboard-inset, 0px);
+}
+[data-atlas-keyboard] .login-root { display: block; }
+[data-atlas-keyboard] .login-art,
+[data-atlas-keyboard] .login-mobile-brand { display: none; }
+[data-atlas-keyboard] .login-panel { min-height: 0; padding-block: 12px; }
+[data-atlas-keyboard] .login-form-wrap { margin: 0 auto; }
+[data-atlas-keyboard] .login-form-wrap h1 { margin-bottom: 12px; font-size: 22px; }
+[data-atlas-keyboard] .login-form-wrap .field { margin-bottom: 10px; }
+[data-atlas-keyboard] .login-submit { margin-top: 2px; }
+
 .demo-dialog {
   width: min(530px, calc(100% - 28px));
   max-height: min(690px, calc(100dvh - 28px));

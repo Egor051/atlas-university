@@ -108,6 +108,56 @@ def test_mobile_drawer_and_demo_dialog_restore_focus(frontend_page):
     assert page.evaluate('document.documentElement.scrollWidth === innerWidth')
 
 
+@pytest.mark.parametrize('keyboard_mode', ['layout-resize', 'visual-only'])
+def test_mobile_login_keeps_password_and_submit_inside_keyboard_view(frontend_browser, frontend_server, keyboard_mode):
+    base = frontend_server
+    page = frontend_browser.new_page(viewport={'width': 390, 'height': 820}, has_touch=True, is_mobile=True)
+    try:
+        assert_mobile_login_with_keyboard(page, base, keyboard_mode)
+    finally:
+        page.context.close()
+
+
+def assert_mobile_login_with_keyboard(page, base, keyboard_mode):
+    page.goto(base)
+    login = page.locator('#login-name')
+    password = page.locator('#login-password')
+    submit = page.get_by_role('button', name='Войти в кабинет')
+    expect(login).to_have_attribute('autocomplete', 'username')
+    expect(password).to_have_attribute('autocomplete', 'current-password')
+    login.fill('alina.demo')
+    password.fill('AtlasDemo!2026-A')
+
+    # Browsers either shrink both viewports or leave the layout viewport
+    # unchanged and report the keyboard through VisualViewport.
+    height = 235
+    if keyboard_mode == 'layout-resize':
+        page.set_viewport_size({'width': 390, 'height': height})
+    else:
+        page.evaluate("""height => {
+            const viewport = window.visualViewport;
+            Object.defineProperty(viewport, 'height', {configurable: true, get: () => height});
+            viewport.dispatchEvent(new Event('resize'));
+        }""", height)
+
+    expect(page.locator('html')).to_have_attribute('data-atlas-keyboard', '')
+    expect(password).to_be_focused()
+    expect(password).to_have_value('AtlasDemo!2026-A')
+    boxes = page.locator('#login-password, .login-submit')
+    for element in boxes.all():
+        position = element.evaluate("""node => {
+            const {top, bottom} = node.getBoundingClientRect();
+            const {height, offsetTop} = visualViewport;
+            return {top, bottom, height, offsetTop};
+        }""")
+        assert position['offsetTop'] <= position['top'] and position['bottom'] <= position['height'] + position['offsetTop'], position
+    box = submit.bounding_box()
+    # Coordinate click uses the current view rather than Playwright scrolling
+    # the submit button into view before the click.
+    page.mouse.click(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2)
+    expect(page).to_have_url(base + '/app/home')
+
+
 def test_schedule_context_survives_bookmark_and_brand_uses_versioned_icon(frontend_page):
     page, base = frontend_page
     page.goto(base)

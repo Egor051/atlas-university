@@ -194,7 +194,7 @@ def run(args, report):
     for page in PAGES:
         public.call("/app/" + page)
     for asset in ("app.js", "campus.js", "improvements.js", "style.css", "usability.css", "campus.css",
-                  "announcements.js", "announcements.css", "shell.css", "university.js", "university.css"):
+                  "announcements.js", "announcements.css", "shell.css", "university.js", "university.css", "viewport.js"):
         public.call("/static/" + asset)
     for path in ("/.env", "/.git/HEAD", "/compose.yaml", "/Dockerfile", "/docs", "/redoc", "/openapi.json"):
         public.call(path, expected=404)

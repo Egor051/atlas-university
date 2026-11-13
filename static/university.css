@@ -85,13 +85,32 @@
   .school-filter > .field:first-child, .school-filter > .school-actions { grid-column: 1 / -1; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .messenger { grid-template-columns: minmax(0, 1fr); height: auto; }
-  .messenger-inbox { border-inline-end: 0; }
+  .messenger-inbox { border-inline-end: 0; overscroll-behavior-y: auto; }
   .messenger-list-view > .messenger-placeholder, .messenger-thread-view > .messenger-inbox { display: none; }
   .messenger-thread-view { height: max(13rem, calc(100dvh - 10rem)); }
   .messenger-back { display: inline-flex; width: 100%; min-height: 30px; }
+  .messenger-history { overscroll-behavior-y: auto; }
   .messenger-bubble { max-width: 92%; }
+
+  [data-atlas-keyboard] .messenger-thread-view {
+    height: max(0px, calc(var(--atlas-visible-height, 100dvh) - 4.5rem));
+  }
+  [data-atlas-keyboard] .messenger-thread-view .school-compose {
+    position: fixed;
+    z-index: 21;
+    inset: auto 0 var(--atlas-keyboard-inset, 0px);
+    margin: 0;
+    background: var(--atlas-surface, var(--card));
+  }
+  [data-atlas-keyboard] .messenger-thread-view .school-compose textarea {
+    max-height: max(var(--atlas-control-height, 44px), calc(var(--atlas-visible-height, 100dvh) / 4));
+  }
+  [data-atlas-keyboard] .shell:has(.school-compose) .bottom-nav { visibility: hidden; }
+  [data-atlas-keyboard] body:has(.school-compose) #toast {
+    bottom: calc(var(--atlas-keyboard-inset, 0px) + 6rem);
+  }
 }
 
 @media (max-width: 360px) {

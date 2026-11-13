@@ -782,7 +782,7 @@ def static_files(filename:str, v: str = ''):
              'university.js':'text/javascript','campus.css':'text/css','style.css':'text/css','usability.css':'text/css',
              'university.css':'text/css','operations.css':'text/css','operations.js':'text/javascript',
              'units.js':'text/javascript','announcements.js':'text/javascript','announcements.css':'text/css',
-             'shell.css':'text/css','favicon.svg':'image/svg+xml'}
+             'shell.css':'text/css','viewport.js':'text/javascript','favicon.svg':'image/svg+xml'}
     if filename not in allowed: raise HTTPException(404)
     cache = 'public, max-age=31536000, immutable' if v == build_id() else 'no-cache'
     return FileResponse(APP_DIR/'static'/filename,media_type=allowed[filename],headers={'Cache-Control': cache})

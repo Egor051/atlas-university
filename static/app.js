@@ -848,9 +848,11 @@
             <h1>Вход в кабинет</h1>
             <form id="login-form">
               <div class="field"><label for="login-name">Логин</label><input id="login-name" name="login" required autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="100" placeholder="Ваш логин" /></div>
-              <div class="field"><label for="login-password">Пароль</label><div class="password-wrap"><input id="login-password" name="password" type="password" required autocomplete="current-password" maxlength="200" placeholder="Введите пароль" /><button class="password-toggle" type="button" data-action="password" aria-controls="login-password" aria-pressed="false">Показать</button></div></div>
-              <div class="inline-error" id="login-error" role="alert" hidden></div>
-              <button class="primary-button login-submit" type="submit">Войти в кабинет ${icon('arrow')}</button>
+              <div class="login-actions">
+                <div class="field"><label for="login-password">Пароль</label><div class="password-wrap"><input id="login-password" name="password" type="password" required autocomplete="current-password" enterkeyhint="go" maxlength="200" placeholder="Введите пароль" /><button class="password-toggle" type="button" data-action="password" aria-controls="login-password" aria-pressed="false">Показать</button></div></div>
+                <div class="inline-error" id="login-error" role="alert" hidden></div>
+                <button class="primary-button login-submit" type="submit">Войти в кабинет ${icon('arrow')}</button>
+              </div>
             </form>
             ${state.config.demo_mode?'<button class="outline-button demo-trigger" type="button" data-action="demo-picker" aria-haspopup="dialog">Попробовать демо</button>':''}
           </div>
@@ -858,6 +860,13 @@
       </div>
     </main>${state.config.demo_mode?demoDialog():''}`;
   }
+  function revealLoginField(){
+    const field=document.activeElement;
+    if(field?.form?.id!=='login-form'||field.tagName!=='INPUT'||!document.documentElement.hasAttribute('data-atlas-keyboard'))return;
+    window.ATLASViewport?.reveal(field.closest('.login-actions')||field,field);
+  }
+  document.addEventListener('atlas:viewport',revealLoginField);
+
   function demoDialog(){
     const groups=[['Студенты',[0,1]],['Преподаватели',[3,8,9,10]],['Сотрудники',[2,4,5,6,7]]];
     return `<dialog class="demo-dialog" id="demo-dialog" aria-labelledby="demo-title">
@@ -885,6 +894,7 @@
       controls.forEach(button=>button.disabled=false);
       pending.innerHTML=originalLabel;
       delete form.dataset.pending;
+      if(error?.id==='login-error')requestAnimationFrame(revealLoginField);
     }
   }
   async function refreshUnread(){
