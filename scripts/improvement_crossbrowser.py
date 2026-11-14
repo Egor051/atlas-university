@@ -13,7 +13,7 @@ from playwright.sync_api import sync_playwright,expect
 from improvement_runtime import ROOT,DEFAULT_REPORTS,isolated_server,browser_ready,browser_login,browser_visit,geometry,report_start,save_report
 
 STUDENT=['home','schedule','grades','plan','requests','certificates','notifications','profile','announcements','courses','assignments','exams',
-         'attendance','calendar','tasks','notes','flashcards','quizzes','focus','consultations','messages','library','events','finance','contacts','knowledge','portfolio','settings']
+         'calendar','tasks','learning/notes','materials','consultations','messages','events','finance','contacts','knowledge','portfolio','settings']
 STAFF=['staff','staffdesk','staffmessages','announcement-admin','profile','settings']
 
 

@@ -25,6 +25,8 @@ from improvement_runtime import ROOT, browser_login, browser_visit, geometry, is
 
 
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
+LEGACY_ROUTES = {'notes': 'learning/notes', 'attendance': 'grades', 'library': 'materials',
+                 'flashcards': 'materials', 'quizzes': 'materials', 'focus': 'tasks'}
 KEY_SCREENS = {"home", "schedule", "requests", "certificates", "announcements", "direct", "staff", "announcement-admin"}
 FEATURE_CONTROLS = {
     "home": ".announcement-timeline",
@@ -179,7 +181,7 @@ class Acceptance:
     def read_page(self, page, engine, actor, route):
         browser_visit(page, self.args.url, route)
         self.check(f"{engine} {actor} {route} stays on its route",
-                   urlsplit(page.url).path.rstrip("/") == "/app/" + route)
+                   urlsplit(page.url).path.rstrip("/") == "/app/" + LEGACY_ROUTES.get(route, route))
         self.layout(page, engine, actor, route)
         if route in FEATURE_CONTROLS:
             expect(page.locator(FEATURE_CONTROLS[route])).to_be_visible()

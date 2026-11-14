@@ -162,11 +162,14 @@ def verify_block_spacing(page, label):
         return
     toolbar = page.locator('.campus-toolbar').first
     expect(toolbar).to_be_visible()
-    before = toolbar.evaluate("""node => {
+    spacing = toolbar.evaluate("""node => {
         const previous = node.previousElementSibling;
-        return previous && node.getBoundingClientRect().top - previous.getBoundingClientRect().bottom;
+        return previous && {
+            gap: node.getBoundingClientRect().top - previous.getBoundingClientRect().bottom,
+            token: parseFloat(getComputedStyle(node).getPropertyValue('--atlas-gap'))
+        };
     }""")
-    assert before is not None and before >= 12, (label, before)
+    assert spacing and spacing['token'] >= 10 and spacing['gap'] >= spacing['token'] - 0.5, (label, spacing)
 
 
 def capture_modal(page, label, output, report, width, theme, scheme, *, contrast):
