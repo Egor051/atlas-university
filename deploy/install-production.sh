@@ -20,7 +20,13 @@ set -a
 set +a
 docker compose config --quiet
 docker compose build web
-docker compose run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile
+read -r caddy_image caddy_domain < <(docker compose config --format json | python3 -c \
+    'import json, sys; caddy = json.load(sys.stdin)["services"]["caddy"]; print(caddy["image"], caddy["environment"]["DOMAIN"])')
+# A second Compose Caddy uses the live proxy's fixed IP. Validation only needs
+# the effective config and can run in an isolated network namespace.
+docker run --rm --network none --env "DOMAIN=$caddy_domain" \
+    --mount "type=bind,source=$root/deploy/Caddyfile,target=/etc/caddy/Caddyfile,readonly" \
+    "$caddy_image" caddy validate --config /etc/caddy/Caddyfile
 docker compose up -d --wait --wait-timeout 120 db
 docker compose run --rm --no-deps web python -m app.db migrate
 install -m 644 deploy/systemd/atlas-* /etc/systemd/system/
