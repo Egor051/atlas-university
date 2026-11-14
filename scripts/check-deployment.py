@@ -92,7 +92,7 @@ def main():
     assert details['status'] == 'ready'
     document = alina.call(f'/api/requests/{row["id"]}/document')
     assert len(document) > 100
-    assert 'КОНКУРСНЫЙ ОБРАЗЕЦ' in document.decode('utf-8')
+    assert 'Не имеет юридической силы' in document.decode('utf-8')
     assert 'Марк Северин' not in document.decode('utf-8')
     assert any('Статус заявки' in item['title'] for item in alina.call('/api/notifications'))
     staff_page = staff.call('/api/staff/requests?paginated=true&filter=active&limit=30')

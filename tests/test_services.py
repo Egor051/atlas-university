@@ -81,7 +81,8 @@ def test_contacts_search_and_finance_are_fictional_and_isolated():
         login(b, 'mark.demo')
         contacts = a.get('/api/services/contacts?q=ОРЛОВ').json()['items']
         assert len(contacts) == 1 and contacts[0]['email'].endswith('.example')
-        assert a.get('/api/services/knowledge?q=КНИГУ').json()['items']
+        assert a.get('/api/services/knowledge?q=КОНСПЕКТЫ').json()['items']
+        assert not a.get('/api/services/knowledge?q=КНИГУ').json()['items']
         first = a.get('/api/services/finance').json()
         other = b.get('/api/services/finance').json()
         assert first['summary']['concept'] is True

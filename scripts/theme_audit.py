@@ -327,7 +327,7 @@ def capture_document(page, base, run):
         link.click()
     document = preview.value
     try:
-        expect(document.locator('.warning')).to_contain_text('ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ')
+        expect(document.locator('.warning')).to_contain_text('Не имеет юридической силы')
         watch(document, run['report'], run['role'])
         capture(document, '/app/certificates', 'document-preview', run, expected_error=True)
     finally:

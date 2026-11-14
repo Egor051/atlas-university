@@ -99,12 +99,18 @@ class GroupWork(Base):
     author_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     version: Mapped[int] = mapped_column(default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    state: Mapped[str] = mapped_column(String(20), default='published', server_default='published')
+    publish_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    policy_json: Mapped[str] = mapped_column(Text, default='{}', server_default='{}')
 
 
 class WorkDelivery(Base):
     __tablename__ = 'academic_work_deliveries'
     deadline_id: Mapped[int] = mapped_column(ForeignKey('deadlines.id'), primary_key=True)
     work_id: Mapped[int] = mapped_column(ForeignKey('academic_group_work.id'), index=True)
+    extended_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    active: Mapped[bool] = mapped_column(default=True, server_default='true')
 
 
 class WorkFeedback(Base):
@@ -117,6 +123,8 @@ class WorkFeedback(Base):
     score: Mapped[int | None]
     comment: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    action: Mapped[str] = mapped_column(String(20), default='comment', server_default='comment')
+    extended_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class TeacherConsultation(Base):

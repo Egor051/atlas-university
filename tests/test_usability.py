@@ -33,11 +33,11 @@ def test_mobile_core_is_one_tap_and_other_sections_are_grouped(frontend_page, wi
     for label in ['Главная', 'Расписание', 'Оценки', 'Заявки']:
         expect(navigation.get_by_role('button', name=label, exact=True)).to_be_visible()
     navigation.get_by_role('button', name='Оценки', exact=True).click()
-    expect(page.locator('#page-title')).to_have_text('Успеваемость')
+    expect(page.locator('#page-title')).to_have_text('Успеваемость и посещаемость')
     menu = navigation.get_by_role('button', name='Открыть меню', exact=True)
     menu.click()
     expect(page.locator('.nav-group.is-open')).to_have_count(1)
-    page.locator('[data-nav-group="planning"] .nav-group-toggle').click()
+    page.locator('[data-nav-group="learning"] .nav-group-toggle').click()
     page.locator('.nav-stack [data-route="notes"]').click()
     expect(page.locator('#page-title')).to_have_text('Конспекты')
     expect(menu).to_have_attribute('aria-expanded', 'false')
@@ -136,7 +136,7 @@ def test_course_disclosure_keyboard_and_live_module_status(frontend_page):
     expect(summaries.first).to_contain_text('Изучено' if desired else 'К изучению')
 
 
-def test_schedule_day_count_timer_duration_and_money_readability(frontend_page):
+def test_schedule_day_count_and_money_readability(frontend_page):
     page, base = frontend_page
     page.set_viewport_size({'width': 360, 'height': 800})
     enter(page, base)
@@ -145,13 +145,6 @@ def test_schedule_day_count_timer_duration_and_money_readability(frontend_page):
     page.locator('.day-pick').last.click()
     expect(page.locator('.schedule-info')).to_contain_text('0 занятий')
     expect(page.locator('.day-view')).to_contain_text('В этот день занятий нет')
-    visit(page, base, 'focus')
-    page.locator('#focus-duration').select_option('15')
-    expect(page.locator('#focus-clock')).to_have_text('15:00')
-    page.locator('[data-c-action="timer-start"]').click()
-    expect(page.locator('[data-c-action="timer-start"]')).to_have_text('Пауза')
-    page.locator('[data-c-action="timer-reset"]').click()
-    expect(page.locator('#focus-clock')).to_have_text('15:00')
     visit(page, base, 'finance')
     for amount in page.locator('.finance-summary b').all():
         assert amount.bounding_box()['height'] < 35, 'Currency must remain on one line'

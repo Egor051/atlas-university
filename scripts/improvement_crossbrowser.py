@@ -85,7 +85,7 @@ def main():
                     download_link=a.locator(f'a[href="/api/requests/{request_id}/document"]')
                     with a.expect_download() as download:download_link.click()
                     doc=Path(download.value.path()).read_text(encoding='utf-8')
-                    assert 'КОНКУРСНЫЙ ОБРАЗЕЦ' in doc
+                    assert 'Не имеет юридической силы' in doc
                     report['checks'].append({'engine':engine,'workflow':'student UI submit → other student denied → staff UI review/processing/ready → student UI opens answer and downloads actual document','request_id':request_id})
                     for context in contexts:context.close()
                     browser.close()

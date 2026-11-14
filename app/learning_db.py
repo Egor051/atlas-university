@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, select
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, select
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base, User, Grade, campus_today, utc_now
@@ -52,6 +52,7 @@ class AssignmentSubmission(Base):
     version: Mapped[int] = mapped_column(Integer, default=1)
     submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    attempt_version: Mapped[int] = mapped_column(Integer, default=1, server_default='1')
 
 
 class StudyNote(Base):
@@ -104,10 +105,12 @@ class QuizAttempt(Base):
 
 class Attendance(Base):
     __tablename__ = 'learning_attendance'
+    __table_args__ = (Index('uq_learning_attendance_student_class', 'student_id', 'class_id', unique=True),)
     id: Mapped[int] = mapped_column(primary_key=True)
     student_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
     subject: Mapped[str] = mapped_column(String(130))
     day: Mapped[date] = mapped_column(Date)
+    class_id: Mapped[int | None] = mapped_column(ForeignKey('academic_classes.id'))
     status: Mapped[str] = mapped_column(String(20))
     note: Mapped[str] = mapped_column(String(300), default='')
     version: Mapped[int] = mapped_column(Integer, default=1, server_default='1')
@@ -193,8 +196,8 @@ COURSE_CONTENT = {
         ('Обратная связь', 'Показывайте промежуточный результат и проверяйте ожидания. На ретроспективе выберите конкретное улучшение процесса и способ проверить его эффект.'),
     ],
     'Право в цифровой среде': [
-        ('Источники и контекст', 'Отличайте нормативный акт, договор и мнение автора. Для учебного разбора фиксируйте дату и юрисдикцию источника. Материал прототипа не является юридической консультацией.'),
-        ('Данные и доступ', 'Для учебного кейса определите, какие данные собираются, зачем, кто имеет доступ и когда данные удаляются. В этом прототипе используются только вымышленные записи.'),
+        ('Источники и контекст', 'Отличайте нормативный акт, договор и мнение автора. Для учебного разбора фиксируйте дату и юрисдикцию источника.'),
+        ('Данные и доступ', 'Для учебного кейса определите, какие данные собираются, зачем, кто имеет доступ и когда данные удаляются.'),
         ('Авторские материалы', 'Проверяйте условия лицензии до использования кода, шрифта или изображения. Открытый доступ к файлу не означает разрешение на любое использование. Фиксируйте источник и условия.'),
         ('Разбор ситуации', 'Разделите факты, предположения и вопросы. Определите заинтересованные стороны и требуемые доказательства. Для практического решения обращаются к актуальным первичным источникам.'),
     ],
@@ -249,12 +252,12 @@ def seed_learning(db):
             for previous in range(1, 4):
                 status = 'absent' if index == 2 and previous == 2 else 'excused' if index == 1 and previous == 3 else 'present'
                 db.add(Attendance(student_id=student.id, subject=grade.subject, day=day - timedelta(days=previous * 7 + index), status=status,
-                                  note='Вымышленная отметка посещаемости.' if status != 'excused' else 'Учебный пример уважительной причины.'))
+                                  note='Уважительная причина.' if status == 'excused' else ''))
         for grade in (grades[0], grades[2] if len(grades) > 2 else grades[-1]):
             questions = QUIZ_CONTENT.get(grade.subject)
             if questions:
                 db.add(Quiz(student_id=student.id, title=f'{grade.subject}: самопроверка', subject=grade.subject,
-                            description='Три учебных вопроса с объяснениями. Результат не изменяет официальную успеваемость прототипа.', questions_json=json.dumps(questions, ensure_ascii=False)))
+                            description='Три учебных вопроса с объяснениями. Результат не влияет на учёт успеваемости.', questions_json=json.dumps(questions, ensure_ascii=False)))
         db.add(StudyNote(student_id=student.id, title='План подготовки к сессии', subject=grades[0].subject,
                          body='1. Повторить определения и основные методы.\n2. Решить три задачи без подсказок.\n3. Разобрать ошибки и записаться на консультацию.\n4. Проверить дату экзамена в разделе «Сессия».', created_at=now, updated_at=now))
         front, back = ('Сложность двоичного поиска?', 'O(log n), если массив отсортирован.') if student.login == 'alina.demo' else ('Что такое критерий приёмки?', 'Проверяемое описание ожидаемого поведения системы.')

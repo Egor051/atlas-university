@@ -25,7 +25,7 @@ def go(page, address, route, title):
 
 
 def enter_staff(page):
-    page.get_by_role('button',name='Попробовать демо',exact=True).click()
+    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
     page.locator("button[data-demo='2']").click()
     page.wait_for_url('**/app/staff')
     expect(page.locator('#page-title')).to_have_text('Учебный офис')
@@ -48,7 +48,7 @@ def close_modal(page):
     expect(page.locator('.modal')).to_have_count(0)
 
 
-def test_real_service_reservations_reload_cancel_and_return(frontend_page):
+def test_real_service_reservations_reload_and_cancel(frontend_page):
     page, address = frontend_page
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
@@ -89,22 +89,6 @@ def test_real_service_reservations_reload_cancel_and_return(frontend_page):
     expect(page.locator(cancel)).to_have_count(0)
     expect(page.locator(f"button[data-c-action='event-register'][data-id='{event_id}']")).to_be_enabled()
 
-    go(page, address, 'library', 'Библиотека')
-    button = page.locator("button[data-c-action='book-borrow']:enabled").first
-    book_id = button.get_attribute('data-id')
-    with post_response(page, f'/library/{book_id}/borrow') as saved:
-        button.click()
-    assert saved.value.status == 201, saved.value.text()
-    loan_id = saved.value.json()['id']
-    give_back = f".campus-log [data-c-action='loan-return'][data-id='{loan_id}']"
-    expect(page.locator(give_back)).to_be_visible()
-    page.reload()
-    expect(page.locator(give_back)).to_be_visible()
-    with post_response(page, f'/loans/{loan_id}/return') as returned:
-        page.locator(give_back).click()
-    assert returned.value.status == 200 and returned.value.json()['status'] == 'returned'
-    expect(page.locator(give_back)).to_have_count(0)
-    expect(page.locator(f"button[data-c-action='book-borrow'][data-id='{book_id}']")).to_be_enabled()
     assert errors == []
 
 

@@ -246,7 +246,8 @@ def migrate_database():
     """
     # Register additive extension tables before metadata creation. These imports
     # do not create a connection, run DDL or seed data by themselves.
-    from . import learning_db, services_db, campus_db, improvement_db, university_db, workspace_db, units_db, announcements_db, certificates  # noqa: F401
+    from . import academic_points, learning_db, services_db, campus_db, improvement_db, university_db, workspace_db, units_db, announcements_db, certificates  # noqa: F401
+    from . import assignment_db  # noqa: F401
     with engine.begin() as connection:
         if engine.dialect.name == 'postgresql':
             connection.execute(text('SELECT pg_advisory_xact_lock(2026110601)'))
@@ -276,8 +277,8 @@ def migrate_database():
                 for row in db.scalars(select(DocumentRequest)).all():
                     row.due_at = request_due_date(row.type, as_utc(row.created_at).astimezone(CAMPUS_TZ).date())
                     if row.status == 'ready' and not row.staff_message:
-                        row.staff_message = 'Демонстрационный документ подготовлен. Все данные вымышлены.'
-                    db.add(RequestEvent(request_id=row.id, status=row.status, message='Заявка сохранена в предыдущей версии прототипа; ранние этапы не восстанавливались.', actor_role='system', actor_name='Система', created_at=row.updated_at))
+                        row.staff_message = 'Документ подготовлен.'
+                    db.add(RequestEvent(request_id=row.id, status=row.status, message='Заявка перенесена из предыдущей версии. История начинается с сохранённого этапа.', actor_role='system', actor_name='Система', created_at=row.updated_at))
                 for notification in db.scalars(select(Notification)).all():
                     notification.target = {'schedule': '/app/schedule', 'deadline': '/app/plan', 'request': '/app/requests'}.get(notification.category)
                 db.add(SchemaMigration(version='0002_workflow', applied_at=utc_now()))
@@ -310,6 +311,24 @@ def migrate_database():
             from .notification_migration import upgrade_notifications
             upgrade_notifications(connection)
             connection.execute(SchemaMigration.__table__.insert().values(version='0012_global_notifications', applied_at=utc_now()))
+        if '0013_academic_points' not in versions:
+            if 'class_id' not in {column['name'] for column in inspect(connection).get_columns('learning_attendance')}:
+                connection.exec_driver_sql('ALTER TABLE learning_attendance ADD COLUMN class_id INTEGER REFERENCES academic_classes(id)')
+            for index in learning_db.Attendance.__table__.indexes:
+                index.create(connection, checkfirst=True)
+            academic_points.import_opening_balances(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0013_academic_points', applied_at=utc_now()))
+        if '0014_assignment_workflow' not in versions:
+            from .assignment_migration import upgrade_assignment_workflow
+            upgrade_assignment_workflow(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0014_assignment_workflow', applied_at=utc_now()))
+        if '0015_announcement_summaries' not in versions:
+            announcements_db.upgrade_summaries(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0015_announcement_summaries', applied_at=utc_now()))
+        if '0016_trim_bundled_copy' not in versions:
+            from .campus_copy_migration import upgrade_campus_copy
+            upgrade_campus_copy(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0016_trim_bundled_copy', applied_at=utc_now()))
 
 
 def seed_demo(session=None):
@@ -368,11 +387,14 @@ def seed_demo(session=None):
             now=utc_now()
             demo_reqs = [(DOC_NAMES['study'],'ready',now-timedelta(days=8)),(DOC_NAMES['transcript'],'review',now-timedelta(days=2))] if index==0 else [(DOC_NAMES['scholarship'],'processing',now-timedelta(days=1))]
             for title,status,dt in demo_reqs:
-                row = DocumentRequest(student_id=stu.id,type=title,comment='',status=status,created_at=dt,updated_at=dt+timedelta(hours=3), due_at=request_due_date(title,dt.astimezone(CAMPUS_TZ).date()),staff_message='Демонстрационный документ подготовлен. Все данные вымышлены.' if status=='ready' else '')
+                row = DocumentRequest(student_id=stu.id,type=title,comment='',status=status,created_at=dt,updated_at=dt+timedelta(hours=3), due_at=request_due_date(title,dt.astimezone(CAMPUS_TZ).date()),staff_message='Документ подготовлен.' if status=='ready' else '')
                 db.add(row); db.flush()
-                db.add(RequestEvent(request_id=row.id,status=status,message='Вымышленная заявка для демонстрации сценария.',actor_role='system',actor_name='Система',created_at=row.updated_at))
+                db.add(RequestEvent(request_id=row.id,status=status,message='Заявка сохранена.',actor_role='system',actor_name='Система',created_at=row.updated_at))
             news=[('Изменение в расписании','Проверьте аудиторию: для одной из пар внесён перенос.','schedule',0),('Скоро дедлайн','До ближайшего задания осталось несколько дней.','deadline',1),('Началась запись на консультации','График консультаций по дисциплинам опубликован в учебном офисе.','announcement',3),('Окно заявок открыто','Теперь справки можно заказать прямо в кабинете.','request',5)]
             for title,body,cat,daysago in news: db.add(Notification(student_id=stu.id,title=title,body=body,category=cat,created_at=now-timedelta(days=daysago),is_read=daysago>=3,target={'schedule':'/app/schedule','deadline':'/app/plan','request':'/app/requests'}.get(cat)))
+        from .academic_points import import_opening_balances
+        db.flush()
+        import_opening_balances(db)
         if session is None:
             db.commit()
         else:

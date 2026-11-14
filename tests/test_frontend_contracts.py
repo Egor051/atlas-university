@@ -88,7 +88,7 @@ def frontend_page(frontend_browser, frontend_server):
 
 
 def enter_demo(page, index, first_name):
-    page.get_by_role('button',name='Попробовать демо',exact=True).click()
+    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
     page.locator(f"button[data-demo='{index}']").click()
     page.wait_for_url("**/app/home")
     expect(page.locator("#page-title")).to_contain_text(first_name)
@@ -172,7 +172,7 @@ def test_delayed_dashboard_response_never_replaces_new_student_data(frontend_pag
 
     page.route('**/api/dashboard', delay_first_dashboard)
     page.goto(address)
-    page.get_by_role('button',name='Попробовать демо',exact=True).click()
+    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
     page.locator("button[data-demo='0']").click()
     page.wait_for_url('**/app/home')
     wait_for_held_response(page, held)

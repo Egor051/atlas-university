@@ -40,7 +40,7 @@ def test_appendix_4_from_order_to_preview(frontend_page, frontend_browser):
     try:
         staff = office.new_page()
         staff.goto(base)
-        staff.get_by_role('button', name='Попробовать демо', exact=True).click()
+        staff.get_by_role('button', name='Выбрать аккаунт', exact=True).click()
         staff.locator('[data-demo="2"]').click()
         expect(staff.locator('#page-title')).to_have_text('Учебный офис')
         staff.locator('[data-staff-kind="certificate"]').click()

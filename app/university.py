@@ -110,7 +110,7 @@ header{{padding-bottom:1rem;border-bottom:2px solid #6556df}}a{{color:#514199}}n
 .deck section{{margin:1.5rem 0;min-height:48vh;padding:1.5rem;background:white;border:1px solid #e1dceb;border-radius:1rem}}
 @media print{{body{{background:white}}.deck section{{break-before:page}}nav{{display:none}}}}
 </style></head><body><main class="{'deck' if deck else 'handout'}"><header>
-<small>АТЛАС Campus · конкурсный концепт · все данные вымышлены</small><h1>{title}</h1>
+<small>АТЛАС Campus</small><h1>{title}</h1>
 <p>{escape(row['kind_label'])} · {escape(row['discipline']['title'])} · {escape(row['author']['title'])} · {row['created_at'][:10]}</p>
 <p>{escape(row['description'])}</p></header>{''.join(articles)}</main></body></html>'''
 

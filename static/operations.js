@@ -15,7 +15,7 @@
   const stateNames={draft:'Черновик',submitted:'На согласовании',agreed:'Согласован',returned:'Возвращён',published:'Опубликован'};
   const actionNames={create:'Новое занятие',update:'Изменение занятия',cancel:'Отмена занятия'};
   const kindNames={lecture:'Лекция',seminar:'Семинар',practice:'Практика',lab:'Лабораторная'};
-  const attendanceNames={present:'Присутствовал',absent:'Отсутствовал',excused:'Уважительная причина'};
+  const attendanceNames={present:'Присутствовал',absent:'Отсутствовал',excused:'Уважительная причина',late:'Опоздал'};
   const teachTabs={roster:'Студенты',grades:'Ведомость',attendance:'Посещаемость',works:'Задания',report:'Отчёт и история'};
   const registryTabs={rooms:'Аудитории',groups:'Группы',loads:'Нагрузка',students:'Состав групп'};
   const datasetIds=['schedule','rooms','groups','loads','students','grades','attendance'];
@@ -23,7 +23,7 @@
     id:'ID записи',version:'Версия',building:'Корпус',code:'Код',capacity:'Мест',kind:'Тип',equipment:'Оборудование',
     accessible:'Безбарьерный доступ',available:'Доступна',program:'Программа',group_id:'ID группы',assignment_id:'ID назначения',
     student_id:'ID студента',load_id:'ID нагрузки',teacher_id:'ID преподавателя',room_id:'ID аудитории',day:'Дата',
-    start:'Начало',end:'Окончание',weeks:'Недель',note:'Комментарий',status:'Отметка',score:'Балл',reason:'Основание',
+    start:'Начало',end:'Окончание',weeks:'Недель',note:'Комментарий',status:'Отметка',score:'Итоговые баллы',reason:'Основание',class_id:'Занятие',
   };
   const callbacks=new WeakMap();
   const retries=new Map();
@@ -62,14 +62,20 @@
   function cleanQuery(page,query,parts){
     if(['timetable-admin','teach-schedule','registry'].includes(page)&&validDay(query.week))return {week:query.week};
     if(page==='registry'&&!parts.length&&Object.hasOwn(registryTabs,query.tab)&&!(query.tab==='students'&&role()!=='admin'))return {tab:query.tab};
+    if(page==='teaching'&&parts.length===3)return {
+      ...(Object.hasOwn(submissionStates,query.status)?{status:query.status}:{}),
+      ...(int(query.student)?{student:Number(query.student)}:{}),
+      ...(['late','on-time'].includes(query.timing)?{timing:query.timing}:{})};
     if(page==='teaching'&&parts.length===1){
       return {...(Object.hasOwn(teachTabs,query.tab)?{tab:query.tab}:{}),
-              ...(validDay(query.day)?{day:query.day}:{}),...(int(query.offset)?{offset:Number(query.offset)}:{})};
+              ...(validDay(query.day)?{day:query.day}:{}),...(int(query.class_id)?{class_id:Number(query.class_id)}:{}),
+              ...(int(query.offset)?{offset:Number(query.offset)}:{})};
     }
     if(page==='schedule-changes'&&int(query.offset))return {offset:Number(query.offset)};
     if(page==='tables'){
       return {...(datasetIds.includes(query.dataset)?{dataset:query.dataset}:{}),
-              ...(int(query.scope)?{scope:Number(query.scope)}:{}),...(validDay(query.day)?{day:query.day}:{})};
+              ...(int(query.scope)?{scope:Number(query.scope)}:{}),...(validDay(query.day)?{day:query.day}:{}),
+              ...(query.dataset==='attendance'&&int(query.class_id)?{class_id:Number(query.class_id)}:{})};
     }
     return {};
   }
@@ -96,7 +102,7 @@
     }
     if(!parts.length)return c.api('teaching');
     const id=parts[0], base='teaching/'+id;
-    const detail=await c.api(url(base,{day:query.day}));
+    const detail=await c.api(url(base,{day:query.day,class_id:query.class_id}));
     const parent={title:detail.discipline+' · '+detail.group,href:'/app/teaching/'+id};
     if(parts.length===3){
       const work=await c.api(base+'/works/'+parts[2]);
@@ -130,18 +136,76 @@
     return `<form class="op-inline-form" data-op-filter="${name}">${input('filter-day',label,value,'date','required')}<button class="outline-button" type="submit">Показать</button></form>`;
   }
 
-  function workDetails(data){
-    const base='/app/teaching/'+data.detail.id;
-    return title(data.work.title,'Срок '+c.dateFmt(data.work.due),button('edit-work','Изменить задание')+link(base+'?tab=works','К заданиям','outline-button'))+
-      section('Условия',`<p class="user-text">${esc(data.work.instructions)}</p>`)+section('Отправленные работы',
-        list(data.work.submissions,s=>row(esc(s.student),p(s.status==='submitted'?'Версия '+s.version+' · '+c.stamp(s.submitted_at):'Работа отозвана')+
-          (s.text?`<p class="user-text">${esc(s.text)}</p>`:'')+safeReference(s.url)+
-          (s.feedback.length?`<ul class="op-log">${s.feedback.map(f=>`<li>${esc(f.author)} · ${c.stamp(f.created_at)} · версия ${f.version}${f.score===null?'':' · '+Number(f.score)+' баллов'}<p>${esc(f.comment)}</p></li>`).join('')}</ul>`:''),
-          s.status==='submitted'?button('feedback','Дать обратную связь',s.id):''),'Работы ещё не отправлены','После сдачи работа появится здесь.'));
+  function teachingSessionPicker(data,selected){
+    const sessions=data.sessions.filter(item=>item.started||item.id===data.class_id);
+    return sessions.length?`<form class="op-inline-form" data-op-filter="teaching-session" data-tab="${selected}">
+      ${select('class_id','Занятие',[['','Без привязки к занятию'],...sessions.map(item=>[item.id,
+        `${c.stamp(item.starts_at)} · ${item.kind}${item.topic?' · '+item.topic:''}`])],data.class_id||'')}
+      <button class="outline-button" type="submit">Открыть</button></form>`:'';
   }
 
-  function safeReference(value){
-    try{const ref=new URL(value);if(ref.protocol==='https:'&&!ref.username&&!ref.password)return `<a href="${esc(ref.href)}" rel="noopener noreferrer" target="_blank">Ссылка к работе</a>`;}
+  const workStates={draft:'Черновик',scheduled:'Запланировано',published:'Опубликовано',archived:'В архиве'};
+  const submissionStates={not_started:'Не начато',in_progress:'В работе',submitted:'Отправлено',resubmitted:'Повторно отправлено',
+    in_review:'На проверке',revision_required:'Требуется доработка',accepted:'Принято',completed:'Завершено',withdrawn:'Отозвано'};
+  const workKinds={homework:'Домашняя работа',lab:'Лабораторная работа',practice:'Практическая работа',test:'Контрольная работа',
+    independent:'Самостоятельная работа',essay:'Реферат',talk:'Доклад',project:'Проектная работа',term_paper:'Курсовая работа',
+    individual:'Индивидуальная работа',group:'Групповая работа',other:'Другой тип'};
+  const handInMethods={text:'Текстовый ответ',url:'HTTPS-ссылка',files:'Файлы',complete:'Отметка о выполнении'};
+  const acceptedFormats=['pdf','txt','md','csv','png','jpg','jpeg','docx','xlsx','pptx'];
+  const reviewActions={review:'Взять на проверку',revise:'Вернуть на доработку',accept:'Принять работу',complete:'Завершить',comment:'Дать обратную связь'};
+  const awaitingReview=new Set(['submitted','resubmitted','in_review']);
+  const deadlineLabel=value=>value?c.stamp(value)+' МСК':'—';
+  function workDetails(data){
+    const {work,detail}=data, base='/app/teaching/'+detail.id, published=work.state==='published';
+    const scope='/api'+base.slice(4)+'/works/'+work.id;
+    const actions=(work.state!=='archived'?button('edit-work','Изменить задание'):'')+
+      (published?button('archive-work','В архив'):'')+link(base+'?tab=works','К заданиям','outline-button');
+    const summary=p([workStates[work.state],work.custom_kind||workKinds[work.kind],work.max_points+' баллов максимум'].join(' · '))+
+      (work.state==='scheduled'?p('Публикация '+deadlineLabel(work.publish_at)):'')+
+      (work.description?p(work.description):'')+`<p class="user-text">${esc(work.instructions)}</p>`+
+      (work.criteria?`<details><summary>Критерии оценивания</summary><p class="user-text">${esc(work.criteria)}</p></details>`:'')+
+      work.materials.map(value=>`<div>${safeReference(value,'Открыть материал')}</div>`).join('');
+    const viewers=Object.fromEntries(work.submissions.map(item=>[item.student_id,item]));
+    const team=work.team_lead_id&&work.recipients.find(x=>x.id===work.team_lead_id);
+    const recipientRows=list(work.recipients,person=>row(esc(person.name),
+      p((person.id===work.team_lead_id?'Ответственный · ':'')+(submissionStates[(team?viewers[team.id]:viewers[person.id])?.status]||'Не начато')+
+        ' · до '+deadlineLabel(person.due_at)),published&&(!team||person.id===team.id)?button('extend-work','Продлить срок',person.id):''),
+      'Получатели появятся после назначения','Укажите студентов в условиях задания.');
+    const filter=q(),filtered=work.submissions.filter(item=>
+      (!filter.status||filter.status===item.status)&&(!filter.student||filter.student===item.student_id)&&
+      (!filter.timing||(filter.timing==='late')===!!item.attempts[0]?.late));
+    const filters=work.submissions.length?`<form class="op-inline-form" data-op-filter="work-review">
+      ${select('status','Статус проверки',[['','Все статусы'],...Object.entries(submissionStates)],filter.status)}
+      ${select('student','Студент',[['','Все студенты'],...work.recipients.map(x=>[x.id,x.name])],filter.student)}
+      ${select('timing','Срок сдачи',[['','Любой срок'],['on-time','Вовремя'],['late','С опозданием']],filter.timing)}
+      <button type="submit" class="outline-button">Показать</button></form>`:'';
+    const submissions=list(filtered,item=>{
+      const current=item.attempts[0], body=item.status==='withdrawn'?'':(current?.text?`<p class="user-text">${esc(current.text)}</p>`:'')+
+        safeReference(current?.url)+(current?.completed?p('Отмечено выполнение'):'');
+      const attachments=attempt=>attempt.files.length?`<ul class="assignment-files">${attempt.files.map(file=>
+        `<li>${download(scope+'/submissions/'+item.id+'/files/'+file.id,file.name)}</li>`).join('')}</ul>`:'';
+      const notes=entries=>entries.length?`<ul class="op-log">${entries.map(f=>`<li>${esc(reviewActions[f.action])} · ${esc(f.author)} · ${c.stamp(f.created_at)}
+        ${f.score===null?'':' · '+Number(f.score)+' баллов'}${p(f.comment)}${f.extended_until?p('Срок доработки '+deadlineLabel(f.extended_until)):''}</li>`).join('')}</ul>`:'';
+      const older=item.status==='withdrawn'?item.attempts:item.attempts.slice(1);
+      const history=older.length?`<details class="assignment-attempt"><summary>История версий</summary>${older.map(attempt=>
+        `<details class="assignment-attempt"><summary>Попытка ${attempt.number} · ${deadlineLabel(attempt.submitted_at)}${attempt.late?' · сдано с опозданием':''}</summary>
+         ${attempt.text?`<p class="user-text">${esc(attempt.text)}</p>`:''}${safeReference(attempt.url)}
+         ${attempt.completed?p('Отмечено выполнение'):''}${attachments(attempt)}${notes(attempt.feedback)}</details>`).join('')}</details>`:'';
+      const operations=published?(awaitingReview.has(item.status)?
+        (item.status!=='in_review'?button('review-work',reviewActions.review,item.id):'')+
+        button('revise-work',reviewActions.revise,item.id)+button('accept-work',reviewActions.accept,item.id)+button('feedback',reviewActions.comment,item.id)+
+        '':item.status==='accepted'?button('complete-work',reviewActions.complete,item.id)+button('feedback',reviewActions.comment,item.id):''):'';
+      return row(esc(item.student),p([submissionStates[item.status],current?'Попытка '+current.number+' · '+deadlineLabel(current.submitted_at):'',
+        current?.late?'сдано с опозданием':''].filter(Boolean).join(' · '))+
+        body+(current&&item.status!=='withdrawn'?attachments(current):'')+
+        notes(item.feedback.filter(entry=>!item.attempts.some(attempt=>attempt.version===entry.version)||entry.version===current?.version))+history,operations);
+    },work.submissions.length?'Работ по этому фильтру нет':'Работы ещё не отправлены','После сдачи работа появится здесь.');
+    return title(work.title,'Срок '+deadlineLabel(work.due_at),actions)+section('Условия',summary)+
+      section('Отправленные работы',filters+submissions)+section('Получатели',recipientRows);
+  }
+
+  function safeReference(value,label='Ссылка к работе'){
+    try{const ref=new URL(value);if(ref.protocol==='https:'&&!ref.username&&!ref.password)return `<a href="${esc(ref.href)}" rel="noopener noreferrer" target="_blank">${esc(label)}</a>`;}
     catch{/* Optional reference. */}
     return '';
   }
@@ -155,7 +219,7 @@
     const heading=title(data.discipline,'Группа '+data.group)+tabs('Работа с группой',teachTabs,selected,tab=>url(base,{tab}));
     if(selected==='works'){
       return heading+section('Задания группы',`<div class="op-actions">${button('new-work','Создать задание')}</div>`+
-        list(data.works.items,x=>row(link(base+'/works/'+x.id,x.title,'school-card-link'),p('Срок '+c.dateFmt(x.due)+' · сдано '+x.submitted)))+
+        list(data.works.items,x=>row(link(base+'/works/'+x.id,x.title,'school-card-link'),p(workStates[x.state]+' · срок '+deadlineLabel(x.due_at)+' · сдано '+x.submitted)))+
         pageLinks(base,data.works,20));
     }
     if(selected==='report'){
@@ -164,20 +228,26 @@
         <div><dt>Средний балл</dt><dd>${s.average??'—'}</dd></div><div><dt>Сдано работ</dt><dd>${s.submitted}</dd></div>
         ${Object.entries(s.attendance).map(([key,n])=>`<div><dt>${esc(attendanceNames[key]||key)}</dt><dd>${n}</dd></div>`).join('')}</dl>`)+
         section('История операций',data.history.length?`<ol class="op-log">${data.history.map(entry=>{
-          const labels={grade:'Оценка',attendance:'Посещаемость',work_created:'Задание опубликовано',work_edited:'Задание изменено',
+          const labels={grade:'Начисление баллов',attendance:'Посещаемость',work_created:'Задание опубликовано',work_edited:'Задание изменено',
             feedback:'Работа проверена',consultation:'Назначена консультация',consultation_completed:'Консультация проведена'};
           const value=entry.action==='grade'?`${entry.before.score??'—'} → ${entry.after.score??'—'}`:
             entry.action==='attendance'?`${entry.after.day} · ${attendanceNames[entry.after.status]}`:'';
-          return `<li><b>${esc(labels[entry.action]||entry.action)}</b>${p([names[entry.after?.student_id],value].filter(Boolean).join(' · '))}<small>${esc(entry.author)} · ${c.stamp(entry.created_at)} МСК</small></li>`;
+          return `<li><b>${esc(labels[entry.action]||entry.action)}</b>${p([names[entry.after?.student_id],value,entry.after?.reason].filter(Boolean).join(' · '))}<small>${esc(entry.author)} · ${c.stamp(entry.created_at)} МСК</small></li>`;
         }).join('')}</ol>`:p('Операций пока нет.'));
     }
     const dataset={roster:'students',grades:'grades',attendance:'attendance'}[selected];
-    return heading+(selected==='attendance'?dateForm('attendance','День журнала',data.day):'')+
-      `<div class="op-actions">${link(url('/app/tables',{dataset,scope:data.id,day:selected==='attendance'?data.day:undefined}),'Работа с таблицей','outline-button')}</div>`+
+    const picker=['attendance','grades'].includes(selected)?teachingSessionPicker(data,selected):'';
+    const dayFilter=selected==='attendance'&&!data.class_id?dateForm('attendance','День журнала',data.day):'';
+    const tables=`<div class="op-actions">${link(url('/app/tables',{dataset,scope:data.id,
+      day:selected==='attendance'?data.day:undefined,class_id:selected==='attendance'?data.class_id:undefined}),
+      'Работа с таблицей','outline-button')}</div>`;
+    return heading+picker+dayFilter+tables+
       list(data.students,person=>{
-        const details=selected==='grades'?'Балл: '+(person.grade.score??'—'):selected==='attendance'?
-          (attendanceNames[person.attendance.status]||'Отметки пока нет'):person.number;
-        return row(esc(person.name),p(details),selected==='grades'?button('grade','Изменить балл',person.id):
+        const counts=person.attendance_counts;
+        const details=selected==='grades'?'Накопленные баллы: '+(person.grade.score??'—'):selected==='attendance'?
+          (attendanceNames[person.attendance.status]||'Отметки пока нет'):person.number+
+          ` · Баллы: ${person.grade.score??'—'} · Посещено: ${(counts.present||0)+(counts.late||0)} · Пропущено: ${(counts.absent||0)+(counts.excused||0)}`;
+        return row(esc(person.name),p(details),selected==='grades'?button('grade','Начислить баллы',person.id)+button('point-history','История баллов',person.id):
           selected==='attendance'?button('attendance','Поставить отметку',person.id):'');
       },'Список пуст','Состав учебной группы ведёт администратор.');
   }
@@ -264,17 +334,19 @@
     const scope=meta.scoped?selected:undefined;
     const key=tableKey(meta.id,scope);
     const file=upload?.key===key?upload:null;
-    const paths=format=>url('/api/tables/'+meta.id+'/export',{format,scope,day:q().day});
+    const paths=format=>url('/api/tables/'+meta.id+'/export',{format,scope,day:q().day,class_id:q().class_id});
     const chooser=`<form class="op-inline-form" data-op-filter="tables">${select('dataset','Таблица',data.items.map(x=>[x.id,x.title]),meta.id)}
       ${meta.scoped?select('scope','Дисциплина и группа',data.loads.map(x=>[x.id,x.discipline+' · '+x.group]),selected):''}
       ${['attendance','schedule'].includes(meta.id)?input('day',meta.id==='schedule'?'Неделя':'День',q().day||c.today(),'date'):''}
       <button class="outline-button" type="submit">Выбрать</button></form>`;
-    const exchange=ready?section('Выгрузка',`<div class="op-actions">${download(paths('csv'),'Скачать CSV')}${download(paths('xlsx'),'Скачать XLSX')}</div>`):
+    const exchange=ready?section('Выгрузка',`${q().class_id?p('Журнал выбранного занятия'+(q().day?' · '+c.dateFmt(q().day):'')) : ''}
+      <div class="op-actions">${download(paths('csv'),'Скачать CSV')}${download(paths('xlsx'),'Скачать XLSX')}</div>`):
       empty('Выберите назначение','В таблицу попадают данные вашей группы и дисциплины.');
     const add=ready&&meta.editable?section('Загрузка таблицы',
       `<div class="op-actions">${['csv','xlsx'].map(format=>download(url('/api/tables/'+meta.id+'/template',{format}),'Шаблон '+format.toUpperCase())).join('')}</div>
       <div class="field"><label for="ops-file">Файл CSV или XLSX</label><input id="ops-file" type="file" accept=".csv,.xlsx" data-op-file="${meta.id}" data-scope="${scope||''}" aria-describedby="op-table-hint"></div>
-      <p class="hint" id="op-table-hint">До 200 строк и 22 КБ. Используйте учебные данные.${meta.id==='schedule'?' Загрузка создаёт черновики для согласования.':''}</p>
+      <p class="hint" id="op-table-hint">До 200 строк и 22 КБ.${meta.id==='schedule'?' Загрузка создаёт черновики для согласования.':
+        q().class_id?' Для массового заполнения скачайте журнал выбранного занятия и сохраните колонку class_id.':''}</p>
       ${file?filePreview(meta,file):''}<div role="alert" data-op-import-error hidden></div>`):'';
     const history=data.history.length?section('Журнал моих импортов',`<ul class="op-log">${data.history.map(x=>`<li>${esc(data.items.find(i=>i.id===x.dataset)?.title||x.dataset)} · строк ${x.count} · ${c.stamp(x.created_at)} МСК</li>`).join('')}</ul>`):'';
     return title('Импорт и экспорт','Загрузите таблицу, проверьте сопоставление и подтвердите изменения.')+chooser+exchange+add+history;
@@ -313,7 +385,7 @@
 
   async function request(path,method='POST',body){
     const source=body===undefined?undefined:JSON.stringify(body);
-    const deduplicate=method==='POST'&&/^(scheduling\/changes|units\/(?:union|vuc)\/cases|teaching\/(?:consultations|\d+\/works(?:\/\d+\/feedback\/\d+)?))$/.test(path);
+    const deduplicate=method==='POST'&&/^(scheduling\/changes|units\/(?:union|vuc)\/cases|teaching\/(?:consultations|\d+\/(?:points|works(?:\/\d+\/feedback\/\d+)?)))$/.test(path);
     const prior=retries.get(path);
     const key=deduplicate?(prior?.source===source?prior.key:crypto.randomUUID()):null;
     if(key)retries.set(path,{source,key});
@@ -322,32 +394,95 @@
     return result;
   }
 
+  function moscowLocal(value){
+    if(!value)return '';
+    return new Date(Date.parse(value)+3*3600000).toISOString().slice(0,16);
+  }
+  function choiceGroup(name,label,options,selected){
+    return `<fieldset class="unit-checklist assignment-choices"><legend>${esc(label)}</legend>${options.map(([value,text])=>
+      `<label class="unit-check"><input type="checkbox" name="${name}" value="${esc(value)}" ${selected.includes(value)?'checked':''}> ${esc(text)}</label>`).join('')}</fieldset>`;
+  }
+  function toggleWorkFields(form){
+    const custom=form?.elements.custom_kind, publish=form?.elements.publish_at;
+    if(custom)custom.closest('.field').hidden=form.elements.kind.value!=='other';
+    if(publish)publish.closest('.field').hidden=form.elements.state.value!=='scheduled';
+  }
+  function workForm(base,data){
+    const work=data.work, detail=data.detail||data, locked=work?.state==='published';
+    const roster=detail.students.map(student=>[student.id,student.name]);
+    const currentMethods=work?.methods||['text','url'];
+    const currentDue=moscowLocal(work?.due_at)||c.addDays(c.today(),7)+'T23:59';
+    const defaults=[['draft',workStates.draft],['scheduled',workStates.scheduled],['published',workStates.published]];
+    const titleFields=input('title','Название',work?.title,'text','required minlength="4" maxlength="180"')+
+      (locked?'':`<div class="op-form-grid">${select('state','Публикация',defaults,work?.state||'published')}
+      ${select('kind','Тип работы',Object.entries(workKinds),work?.kind||'homework')}${input('custom_kind','Название другого типа',work?.custom_kind,'text','maxlength="80"')}
+      ${input('publish_at','Дата публикации (МСК)',moscowLocal(work?.publish_at),'datetime-local')}</div>`);
+    const points=locked?'':input('max_points','Максимальный балл',work?.max_points??100,'number','required min="0" max="1000" step="1"');
+    const audience=locked?'':`<details class="assignment-attempt"><summary>Получатели и групповая сдача</summary>
+      ${choiceGroup('recipient_ids','Получатели (если все пустые, назначается всей группе)',roster,work?.recipient_ids||[])}
+      ${select('team_lead_id','Ответственный за общую отправку',[['','Индивидуальная сдача'],...roster],work?.team_lead_id??'')}
+      ${select('award_mode','Начисление при общей сдаче',[['all','Всем участникам'],['lead','Только ответственному']],work?.award_mode||'all')}
+      ${select('class_id','Связанное занятие',[['','Без связи'],...(detail.sessions||[]).map(session=>
+        [session.id,c.dateFmt(session.day)+(session.topic?' · '+session.topic:'')])],work?.class_id??'')}</details>`;
+    const settings=`<details class="assignment-attempt"><summary>Способы сдачи и попытки</summary>
+      ${choiceGroup('methods','Способы сдачи',Object.entries(handInMethods),currentMethods)}
+      ${choiceGroup('formats','Форматы файлов',acceptedFormats.map(ext=>[ext,ext.toUpperCase()]),work?.formats||acceptedFormats)}
+      <div class="op-form-grid">${yesNo('allow_resubmission','Разрешить новую отправку после отзыва',work?.allow_resubmission??true)}
+      ${yesNo('allow_late','Принимать после дедлайна',work?.allow_late??true)}
+      ${input('max_attempts','Лимит попыток',work?.max_attempts??'','number','min="1" max="50" step="1"')}</div></details>`;
+    return modal(work?'Изменить задание':'Создать задание',detail.discipline+' · '+detail.group,titleFields+
+      `<div class="op-form-grid">${input('due_at','Срок сдачи (МСК)',currentDue,'datetime-local','required')}${points}</div>`+
+      area('description','Описание',work?.description,1500)+area('instructions','Условия задания',work?.instructions,4000)+
+      area('criteria','Критерии оценивания',work?.criteria,2000)+area('materials','Дополнительные материалы (по одной HTTPS-ссылке в строке)',(work?.materials||[]).join('\n'),2550)+audience+settings,
+      (values,formData)=>{
+        const body={...values,due_at:msk(values.due_at),materials:values.materials.split(/\s+/).filter(Boolean),
+          methods:formData.getAll('methods'),formats:formData.getAll('formats'),max_attempts:values.max_attempts?Number(values.max_attempts):null,
+          allow_resubmission:values.allow_resubmission==='true',allow_late:values.allow_late==='true'};
+        if(!locked)Object.assign(body,{publish_at:values.state==='scheduled'&&values.publish_at?msk(values.publish_at):null,
+          max_points:Number(values.max_points),recipient_ids:formData.getAll('recipient_ids').map(Number),
+          team_lead_id:values.team_lead_id?Number(values.team_lead_id):null,class_id:values.class_id?Number(values.class_id):null});
+        return work?request(base+'/works/'+work.id,'PATCH',{...body,version:work.version}):request(base+'/works','POST',body);
+      });
+  }
+
   function teacherForm(action,id,data){
     const base='teaching/'+(data.detail?.id||data.id);
+    if(action==='point-history')return openPointHistory(base,id,data);
     if(action==='grade'||action==='attendance'){
       const student=data.students.find(x=>x.id===id);
-      if(action==='grade')return modal('Оценка',student.name,
-        input('score','Балл от 0 до 100',student.grade.score,'number','min="0" max="100" step="1"')+
-        area('reason','Основание изменения'),v=>request(base+'/grade','PUT',{
-          student_id:id,version:student.grade.version,score:v.score===''?null:Number(v.score),reason:v.reason}));
+      if(action==='grade')return modal('Начислить баллы',student.name+' · накоплено '+(student.grade.score??0),
+        input('points','Сколько баллов добавить','','number','required min="1" max="100" step="1"')+
+        input('reason','Основание начисления','','text','required minlength="3" maxlength="300"'),v=>request(base+'/points','POST',{
+          student_id:id,version:student.grade.version,points:Number(v.points),reason:v.reason,class_id:data.class_id}));
       return modal('Посещаемость',student.name+' · '+c.dateFmt(data.day),
         select('status','Отметка',Object.entries(attendanceNames),student.attendance.status||'present')+
         area('note','Комментарий',student.attendance.note),v=>request(base+'/attendance','PUT',{
-          ...v,student_id:id,day:data.day,version:student.attendance.version}));
+          ...v,student_id:id,day:data.day,version:student.attendance.version,class_id:data.class_id}));
     }
     if(action==='new-work'||action==='edit-work'){
-      const work=data.work;
-      return modal(work?'Изменить задание':'Создать задание',data.detail?.discipline||data.discipline,
-        input('title','Название',work?.title,'text','required maxlength="180"')+
-        input('due','Срок сдачи',work?.due||c.addDays(c.today(),7),'date','required')+
-        area('instructions','Условия задания',work?.instructions,4000),
-        v=>work?request(base+'/works/'+work.id,'PATCH',{...v,version:work.version}):request(base+'/works','POST',v));
+      workForm(base,data);
+      toggleWorkFields(c.$('.modal [data-op-form]'));
+      return;
     }
-    if(action==='feedback'){
-      const item=data.work.submissions.find(x=>x.id===id);
-      return modal('Обратная связь',item.student+' · версия '+item.version,input('score','Балл за работу (необязательно)','','number','min="0" max="100"')+
-        area('comment','Комментарий студенту','',2000),v=>request(base+'/works/'+data.work.id+'/feedback/'+id,'POST',
-          {submitted_version:item.version,score:v.score===''?null:Number(v.score),comment:v.comment}));
+    const work=data.work;
+    if(action==='archive-work')return modal('Архивировать задание',work.title,p('История работ сохранится. Сдача и проверка закроются.'),
+      ()=>request(base+'/works/'+work.id,'PATCH',{state:'archived',version:work.version}));
+    if(action==='extend-work'){
+      const person=work.recipients.find(x=>x.id===id);
+      return modal('Продлить срок',person.name+' · действующий срок '+deadlineLabel(person.due_at),
+        input('extended_until','Новый срок (МСК)','','datetime-local','required'),
+        v=>request(base+'/works/'+work.id+'/recipients/'+id,'PATCH',{version:work.version,extended_until:msk(v.extended_until)}));
+    }
+    if(action==='feedback'||['review-work','revise-work','accept-work','complete-work'].includes(action)){
+      const item=work.submissions.find(x=>x.id===id);
+      const step=action==='feedback'?'comment':action.replace('-work','');
+      const fields=(['accept','comment'].includes(step)?input('score','Балл за работу (необязательно)','','number',
+        'min="0" max="'+Number(work.max_points)+'" step="1"'):'')+area('comment',step==='revise'?'Замечания к работе':'Комментарий студенту','',2000)+
+        (step==='revise'?input('extended_until','Срок доработки (МСК)','','datetime-local'):'');
+      return modal(step==='comment'?'Обратная связь':reviewActions[step],item.student+' · версия '+item.attempt_version,fields,
+        v=>request(base+'/works/'+work.id+'/feedback/'+id,'POST',{action:step,submitted_version:item.attempt_version,
+        version:item.version,score:v.score?Number(v.score):null,comment:v.comment,
+        extended_until:v.extended_until?msk(v.extended_until):null}));
     }
     if(action==='consultation'){
       const date=c.addDays(c.today(),2);
@@ -359,6 +494,18 @@
     }
     return modal('Отметить консультацию проведённой','Отметка сохранится в журнале.', '',
       ()=>request('teaching/consultations/'+id+'/complete'));
+  }
+
+  async function openPointHistory(base,id,data){
+    const epoch=c.state.sessionEpoch, loadId=c.state.loadingId, modalId=c.state.modalId;
+    const student=data.students.find(x=>x.id===id);
+    try{
+      const result=await c.api(`${base}/points/${id}`);
+      if(epoch!==c.state.sessionEpoch||loadId!==c.state.loadingId||modalId!==c.state.modalId)return;
+      c.modal(c.modalHead('История баллов',student.name)+
+        (result.items.length?`<ol class="academic-history">${result.items.map(window.ATLASAcademics.showAward).join('')}</ol>`:p('Начислений пока нет.')),
+        {label:'История баллов'});
+    }catch(error){if(!error.stale&&epoch===c.state.sessionEpoch&&loadId===c.state.loadingId)c.toast(error.message);}
   }
 
   function appointmentTeachers(options,load){
@@ -416,10 +563,10 @@
   async function submitModal(form){
     const handler=callbacks.get(form);
     if(!handler||c.state.pending)return;
-    const epoch=c.state.sessionEpoch, values=Object.fromEntries(new FormData(form)), controls=[...form.elements], error=c.$('[data-op-error]',form);
+    const epoch=c.state.sessionEpoch, formData=new FormData(form), values=Object.fromEntries(formData), controls=[...form.elements], error=c.$('[data-op-error]',form);
     c.state.pending++;controls.forEach(control=>control.disabled=true);error.hidden=true;
     let result;
-    try{result=await handler.run(values);}
+    try{result=await handler.run(values,formData);}
     catch(e){if(!e.stale&&form.isConnected){error.hidden=false;error.textContent=e.message;}}
     finally{if(epoch===c.state.sessionEpoch){c.state.pending--;controls.forEach(control=>control.disabled=false);}}
     if(result&&epoch===c.state.sessionEpoch){
@@ -504,8 +651,9 @@
         event.preventDefault();
         const values=Object.fromEntries(new FormData(form)), type=form.dataset.opFilter;
         const datasetChanged=type==='tables'&&values.dataset!==(q().dataset||current().items[0]?.id);
-        const context=type==='tables'?{...values,scope:datasetChanged?undefined:values.scope}:type==='week'?
-          {week:values['filter-day']}:{tab:'attendance',day:values['filter-day']};
+        const context=type==='work-review'?values:type==='tables'?{...values,scope:datasetChanged?undefined:values.scope}:type==='week'?
+          {week:values['filter-day']}:type==='teaching-session'?{tab:form.dataset.tab,class_id:values.class_id}:
+          {tab:'attendance',day:values['filter-day']};
         c.route(c.state.page,{parts:c.state.routeParts,context});
       }
     });
@@ -518,7 +666,7 @@
         teachers.replaceChildren(...choices.map(([id,name])=>new Option(name,id)));
       }
       if(el.closest('[data-op-map]'))c.$('[data-op-action="apply-table"]')?.setAttribute('disabled','');
-      const form=el.closest('[data-op-form]');if(form)form.dataset.dirty='true';
+      const form=el.closest('[data-op-form]');if(form){form.dataset.dirty='true';if(['kind','state'].includes(el.name))toggleWorkFields(form);}
     });
     document.addEventListener('input',event=>{const form=event.target.closest('[data-op-form]');if(form)form.dataset.dirty='true';});
   }

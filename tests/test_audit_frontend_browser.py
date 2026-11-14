@@ -219,7 +219,7 @@ def test_settings_hides_export_but_existing_drafts_restore(frontend_page):
 @pytest.mark.parametrize('width',[360,390,1440])
 def test_revised_forms_and_history_have_no_horizontal_overflow(frontend_page,width):
     page,base=frontend_page;page.set_viewport_size({'width':width,'height':900});enter(page,base)
-    for section in ['requests','certificates','calendar','tasks','notes','events','library']:
+    for section in ['requests','certificates','calendar','tasks','notes','events','finance']:
         visit(page,base,section);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(section,width)
     form=new_note(page) if page.url.endswith('/notes') else None
     visit(page,base,'notes');form=new_note(page)

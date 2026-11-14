@@ -34,7 +34,7 @@ UNITS = {'union':'Студенческий профсоюз','vuc':'Военны
 POST_KINDS = {'union':{'structure','news','benefit','event','document'},'vuc':{'structure','news','document','material'}}
 UNIT_CASES = {'union':{'join','leave','aid','consult','appeal','event'},'vuc':{'apply','consult','appeal'}}
 TERMINAL = {'accepted','rejected','resolved'}
-CHECKLIST = {'sample_application':'Образец заявления','sample_status':'Образец подтверждения статуса студента'}
+CHECKLIST = {'sample_application':'Заявление','sample_status':'Подтверждение статуса студента'}
 
 
 class CaseBody(StrictBody):
@@ -279,9 +279,9 @@ def verify_submission(db,unit,user,body):
     if kind not in UNIT_CASES[unit]:
         raise HTTPException(422,'Выберите услугу этого подразделения')
     if kind in {'join','leave','event','apply'} and not body.confirmed:
-        raise HTTPException(422,'Подтвердите демонстрационное действие')
+        raise HTTPException(422,'Подтвердите отправку заявления')
     if kind in {'aid','consult','appeal'} and len(body.message.strip())<5:
-        raise HTTPException(422,'Опишите вымышленную ситуацию или вопрос')
+        raise HTTPException(422,'Опишите ситуацию или вопрос')
     if kind!='apply' and (body.program_id is not None or body.checklist):
         raise HTTPException(422,'Программа и чек-лист относятся к заявлению в ВУЦ')
     if kind!='event' and body.publication_id is not None:
@@ -295,7 +295,7 @@ def verify_submission(db,unit,user,body):
             raise HTTPException(409,'Действие доступно члену профсоюза')
     if kind=='apply':
         if body.message or set(body.checklist)!=set(CHECKLIST) or len(body.checklist)!=len(CHECKLIST):
-            raise HTTPException(422,'Отметьте два демонстрационных образца')
+            raise HTTPException(422,'Проверьте оба пункта списка')
         program=db.get(CenterProgram,body.program_id) if body.program_id else None
         if program is None or not program.published:
             raise HTTPException(404,'Программа не найдена')
@@ -334,7 +334,7 @@ def submit(unit:Unit,body:CaseBody,request:Request,response:Response,user=Depend
                  program_id=body.program_id,publication_id=body.publication_id,sample_checklist=json.dumps(body.checklist),
                  created_at=now,updated_at=now)
     db.add(row);db.flush()
-    add_history(db,user,row,'submitted','Демонстрационная заявка подана.')
+    add_history(db,user,row,'submitted','Заявление подано.')
     notify_operators(db,unit,row,'Новое заявление')
     return commit_idempotent(db,receipt,case_data(row))
 
@@ -415,7 +415,7 @@ def clarify(unit:Unit,case_id:RecordId,body:Followup,user=Depends(require_studen
 
 def html_file(title,body,filename):
     html=('<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-          f'<title>{escape(title)}</title><main><p>АТЛАС Campus · конкурсный образец · все данные вымышлены</p>'
+          f'<title>{escape(title)}</title><main><p>АТЛАС Campus</p>'
           f'<h1>{escape(title)}</h1>'+''.join(f'<p>{escape(line)}</p>' for line in body.splitlines() if line.strip())+'</main></html>')
     return HTMLResponse(html,headers={'Content-Disposition':f'attachment; filename="{filename}.html"',
                                       'Content-Security-Policy':"sandbox; default-src 'none'; frame-ancestors 'none'; base-uri 'none'"})

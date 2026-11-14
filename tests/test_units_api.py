@@ -55,7 +55,7 @@ def test_union_membership_clarification_decision_and_departure(units):
     assert body(student.get('/api/units/union'))['member']['active']
     assert not body(other.get('/api/units/union'))['member']['active']
     assert other.get(accepted['file_url']).status_code==404
-    assert 'все данные вымышлены' in student.get(accepted['file_url']).text
+    assert 'Заявление №' in student.get(accepted['file_url']).text
     assert len(body(student.get(owned))['history'])==6
     assert any(n['target']==f"/app/union/{accepted['id']}" for n in body(student.get('/api/notifications?filter=union')))
     aid=body(student.post(path,json={'kind':'aid','message':'Учебная заявка на поддержку проекта.'},headers=HEAD),201)

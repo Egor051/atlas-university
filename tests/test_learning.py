@@ -72,8 +72,13 @@ def test_course_progress_is_owned_persistent_and_does_not_change_grades():
 def test_assignment_submission_withdrawal_resubmission_preserves_personal_plan_and_blocks_idor():
     with TestClient(app) as a, TestClient(app) as b:
         signed(a); signed(b, 'b')
-        task = a.get(ROOT + 'assignments').json()['items'][0]
-        route = f'assignments/{task["id"]}'
+        with SessionLocal() as db:
+            deadline = Deadline(student_id=a.get('/api/me').json()['id'], subject='Сетевое программирование',
+                                title=fresh_title(), due_date=campus_today() + timedelta(days=5))
+            db.add(deadline)
+            db.flush()
+            route = f'assignments/{deadline.id}'
+            db.commit()
         before = a.get('/api/deadlines').json()
         assert b.get(ROOT + route).status_code == 404
         assert post(b, route + '/submit', {'text': 'Чужая тестовая работа'}).status_code == 404

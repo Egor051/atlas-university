@@ -185,10 +185,14 @@ def write_member(db, user, body, *, apply=True, capacity_check=True):
     student.group_name = group.code
     db.flush()
     if old_group != group.id:
+        from .assignment_workflow import work_policy
         rows = db.execute(select(GroupWork, TeachingLoad).join(TeachingLoad).where(TeachingLoad.group_id == group.id,
-                                                                               GroupWork.due >= campus_today()))
+            GroupWork.due >= campus_today(), GroupWork.state.in_(('published', 'scheduled'))))
         from .db import Deadline
         for work, load in rows:
+            policy = work_policy(work)
+            if policy['recipient_ids'] or policy['team_lead_id'] is not None:
+                continue
             existing = db.scalar(select(WorkDelivery.deadline_id).join(Deadline).where(
                 WorkDelivery.work_id == work.id, Deadline.student_id == student.id).limit(1))
             if existing is None:

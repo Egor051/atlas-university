@@ -1,9 +1,10 @@
 """Academic writes use real scopes, history and serialized publication."""
 import base64
+import csv
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
 from datetime import datetime, time, timedelta, timezone
-from io import BytesIO
+from io import BytesIO, StringIO
 from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -57,11 +58,13 @@ def test_assessment_history_roster_and_stale_writes(roles):
     path=f"/api/teaching/{load['id']}"
     own=body(teacher.get(path))['students'][0]
     outsider=body(other.get('/api/me'))['id']
+    other_before = body(other.get('/api/grades'))
     assert own['id']!=outsider
     assert colleague.get(path).status_code==404
     assert admin.get(path).status_code==403
     assert teacher.get('/api/grades').status_code==403
-    data={'student_id':own['id'],'score':94,'version':own['grade']['version'],'reason':'Демонстрационная проверка'}
+    result=(own['grade']['score'] or 0)+4
+    data={'student_id':own['id'],'score':result,'version':own['grade']['version'],'reason':'Решение задачи'}
     assert teacher.put(path+'/grade',json=data).status_code==403
     assert teacher.put(path+'/grade',json={**data,'student_id':outsider},headers=HEAD).status_code==404
     with ThreadPoolExecutor(max_workers=2) as pool:
@@ -71,12 +74,98 @@ def test_assessment_history_roster_and_stale_writes(roles):
     assert teacher.put(path+'/attendance',json={**present,'student_id':outsider},headers=HEAD).status_code==404
     body(teacher.put(path+'/attendance',json=present,headers=HEAD))
     records=body(teacher.get(path))
-    assert records['students'][0]['grade']['score']==94
+    assert records['students'][0]['grade']['score']==result
     assert records['students'][0]['attendance']['status']=='present'
     assert {x['action'] for x in records['history']} >= {'grade','attendance'}
     assert all(x['author']=='Михаил Орлов' and x['created_at'] for x in records['history'])
-    assert next(x for x in body(student.get('/api/grades'))['items'] if x['subject']==load['discipline'])['score']==94
-    assert not any(x['subject']==load['discipline'] for x in body(other.get('/api/grades'))['items'])
+    assert next(x for x in body(student.get('/api/grades'))['items'] if x['subject']==load['discipline'])['score']==result
+    assert body(other.get('/api/grades')) == other_before
+
+
+def test_positive_awards_replay_and_aggregate(roles):
+    teacher, student, other, staff = (roles(role) for role in ('teacher', 'student', 'other', 'staff'))
+    endpoint = '/api/learning/progress'
+    assert teacher.get(endpoint).status_code == 403
+    assert staff.get(endpoint).status_code == 403
+    subject = orlov(teacher)['discipline']
+    other_before = body(other.get(endpoint))
+    path = f"/api/teaching/{orlov(teacher)['id']}"
+    roster = body(teacher.get(path))
+    own = roster['students'][0]
+    current = own['grade']['score'] or 0
+    assert student.get(path + '/points/' + str(own['id'])).status_code == 403
+    payload = dict(student_id=own['id'], points=4, version=own['grade']['version'], reason='Решение задачи')
+    headers = {**HEAD, 'Idempotency-Key': str(uuid4())}
+    assert teacher.post(path + '/points', json={**payload, 'points': -1}, headers=headers).status_code == 422
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        replies = list(pool.map(lambda _: teacher.post(path + '/points', json=payload, headers=headers), range(2)))
+    assert sorted(response.status_code for response in replies) == [200, 201]
+    award = body(next(response for response in replies if response.status_code == 201), 201)
+    assert award['score'] == current + 4
+    assert teacher.post(path + '/points', json={**payload, 'points': 5}, headers=headers).status_code == 409
+    for invalid in (current, None):
+        assert teacher.put(path+'/grade', json=dict(student_id=own['id'], score=invalid, version=award['version']),
+                           headers=HEAD).status_code == 422
+    body(teacher.put(path + '/attendance', json=dict(student_id=own['id'], day=campus_today().isoformat(), status='absent',
+                                                    version=own['attendance']['version']), headers=HEAD))
+    summary = next(row for row in body(student.get(endpoint))['items'] if row['subject'] == subject)
+    assert summary['earned_points'] == current + 4 and summary['missed'] >= 1
+    assert summary['awards'][0]['points'] == 4 and sum(entry['points'] for entry in summary['awards']) == summary['earned_points']
+    assert body(other.get(endpoint)) == other_before
+
+
+def test_assessment_status_uses_result_and_date_not_points():
+    from types import SimpleNamespace
+    from app.academics import assessment_status
+
+    current = campus_today()
+    grade = SimpleNamespace(assessment='Допуск', exam_kind='Экзамен', exam_date=current + timedelta(days=1), current=2)
+    assert assessment_status(grade, current)['code'] == 'soon'
+    assert assessment_status(grade, current)['admission'] == 'Допущен'
+    grade.exam_date = current - timedelta(days=1)
+    assert assessment_status(grade, current)['code'] == 'waiting_result'
+    grade.assessment = 'Экзамен сдан'
+    assert assessment_status(grade, current)['code'] == 'passed'
+    grade.assessment, grade.exam_date = '', None
+    assert assessment_status(grade, current)['code'] == 'undated'
+    grade.assessment = 'Не допущен'
+    assert assessment_status(grade, current)['action'] == 'consultations'
+
+
+def test_class_attendance_export_and_bulk_import(roles):
+    from app.db import SessionLocal, utc_now
+    from app.workspace_db import ScheduledClass
+    from sqlalchemy import select
+
+    teacher, student = roles('teacher'), roles('student')
+    load = orlov(teacher)
+    with SessionLocal.begin() as db:
+        template = db.scalar(select(ScheduledClass).where(ScheduledClass.load_id == load['id']).limit(1))
+        starts = utc_now() - timedelta(days=1)
+        row = ScheduledClass(load_id=template.load_id, group_id=template.group_id, teacher_id=template.teacher_id,
+                             room_id=template.room_id, starts_at=starts, ends_at=starts + timedelta(hours=1),
+                             kind='seminar', note='Проверка алгоритмов', series=uuid4().hex, status='active')
+        db.add(row)
+        db.flush()
+        class_id = row.id
+    scope = load['id']
+    journal = teacher.get(f'/api/tables/attendance/export?format=csv&scope={scope}&class_id={class_id}')
+    assert journal.status_code == 200
+    data = list(csv.DictReader(StringIO(journal.content.decode('utf-8-sig')), delimiter=';'))
+    assert data and all(int(row['class_id']) == class_id for row in data)
+    for row in data:
+        row['status'] = 'late'
+    fields = list(data[0])
+    payload = {'format': 'csv', 'content': base64.b64encode(table_bytes('csv', fields, data)[0]).decode()}
+    preview = body(teacher.post(f'/api/tables/attendance/preview?scope={scope}', json=payload, headers=HEAD))
+    assert preview['fingerprint'] and not preview['errors']
+    result = body(teacher.post(f'/api/tables/attendance/apply?scope={scope}',
+                               json={**payload, 'fingerprint': preview['fingerprint']}, headers=HEAD))
+    assert result['count'] == len(data)
+    aggregate = next(row for row in body(student.get('/api/learning/progress'))['items'] if row['subject'] == load['discipline'])
+    lesson = next(item for item in aggregate['classes'] if item['class_id'] == class_id)
+    assert lesson['status'] == 'late' and lesson['topic'] == 'Проверка алгоритмов'
+    assert aggregate['attendance_by_semester'][lesson['semester']]['visited'] >= 1
 
 
 def test_work_feedback_and_group_consultation(roles):
@@ -235,11 +324,12 @@ def test_spreadsheet_preview_mapping_atomicity_permissions_and_replay(roles):
     assert sum(row['code']==code for row in body(dispatcher.get('/api/registry'))['rooms'])==1
     scope=orlov(teacher)['id']
     mark=body(teacher.get(f'/api/teaching/{scope}'))['students'][0]
+    current=mark['grade']['score'] or 0
     grades=upload('csv',['student_id','score','version'],[
-        {'student_id':mark['id'],'score':87,'version':mark['grade']['version']}])
+        {'student_id':mark['id'],'score':current+1,'version':mark['grade']['version']}])
     receipt=body(teacher.post(f'/api/tables/grades/preview?scope={scope}',json=grades,headers=HEAD))
     assert receipt['fingerprint'] and not receipt['errors']
     body(teacher.put(f'/api/teaching/{scope}/grade',json={
-        'student_id':mark['id'],'score':89,'version':mark['grade']['version']},headers=HEAD))
+        'student_id':mark['id'],'score':current+2,'version':mark['grade']['version']},headers=HEAD))
     assert teacher.post(f'/api/tables/grades/apply?scope={scope}',json={
         **grades,'fingerprint':receipt['fingerprint']},headers=HEAD).status_code==409

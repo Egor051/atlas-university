@@ -30,16 +30,16 @@ STAFF = ("dean.demo", "AtlasStaff!2026-D")
 PAGES = [
     "home", "schedule", "grades", "plan", "requests", "certificates", "notifications",
     "announcements", "announcement-admin", "direct",
-    "profile", "campus", "courses", "assignments", "exams", "attendance",
-    "calendar", "tasks", "notes", "flashcards", "quizzes", "focus",
-    "consultations", "messages", "library", "events", "finance", "contacts",
+    "profile", "campus", "courses", "materials", "assignments", "exams",
+    "calendar", "tasks", "learning/notes",
+    "consultations", "messages", "events", "finance", "contacts",
     "knowledge", "portfolio", "settings", "staff", "staffdesk", "staffmessages",
 ]
 STUDENT_READS = [
     "/api/dashboard", "/api/schedule", "/api/grades", "/api/deadlines",
     "/api/requests/types", "/api/requests?paginated=true&limit=3",
     "/api/notifications?paginated=true&limit=3", "/api/announcements", "/api/direct/dialogs", "/api/learning/courses",
-    "/api/learning/assignments", "/api/learning/exams", "/api/learning/attendance",
+    "/api/learning/assignments", "/api/learning/exams", "/api/learning/attendance", "/api/learning/progress",
     "/api/learning/tasks", "/api/learning/notes", "/api/learning/flashcards",
     "/api/learning/quizzes", "/api/learning/quiz-attempts", "/api/learning/focus-sessions",
     "/api/services/consultations", "/api/services/bookings", "/api/services/tickets",
@@ -153,7 +153,7 @@ def verify_ready_request(alina, mark, staff, request_id, report, expected_sha=No
     document, headers = alina.call(path + "/document", return_headers=True)
     text = document.decode("utf-8")
     report.check("document is a fictional downloadable HTML sample",
-                 "КОНКУРСНЫЙ ОБРАЗЕЦ" in text and "ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ" in text
+                 "Не имеет юридической силы" in text
                  and "attachment" in headers.get("Content-Disposition", ""))
     policy = headers.get("Content-Security-Policy", "")
     report.check("downloaded document blocks active content",
@@ -195,7 +195,7 @@ def run(args, report):
         public.call("/app/" + page)
     for asset in ("app.js", "campus.js", "improvements.js", "style.css", "usability.css", "campus.css",
                   "announcements.js", "announcements.css", "shell.css", "university.js", "university.css", "viewport.js",
-                  "theme.css", "theme.js"):
+                  "theme.css", "theme.js", "academics.css", "academics.js", "operations.css", "operations.js"):
         public.call("/static/" + asset)
     for path in ("/.env", "/.git/HEAD", "/compose.yaml", "/Dockerfile", "/docs", "/redoc", "/openapi.json"):
         public.call(path, expected=404)
@@ -247,7 +247,7 @@ def run(args, report):
     calendar = alina.call("/api/schedule/export")
     report.check("calendar export", b"BEGIN:VCALENDAR" in calendar and b"END:VCALENDAR" in calendar)
     portfolio = alina.call("/api/campus/portfolio/export")
-    report.check("portfolio export declares fictional data", "ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ" in portfolio.decode())
+    report.check("portfolio export explains who supplied the content", "Портфолио составлено пользователем" in portfolio.decode())
 
     if args.write_demo:
         marker = "Локальная приёмка API " + uuid.uuid4().hex

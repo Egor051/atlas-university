@@ -1,5 +1,10 @@
 """Security regression and end-to-end API tests, using only fictional fixture data."""
+from datetime import timedelta
+
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+
+from app.db import LessonChange, SessionLocal
 from app.main import app
 
 
@@ -16,7 +21,7 @@ def test_public_assets_and_protected_apis():
         assert api.get('/').status_code==200
         assert api.get('/static/app.js').status_code==200
         assert api.get('/api/health').json()['ok'] is True
-        for url in ['/api/me','/api/grades','/api/dashboard','/api/requests','/api/staff/requests']:
+        for url in ['/api/me','/api/grades','/api/learning/progress','/api/dashboard','/api/requests','/api/staff/requests']:
             assert api.get(url).status_code==401
         assert 'service_role' not in api.get('/static/app.js').text
 
@@ -83,8 +88,11 @@ def test_validation_and_schedule():
         assert api.post('/api/requests',json={'type':'statement','comment':'мало'},headers={'X-Requested-With':'ATLAS'}).status_code==422
         assert api.post('/api/requests',json={'type':'injected','comment':'test'},headers={'X-Requested-With':'ATLAS'}).status_code==422
         assert api.get('/api/schedule?week=2005-01-01').status_code==422
-        from app.db import campus_today
-        schedule=api.get('/api/schedule?week='+campus_today().isoformat()).json()
+        own = api.get('/api/me').json()['id']
+        with SessionLocal() as db:
+            changed = db.scalar(select(LessonChange.day).where(LessonChange.student_id == own).limit(1))
+        week = changed - timedelta(days=changed.weekday())
+        schedule = api.get('/api/schedule?week=' + week.isoformat()).json()
         assert len(schedule['days'])==7
         assert any(x['changed'] for day in schedule['days'] for x in day['items'])
         a=api.get('/api/notifications').json()[0]

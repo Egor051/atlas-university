@@ -14,7 +14,7 @@ PROFILE = '/app/university/digital/systems/mikhail-orlov'
 
 def enter(page, base, actor, destination='/'):
     page.goto(base + destination)
-    page.get_by_role('button',name='Попробовать демо',exact=True).click()
+    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
     page.locator(f'[data-demo="{actor}"]').click()
     expect(page.locator('#page-title')).to_be_visible()
 
@@ -110,7 +110,7 @@ def test_department_teacher_file_and_private_reply(frontend_page, tmp_path):
         assert student.evaluate('document.documentElement.scrollWidth <= innerWidth')
         other = other_context.new_page()
         other.goto(url)
-        other.get_by_role('button',name='Попробовать демо',exact=True).click()
+        other.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
         other.locator('[data-demo="1"]').click()
         expect(other.locator('.error-state')).to_contain_text('Диалог не найден')
         expect(other.locator('.school-conversation')).to_have_count(0)

@@ -285,8 +285,7 @@ class Acceptance:
             a.locator(f'a[href="/api/requests/{request_id}/document"]').click()
         content = self.record_download(pending.value, engine, "fictional-document", request_id)
         text = content.decode("utf-8")
-        self.check(engine + " actual owner document download", "КОНКУРСНЫЙ ОБРАЗЕЦ" in text
-                   and answer in text and "ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ" in text)
+        self.check(engine + " actual owner document download", "Не имеет юридической силы" in text and answer in text)
         self.check(engine + " saved new request ready", a.request.get(base + f"/api/requests/{request_id}").json()["status"] == "ready")
 
     def logout(self, page, engine, actor):

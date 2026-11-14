@@ -52,7 +52,7 @@
 
   async function homeFeed() {
     try {
-      return await c.api('announcements?limit=3&sort=newest');
+      return await c.api('announcements?limit=10&sort=newest');
     } catch (error) {
       if (error.stale) throw error;
       return {error: true};
@@ -70,8 +70,22 @@
     if (data.error) return '<p class="compact-empty" role="status">Объявления не загрузились. <button type="button" class="mini-link" data-announcement-action="retry">Повторить</button></p>';
     const rows = data.items.filter(row => !timelinePriority || row.priority === timelinePriority);
     if (!rows.length) return `<p class="compact-empty">${timelinePriority ? 'В последних публикациях таких объявлений нет.' : 'Опубликованных объявлений пока нет.'}</p>`;
-    return `<ol class="announcement-track">${rows.map(row =>
-      `<li data-priority="${esc(row.priority)}"><span class="announcement-marker" aria-hidden="true"></span><article class="announcement-event">${metadata(row)}<h3>${link(pageUrl('announcements', {id: row.id}), row.title, 'announcement-title-link')}</h3><p class="announcement-excerpt">${esc(row.excerpt)}</p></article></li>`).join('')}</ol>`;
+    return `<ol class="announcement-track">${rows.map(row => `
+      <li data-priority="${esc(row.priority)}">
+        <span class="announcement-marker" aria-hidden="true"></span>
+        <article class="announcement-event">
+          ${metadata(row)}
+          <h3>${link(pageUrl('announcements', {id: row.id}), row.title, 'announcement-title-link')}</h3>
+          <details class="announcement-expansion">
+            <summary>
+              <span class="announcement-expand-label">Прочитать анонс</span>
+              <span class="announcement-collapse-label">Свернуть анонс</span>
+              <span class="sr-only"> — ${esc(row.title)}</span>
+            </summary>
+            <p class="announcement-excerpt">${esc(row.excerpt)}</p>
+          </details>
+        </article>
+      </li>`).join('')}</ol>`;
   }
 
   function timeline(data) {
@@ -80,7 +94,7 @@
     return `<section class="card card-pad announcement-timeline" aria-labelledby="announcement-timeline-title">
       <header class="card-titlebar"><h2 class="card-title" id="announcement-timeline-title">Объявления</h2>${link(pageUrl('announcements'), 'Все объявления')}</header>
       ${data.items?.length ? `<div class="announcement-legend" role="group" aria-label="Приоритет последних объявлений">${choices.map(([value, label]) => `<button type="button" class="outline-button" data-announcement-priority="${value}" aria-pressed="${timelinePriority === value}">${value ? `<span class="announcement-legend-dot" data-priority="${value}" aria-hidden="true"></span>` : ''}${label}</button>`).join('')}</div>` : ''}
-      <div id="announcement-timeline-items" aria-live="polite">${timelineItems(data)}</div>
+      <div id="announcement-timeline-items" role="region" tabindex="0" aria-label="Лента последних объявлений" aria-live="polite">${timelineItems(data)}</div>
     </section>`;
   }
 
@@ -111,14 +125,21 @@
         c.empty('megaphone', 'Объявлений не найдено', emptyHint)}${pager(page, data)}</section>`;
   }
 
-  function detailContent(row) {
-    return `${metadata(row, true)}<p class="announcement-meta"><span>${esc(row.unit)} · ${esc(row.author)}</span><span>${esc(audiences[row.audience])}${row.group ? ' · ' + esc(row.group) : ''}</span><span>${esc(statuses[row.status])}</span></p><p class="announcement-body">${esc(row.body)}</p>`;
+  function bodyContent(body, headingLevel = 2) {
+    const blocks = body.trim().split(/\r?\n[ \t]*\r?\n/);
+    return `<div class="announcement-body">${blocks.map(block =>
+      /^## [^\r\n]+$/.test(block) ? `<h${headingLevel}>${esc(block.slice(3))}</h${headingLevel}>` : `<p>${esc(block)}</p>`
+    ).join('')}</div>`;
+  }
+
+  function detailContent(row, headingLevel) {
+    return `${metadata(row, true)}<p class="announcement-meta"><span>${esc(row.unit)} · ${esc(row.author)}</span><span>${esc(audiences[row.audience])}${row.group ? ' · ' + esc(row.group) : ''}</span><span>${esc(statuses[row.status])}</span></p>${bodyContent(row.body, headingLevel)}`;
   }
 
   function history(data) {
     const id = data.id;
     return `<section class="card card-pad announcement-history" aria-labelledby="announcement-history-title"><h2 id="announcement-history-title">История изменений</h2>
-      ${data.revisions.length ? `<ol>${data.revisions.map(event => `<li><details><summary><b>${esc(actionLabels[event.action] || event.action)}</b> <span>${esc(event.author)} · ${date(event.created_at, true)}</span></summary><p><b>${esc(event.after.title)}</b></p>${detailContent(event.after)}</details></li>`).join('')}</ol>` : '<p class="compact-empty">Изменений пока нет.</p>'}
+      ${data.revisions.length ? `<ol>${data.revisions.map(event => `<li><details><summary><b>${esc(actionLabels[event.action] || event.action)}</b> <span>${esc(event.author)} · ${date(event.created_at, true)}</span></summary><p><b>${esc(event.after.title)}</b></p>${detailContent(event.after, 3)}</details></li>`).join('')}</ol>` : '<p class="compact-empty">Изменений пока нет.</p>'}
       <nav class="announcement-pager" aria-label="Страницы истории">${data.revision_offset ? link(pageUrl('announcement-admin', {id, query: {history_offset: Math.max(0, data.revision_offset - 20)}}), 'Более новые', 'outline-button') : ''}${data.more_revisions ? link(pageUrl('announcement-admin', {id, query: {history_offset: data.revision_offset + 20}}), 'Более ранние', 'outline-button') : ''}</nav>
     </section>`;
   }
@@ -155,7 +176,8 @@
     const audienceDisabled = row.published_at ? ' disabled' : '';
     c.modal(c.modalHead(heading, '') + `<form class="announcement-editor" data-announcement-editor data-c-form="announcement" data-id="${row.id || ''}" data-version="${row.version || ''}">
       <div class="field"><label for="announcement-title">Заголовок</label><input id="announcement-title" name="title" required minlength="5" maxlength="180" value="${esc(row.title || '')}" autofocus></div>
-      <div class="field"><label for="announcement-body">Текст объявления</label><textarea id="announcement-body" name="body" required minlength="10" maxlength="4000" rows="7">${esc(row.body || '')}</textarea></div>
+      <div class="field"><label for="announcement-summary">Анонс</label><textarea id="announcement-summary" name="summary" maxlength="700" rows="3" aria-describedby="announcement-summary-hint">${esc(row.summary || '')}</textarea><p class="hint" id="announcement-summary-hint">Если оставить поле пустым, в ленте появится первый абзац.</p></div>
+      <div class="field"><label for="announcement-body">Текст объявления</label><textarea id="announcement-body" name="body" required minlength="10" maxlength="4000" rows="7" aria-describedby="announcement-body-hint">${esc(row.body || '')}</textarea><p class="hint" id="announcement-body-hint">Разделяйте абзацы пустой строкой. Подзаголовок начните с «## ».</p></div>
       <div class="announcement-editor-fields">
         ${filter('category', 'Категория', categories, row.category || 'announcement')}
         ${filter('priority', 'Приоритет', priorityLabels, row.priority || 'normal')}
@@ -189,7 +211,8 @@
 
   function formValues(form, submitter) {
     const controls = form.elements;
-    const values = {title: controls.title.value.trim(), body: controls.body.value.trim(), category: controls.category.value,
+    const values = {title: controls.title.value.trim(), summary: controls.summary.value.trim(),
+      body: controls.body.value.trim(), category: controls.category.value,
       priority: controls.priority.value, audience: controls.audience.value, pinned: controls.pinned.checked,
       group_id: controls.audience.value === 'group' ? Number(controls.group_id.value) || null : null,
       status: controls.status?.value || submitter?.value || 'draft'};
@@ -202,7 +225,7 @@
     if (!form.reportValidity()) return;
     const values = formValues(form);
     const preview = c.$('[data-announcement-preview]', form);
-    preview.innerHTML = `<h3 tabindex="-1">${esc(values.title)}</h3>${metadata(values)}<p class="announcement-meta"><span>Учебный офис</span><span>${esc(audiences[values.audience])}${values.group_id ? ' · ' + esc(form.elements.group_id.selectedOptions[0].textContent) : ''}</span></p><p class="announcement-body">${esc(values.body)}</p>`;
+    preview.innerHTML = `<h3 tabindex="-1">${esc(values.title)}</h3>${metadata(values)}<p class="announcement-meta"><span>Учебный офис</span><span>${esc(audiences[values.audience])}${values.group_id ? ' · ' + esc(form.elements.group_id.selectedOptions[0].textContent) : ''}</span></p>${bodyContent(values.body, 4)}`;
     preview.hidden = false;
     preview.querySelector('h3').focus();
   }
@@ -271,6 +294,11 @@
       if (editor) c.$('[data-announcement-preview]', editor).hidden = true;
     });
     document.addEventListener('click', event => {
+      const card = event.target.closest('.announcement-event');
+      if (card && !event.target.closest('a, summary, .announcement-expansion') && !getSelection()?.toString()) {
+        const expansion = card.querySelector('details');
+        expansion.open = !expansion.open;
+      }
       const button = event.target.closest('[data-announcement-action]');
       if (button) {
         const action = button.dataset.announcementAction;
@@ -284,7 +312,9 @@
       if (!priorityButton) return;
       timelinePriority = priorityButton.dataset.announcementPriority;
       c.$$('[data-announcement-priority]').forEach(item => item.setAttribute('aria-pressed', String(item === priorityButton)));
-      c.$('#announcement-timeline-items').innerHTML = timelineItems(c.state.data.home.announcements);
+      const viewport = c.$('#announcement-timeline-items');
+      viewport.innerHTML = timelineItems(c.state.data.home.announcements);
+      viewport.scrollTop = 0;
     });
   }
 

@@ -114,7 +114,7 @@ def layout(page, name):
 
 def login(page, base, account):
     page.goto(base, wait_until='networkidle')
-    page.get_by_role('button',name='Попробовать демо',exact=True).click()
+    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
     page.locator(f'[data-demo="{account}"]').click()
     ready(page)
 
@@ -264,7 +264,7 @@ def run():
                     page.locator('a[href*="/document"][download]').click()
                 document=Path(download.value.path()).read_text(encoding='utf-8')
                 assert 'Алина Ветрова' in document and 'Марк Северин' not in document
-                assert 'конкурс' in document.lower() and 'вымышлен' in document.lower()
+                assert 'Не имеет юридической силы' in document
                 assert '<script' not in document.lower()
                 screenshot(page,'mobile-document-ready')
                 passed('Student sees all four history events and downloads their fictional completed document')
@@ -302,12 +302,16 @@ def run():
 
                 mark_id=b.request.get(base+'/api/me').json()['id']
                 with sqlite3.connect(db_path) as conn:
+                    conn.execute('DELETE FROM academic_point_awards WHERE student_id=?',(mark_id,))
+                    conn.execute('DELETE FROM academic_work_deliveries WHERE deadline_id IN (SELECT id FROM deadlines WHERE student_id=?)',(mark_id,))
                     conn.execute('DELETE FROM deadlines WHERE student_id=?',(mark_id,))
                     conn.execute('DELETE FROM grades WHERE student_id=?',(mark_id,))
+                    conn.execute('DELETE FROM learning_attendance WHERE student_id=?',(mark_id,))
+                    conn.execute('DELETE FROM academic_group_members WHERE student_id=?',(mark_id,))
                     conn.execute('DELETE FROM notifications WHERE student_id=?',(mark_id,))
                 conn.close()
                 visit(mark,base,'grades')
-                expect(mark.locator('#page-content')).to_contain_text('Оценки ещё не опубликованы')
+                expect(mark.locator('#page-content')).to_contain_text('Учебных результатов пока нет')
                 screenshot(mark,'mobile-empty-grades')
                 visit(mark,base,'plan')
                 expect(mark.locator('.empty-state')).to_be_visible()

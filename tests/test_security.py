@@ -269,7 +269,7 @@ def test_staff_concurrency_and_rejection_reason():
         assert student.get(f"/api/requests/{record['id']}").json()["status"] == "review"
 
 
-def test_document_is_owner_only_escaped_and_explicitly_fictional():
+def test_document_is_owner_only_escaped_and_marks_legal_status():
     dangerous = "<script>alert(1)</script>"
     with security_client() as student, security_client() as staff:
         login(student)
@@ -284,8 +284,8 @@ def test_document_is_owner_only_escaped_and_explicitly_fictional():
         assert "attachment" in document.headers["content-disposition"].lower()
         assert dangerous not in document.text
         assert "&lt;script&gt;" in document.text
-        assert "вымышлен" in document.text.lower()
-        assert "конкурс" in document.text.lower()
+        assert "не имеет юридической силы" in document.text.lower()
+        assert "все данные вымышлены" not in document.text.lower()
         policy = document.headers["content-security-policy"]
         assert "script-src 'none'" in policy or "default-src 'none'" in policy
         assert "no-store" in document.headers["cache-control"]

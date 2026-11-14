@@ -20,7 +20,7 @@ from .references import (GroupBody, LoadBody, MemberBody, RoomBody, group_data, 
                          room_data, write_load, write_member, write_reference)
 from .scheduling import ChangeBody, class_data, class_query, create_draft, own_timetable, validate_change, week_bounds
 from .table_formats import MAX_UPLOAD, read_table, table_bytes
-from .teaching import AttendanceBody, MarkBody, save_attendance, save_grade
+from .teaching import AttendanceBody, MarkBody, attendance_scope, class_day, save_attendance, save_grade, scoped_class
 from .university_db import Teacher, TeachingAssignment
 from .workspace import load_payload, load_query, lock_workspace, owned_load, recorded, roster
 from .workspace_db import AcademicGroup, Classroom, GroupMember, ScheduledClass, TableImport
@@ -36,10 +36,10 @@ DATA = {
     'loads': ('Учебная нагрузка','id version group_id assignment_id', 'group_id assignment_id', coordinators|{'teacher'}, {'admin'}),
     'students': ('Списки студентов','student_id group_id version', 'student_id group_id', {'admin','teacher'}, {'admin'}),
     'grades': ('Ведомость успеваемости','student_id score version reason', 'student_id score version', {'teacher'}, {'teacher'}),
-    'attendance': ('Журнал посещаемости','student_id day status note version', 'student_id day status version', {'teacher'}, {'teacher'}),
+    'attendance': ('Журнал посещаемости','student_id day status note version class_id', 'student_id day status version', {'teacher'}, {'teacher'}),
 }
 MODELS = {'rooms':RoomBody, 'groups':GroupBody, 'loads':LoadBody, 'students':MemberBody, 'grades':MarkBody, 'attendance':AttendanceBody}
-INTS = {'id','version','load_id','teacher_id','room_id','weeks','capacity','group_id','assignment_id','student_id','score'}
+INTS = {'id','version','load_id','teacher_id','room_id','weeks','capacity','group_id','assignment_id','student_id','score','class_id'}
 
 
 class Upload(StrictBody):
@@ -96,7 +96,7 @@ def template(dataset: Dataset, format: Format='xlsx', user=Depends(require_user)
     return download(format,dataset,[],template=True)
 
 
-def export_rows(dataset, db, user, load, day):
+def export_rows(dataset, db, user, load, day, class_id=None):
     if dataset == 'schedule':
         if user.role == 'teacher':
             return [{**row,'weeks':1} for row in own_timetable(day,user,db)['items']]
@@ -125,22 +125,23 @@ def export_rows(dataset, db, user, load, day):
             marks.setdefault(row.student_id,row)
         return [dict(student_id=uid,name=person.full_name,score=marks[uid].current if uid in marks else None,
                      version=marks[uid].version if uid in marks else 0) for uid,person in people.items()]
-    day = day or campus_today()
+    day = class_day(scoped_class(db, load, class_id)) if class_id else day or campus_today()
     present = {}
     for row in db.scalars(select(Attendance).where(Attendance.student_id.in_(people),Attendance.subject==load.discipline.title,
-                                                  Attendance.day==day).order_by(Attendance.id)):
+                                                  attendance_scope(day, class_id)).order_by(Attendance.id)):
         present.setdefault(row.student_id,row)
-    return [dict(student_id=uid,name=person.full_name,day=day.isoformat(),status=present[uid].status if uid in present else '',
+    return [dict(student_id=uid,name=person.full_name,day=day.isoformat(),class_id=class_id,status=present[uid].status if uid in present else '',
                  note=present[uid].note if uid in present else '',version=present[uid].version if uid in present else 0)
             for uid,person in people.items()]
 
 
 @router.get('/{dataset}/export')
 def export(dataset: Dataset, format: Format='xlsx', scope: int|None=Query(None,ge=1,le=2147483647), day: date|None=None,
+           class_id: int | None = Query(None, ge=1, le=2147483647),
            user=Depends(require_user), db: Session=Depends(get_db)):
     allowed(dataset,user)
     load = scoped_load(db,dataset,scope,user)
-    return download(format,dataset,export_rows(dataset,db,user,load,day))
+    return download(format,dataset,export_rows(dataset,db,user,load,day,class_id))
 
 
 def decimal_number(value):
@@ -257,7 +258,7 @@ def check_rows(db, user, dataset, load, parsed):
                 key=body.student_id
                 save_grade(db,user,load,body,apply=False)
             else:
-                key=(body.student_id,body.day)
+                key=(body.student_id,body.class_id or body.day)
                 save_attendance(db,user,load,body,apply=False)
             if key in seen:
                 raise HTTPException(409,'Запись повторяется в файле')

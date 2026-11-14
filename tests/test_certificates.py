@@ -95,7 +95,7 @@ def test_appendix_4_staff_confirmation_and_download_are_scoped():
             assert preview.headers['Content-Disposition'].startswith('inline;')
             assert APPENDIX_4_FORM in result.text and 'Северин Марк' in result.text
             assert 'Изменённая запись' not in result.text
-            assert 'подпись отсутствует' in result.text and 'КОНКУРСНЫЙ ОБРАЗЕЦ' in result.text
+            assert 'подпись отсутствует' in result.text and 'Не имеет юридической силы' in result.text
         finally:
             with SessionLocal() as db:
                 db.get(CertificateEnrollment, student.id).data = original

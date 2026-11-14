@@ -96,21 +96,29 @@ def test_calendar_opens_booked_slot_and_registered_event_not_generic_catalog(cam
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
 
 
-def test_library_pages_and_search_reach_book_after_first_three_hundred(campus_page):
+def test_retired_library_api_preserves_paging_search_and_loan_history(campus_page):
     page, base, db = campus_page
     with closing(sqlite3.connect(db)) as connection, connection:
         connection.executemany('INSERT INTO library_books(title,author,subject,description,total,available) VALUES (?,?,?,?,?,?)',
             [(f'Automation catalog book {i:03}', 'Вымышленный автор', 'Тестовый предмет', 'Синтетическая запись проверки каталога', 2, 2) for i in range(310)])
-    visit(page, base, 'library')
-    first = page.locator('.campus-grid [data-campus-record-id]').first.get_attribute('data-campus-record-id')
-    page.locator('[data-c-action="service-page"][data-page-key="library"][data-offset="20"]').click()
-    expect(page.locator('.campus-pagination[aria-label="Библиотечный каталог — страницы"]')).to_contain_text('21–40')
-    assert page.locator('.campus-grid [data-campus-record-id]').first.get_attribute('data-campus-record-id') != first
-    page.locator('#campus-query').fill('Automation catalog book 309')
-    expect(page.get_by_role('heading', name='Automation catalog book 309', exact=True)).to_be_visible()
-    expect(page.locator('.campus-grid > article')).to_have_count(1)
-    expect(page.locator('#campus-query')).to_have_value('Automation catalog book 309')
-    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    library = base + '/api/services/library'
+    first = page.request.get(library, params={'limit': 20}).json()
+    second = page.request.get(library, params={'limit': 20, 'offset': 20}).json()
+    assert first['has_more'] and second['offset'] == 20
+    assert {row['id'] for row in first['items']}.isdisjoint(row['id'] for row in second['items'])
+    query = page.request.get(library, params={'q': 'Automation catalog book 309'}).json()
+    book, = query['items']
+    assert book['title'] == 'Automation catalog book 309'
+    headers = {'X-Requested-With': 'ATLAS'}
+    loan = page.request.post(f"{library}/{book['id']}/borrow", headers=headers, data={})
+    assert loan.status == 201, loan.text()
+    loan_id = loan.json()['id']
+    loans = base + '/api/services/loans'
+    assert loan_id in {row['id'] for row in page.request.get(loans, params={'filter': 'active'}).json()['items']}
+    returned = page.request.post(f'{loans}/{loan_id}/return', headers=headers, data={})
+    assert returned.status == 200, returned.text()
+    saved = page.request.get(loans, params={'filter': 'returned'}).json()['items']
+    assert any(row['id'] == loan_id and row['book']['id'] == book['id'] for row in saved)
 
 
 def test_subject_context_with_no_future_slot_offers_materials_and_prefilled_office_question(campus_page):
@@ -119,6 +127,7 @@ def test_subject_context_with_no_future_slot_offers_materials_and_prefilled_offi
     with closing(sqlite3.connect(db)) as connection, connection:
         # Real isolated data change models a subject without any available future slot.
         connection.execute("UPDATE consultation_slots SET start_at='2020-01-01 09:00:00',end_at='2020-01-01 10:00:00' WHERE subject=?", (exam['subject'],))
+        connection.execute("UPDATE grades SET assessment='Не допущен' WHERE id=?", (exam['id'],))
     visit(page, base, 'exams')
     row = page.locator(f'[data-campus-record-id="{exam["id"]}"]')
     row.locator('[data-route="consultations"]').click()
@@ -162,7 +171,7 @@ def test_campus_context_pages_automated_accessibility_and_text_size_stress(campu
     axe=Path(__file__).resolve().parents[1]/'node_modules/axe-core/axe.min.js'
     assert axe.is_file(), 'Install dev-only axe-core before running accessibility tests'
     page.add_init_script(path=str(axe))
-    for section in ['courses','assignments','exams','consultations','events','library']:
+    for section in ['courses','assignments','exams','consultations','events','learning/notes']:
         visit(page,base,section)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (section,width,'normal reflow')
         violations=page.evaluate("""async () => {

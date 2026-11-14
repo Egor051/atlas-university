@@ -4,6 +4,15 @@
   margin-block: var(--atlas-gap, 16px);
 }
 .announcement-timeline .card-titlebar { flex-wrap: wrap; }
+#announcement-timeline-items {
+  max-block-size: clamp(15rem, 38vh, 28rem);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--atlas-accent-mark) var(--atlas-surface);
+  padding: 2px var(--atlas-row-pad) 2px 2px;
+}
+#announcement-timeline-items:focus-visible { outline: 2px solid var(--atlas-focus); outline-offset: 2px; }
 .announcement-legend, .announcement-meta, .announcement-pager {
   display: flex;
   flex-wrap: wrap;
@@ -63,13 +72,23 @@
   border-radius: .75rem;
   background: var(--atlas-surface-alt);
   min-width: 0;
+  cursor: pointer;
 }
+.announcement-event:hover, .announcement-event:focus-within { box-shadow: inset 0 0 0 1px var(--atlas-control-border); }
 .announcement-event h3 { margin-block: .2rem; font-size: 1rem; }
-.announcement-event .announcement-excerpt {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
+.announcement-expansion summary {
+  padding-block: .6rem;
+  cursor: pointer;
+  color: var(--atlas-accent-text);
+  font-size: .875rem;
+}
+.announcement-expand-label, .announcement-collapse-label { margin-inline-start: .2rem; }
+.announcement-expansion:not([open]) .announcement-collapse-label,
+.announcement-expansion[open] .announcement-expand-label { display: none; }
+.announcement-expansion .announcement-excerpt { white-space: pre-wrap; cursor: text; line-height: 1.6; }
+@media (prefers-reduced-motion: no-preference) {
+  .announcement-expansion[open] .announcement-excerpt { animation: announcement-open .2s ease-out; }
+  @keyframes announcement-open { from { opacity: 0; transform: translateY(-.25rem); } to { opacity: 1; transform: translateY(0); } }
 }
 .announcement-title-link { overflow-wrap: anywhere; }
 .announcement-title-link:hover { color: var(--atlas-accent-text); text-decoration: underline; }
@@ -112,7 +131,16 @@
 .announcement-list { display: grid; gap: var(--atlas-row-pad, 12px); }
 .announcement-list-item, .announcement-detail { display: grid; gap: .45rem; }
 .announcement-list-item h2, .announcement-history h2 { font-size: 1.125rem; }
-.announcement-body { white-space: pre-wrap; overflow-wrap: anywhere; margin-block-start: var(--atlas-row-pad, 12px); }
+.announcement-body {
+  display: grid;
+  gap: var(--atlas-row-pad, 12px);
+  max-inline-size: 76ch;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  margin-block-start: var(--atlas-row-pad, 12px);
+}
+.announcement-body p { white-space: pre-wrap; }
+.announcement-body :is(h2, h3, h4) { margin-block-start: .4rem; }
 .announcement-history ol { padding: 0; margin: .5rem 0; list-style: none; }
 .announcement-history li { padding-block: var(--atlas-row-pad, 12px); border-bottom: 1px solid var(--atlas-divider); }
 .announcement-history summary { cursor: pointer; overflow-wrap: anywhere; }

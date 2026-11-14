@@ -54,7 +54,7 @@ def test_directory_nested_scope_search_and_each_material_opens(accounts):
         file = student.get(row['file_url'])
         assert file.status_code == 200 and file.headers['content-disposition'].startswith('attachment;')
         assert 'sandbox' in file.headers['content-security-policy']
-        assert 'все данные вымышлены' in file.text and detail['sections'][0]['heading'] in file.text
+        assert 'АТЛАС Campus' in file.text and detail['sections'][0]['heading'] in file.text
         if row['kind'] == 'slides':
             assert 'href="#slide-2"' in file.text
     found = student.get('/api/materials', params={'q': 'ПОИСК ПУТИ', 'kind': 'lecture',

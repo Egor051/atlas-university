@@ -22,8 +22,8 @@ from browser_check import ROOT, start_server, stop_server
 SCREENSHOTS = ROOT / 'screenshots'
 REPORT = ROOT / 'docs' / 'verification' / 'extension-browser-report.json'
 STUDENT_PAGES = ['home', 'schedule', 'grades', 'plan', 'requests', 'certificates', 'notifications', 'profile',
-                 'announcements', 'courses', 'assignments', 'exams', 'attendance', 'calendar', 'tasks',
-                 'notes', 'flashcards', 'quizzes', 'focus', 'consultations', 'messages', 'library',
+                 'announcements', 'courses', 'assignments', 'exams', 'calendar', 'tasks',
+                 'learning/notes', 'consultations', 'messages',
                  'events', 'finance', 'contacts', 'knowledge', 'portfolio', 'settings']
 STAFF_PAGES = ['staff', 'staffdesk', 'staffmessages', 'announcement-admin', 'settings', 'profile']
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
@@ -87,7 +87,7 @@ class Acceptance:
 
     def login(self, page, base, account):
         page.goto(base, wait_until='networkidle')
-        page.get_by_role('button',name='Попробовать демо',exact=True).click()
+        page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
         page.locator(f'[data-demo="{account}"]').click()
         self.ready(page)
 
@@ -193,9 +193,15 @@ class Acceptance:
             assert first['submission']['status'] == 'submitted'
             page.locator('[data-c-filter="assignments"][data-value="submitted"]').click()
             page.locator(f'[data-c-action="assignment"][data-id="{task_id}"]').click()
+            withdrawn = self.confirm(page, 'withdraw', task_id, f'learning/assignments/{task_id}/withdraw')
+            assert withdrawn['submission']['status'] == 'withdrawn'
+            page.locator('[data-c-filter="assignments"][data-value="pending"]').click()
+            page.locator(f'[data-c-action="assignment"][data-id="{task_id}"]').click()
             expect(page.locator('form[data-c-form="assignment"] [name="text"]')).to_have_value(self.token + ': учебное решение с проверкой.')
             second = self.submit(page, 'assignment', f'learning/assignments/{task_id}/submit', {'text': self.token + ': исправленная версия решения.'})
-            assert second['submission']['version'] == first['submission']['version'] + 1
+            assert second['submission']['version'] == withdrawn['submission']['version'] + 1
+            assert len(second['attempts']) == 2
+            page.locator('[data-c-filter="assignments"][data-value="submitted"]').click()
             page.locator(f'[data-c-action="assignment"][data-id="{task_id}"]').click()
             withdrawn = self.confirm(page, 'withdraw', task_id, f'learning/assignments/{task_id}/withdraw')
             assert withdrawn['submission']['status'] == 'withdrawn'
@@ -239,7 +245,7 @@ class Acceptance:
         self.case('Personal task UI create, complete, edit, reload and delete', page, tasks)
 
         def notes():
-            self.visit(page, base, 'notes')
+            self.visit(page, base, 'learning/notes')
             page.locator('[data-c-action="note-new"]').click()
             note = self.submit(page, 'note', 'learning/notes', {'title': self.token + ' конспект', 'subject': 'Учебная тема', 'body': 'Первый тезис и пример. <img src=x onerror=alert(1)> — простой текст.'})
             page.locator('[data-c-query="notes"]').fill(self.token)
@@ -256,48 +262,6 @@ class Acceptance:
             page.locator('.close-btn').click()
         self.case('Note UI create, live search, safe text, edit and persisted content', page, notes)
 
-        def cards():
-            self.visit(page, base, 'flashcards')
-            page.locator('[data-c-action="flashcard-new"]').click()
-            card = self.submit(page, 'flashcard', 'learning/flashcards', {'subject': 'Самопроверка', 'front': self.token + ' вопрос', 'back': 'Запомненный учебный ответ.'})
-            page.locator(f'[data-c-action="flashcard-open"][data-id="{card["id"]}"]').click()
-            expect(page.locator('.campus-flashcard-back')).to_have_count(0)
-            page.locator('[data-c-action="flashcard-reveal"]').click()
-            expect(page.locator('.campus-flashcard-back')).to_contain_text('Запомненный учебный ответ.')
-            self.geometry(page, 'flashcard-reveal-modal-390'); self.axe(page, 'flashcard-reveal-modal-390')
-            with page.expect_response(lambda r: r.url.endswith(f'/api/learning/flashcards/{card["id"]}/review') and r.request.method == 'POST') as response:
-                page.locator('[data-c-action="flashcard-known"]').click()
-            assert response.value.status == 200
-            reviewed = response.value.json()
-            assert reviewed['reviews'] == 1 and reviewed['known_count'] == 1 and reviewed['is_due'] is False
-            expect(page.locator('.modal')).to_have_count(0); self.ready(page)
-            page.reload(wait_until='networkidle'); self.ready(page)
-            saved = page.context.request.get(base + f'/api/learning/flashcards/{card["id"]}').json()
-            assert saved['reviews'] == 1
-        self.case('Flashcard UI create, hidden answer, reveal and scheduled review', page, cards)
-
-        def quizzes():
-            self.visit(page, base, 'quizzes')
-            button = page.locator('[data-c-action="quiz-open"]').first
-            quiz_id = int(button.get_attribute('data-id'))
-            button.click()
-            form = page.locator('form[data-c-form="quiz"]')
-            expect(form).to_be_visible()
-            questions = form.locator('fieldset').count()
-            for number in range(questions):
-                form.locator(f'input[name="question-{number}"]').first.check()
-            self.geometry(page, 'quiz-form-modal-390'); self.axe(page, 'quiz-form-modal-390')
-            result = self.submit(page, 'quiz', f'learning/quizzes/{quiz_id}/attempt')
-            expect(page.locator('.campus-quiz-results article')).to_have_count(questions)
-            assert result['total'] == questions and len(result['results']) == questions
-            assert all(row['explanation'] for row in result['results'])
-            self.axe(page, 'quiz-results-modal-390'); self.capture(page, 'extension-390-quiz-results-modal')
-            page.locator('.close-btn').click()
-            page.reload(wait_until='networkidle'); self.ready(page)
-            expect(page.locator('.campus-log')).to_contain_text(str(result['score']) + ' из ' + str(result['total']))
-            expect(page.locator(f'[data-c-action="quiz-open"][data-id="{quiz_id}"]').locator('xpath=ancestor::article')).to_contain_text(str(result['percent']) + '%')
-        self.case('Quiz UI genuine answers, server score, explanations and saved history', page, quizzes)
-
         def portfolio():
             self.visit(page, base, 'portfolio')
             page.locator('[data-c-action="portfolio-new"]').click()
@@ -306,34 +270,9 @@ class Acceptance:
             with page.expect_download() as download:
                 page.locator('a[href="/api/campus/portfolio/export"]').click()
             text = Path(download.value.path()).read_text(encoding='utf-8')
-            assert self.token in text and 'ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ' in text
+            assert self.token in text and 'Портфолио составлено пользователем' in text
             assert 'Алина Ветрова' in text and 'Марк Северин' not in text
         self.case('Portfolio UI create and genuine own HTML export', page, portfolio)
-
-        def focus():
-            self.visit(page, base, 'focus')
-            previous = page.context.request.get(base + '/api/learning/focus-sessions').json()['summary']
-            page.locator('#focus-duration').select_option('5')
-            page.locator('[data-c-action="timer-start"]').click()
-            expect(page.locator('[data-c-action="timer-start"]')).to_contain_text('Пауза')
-            page.locator('[data-c-action="timer-start"]').click()
-            expect(page.locator('[data-c-action="timer-start"]')).to_contain_text('Продолжить')
-            paused = page.locator('#focus-clock').inner_text()
-            page.wait_for_timeout(700)
-            assert page.locator('#focus-clock').inner_text() == paused
-            page.locator('[data-c-action="timer-reset"]').click()
-            expect(page.locator('[data-c-action="timer-start"]')).to_contain_text('Начать')
-            expect(page.locator('#focus-duration')).to_be_enabled()
-            page.locator('[data-c-action="focus-log"]').click()
-            row = self.submit(page, 'focus', 'learning/focus-sessions', {'subject': self.token + ' фокус', 'minutes': '17'})
-            assert row['minutes'] == 17
-            page.reload(wait_until='networkidle'); self.ready(page)
-            expect(page.locator('.campus-log')).to_contain_text(self.token + ' фокус')
-            expect(page.locator('.campus-metric', has_text='мин. на этой неделе').locator('b')).to_have_text(str(previous["week_minutes"] + 17))
-            page.locator('details.disclosure summary',has_text='Мой журнал').click()
-            self.confirm(page, 'focus-delete', row['id'], f'learning/focus-sessions/{row["id"]}/delete')
-            expect(page.locator('.campus-log')).not_to_contain_text(self.token + ' фокус')
-        self.case('Focus timer UI start, pause, reset, persisted manual log, weekly total and delete', page, focus)
 
     def run(self):
         SCREENSHOTS.mkdir(exist_ok=True)

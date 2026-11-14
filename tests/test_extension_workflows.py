@@ -76,6 +76,6 @@ def test_additional_application_reaches_staff_answer_and_owner_document():
         result = student.get(f'/api/requests/{row["id"]}/document')
         assert result.status_code == 200
         assert 'Индивидуальный учебный план' in result.text
-        assert 'КОНКУРСНЫЙ ОБРАЗЕЦ' in result.text
+        assert 'Не имеет юридической силы' in result.text
         assert 'Марк Северин' in result.text and 'Алина Ветрова' not in result.text
         assert staff.get(f'/api/requests/{row["id"]}/document').status_code == 403

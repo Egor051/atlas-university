@@ -2,12 +2,10 @@
 import json
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal
-from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import Field, StrictBool, StrictInt, field_validator
 from sqlalchemy import select, func, update
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .db import User, Deadline, Grade, CAMPUS_TZ, campus_today, utc_now
@@ -16,12 +14,19 @@ from .learning_db import (Course, CourseModule, AssignmentSubmission, StudyNote,
 from .services import begin_idempotent, commit_idempotent
 from .storage_guards import (lock_owner, update_personal, delete_personal,
                              require_record_token, identity_conditions)
-from .workspace_db import GroupWork, WorkDelivery
+from .assignment_db import SubmissionAttempt, SubmissionAttachment
+from .assignment_workflow import (ACTIONABLE, SUBMITTED, assignment_payload, attachment_payload,
+                                  attachment_response, attempt_count, effective_due, effective_state,
+                                  student_assignment, student_assignment_results, submission_for,
+                                  work_policy)
+from .workspace import lock_workspace, notify, recorded
 
 
 def create_router():
     # Main has already declared its dependencies before it includes this router.
     from .main import get_db, require_student, require_same_origin, StrictBody, date_iso
+
+    from .assignment_inputs import SubmissionBody
 
     router = APIRouter(prefix='/api/learning')
     protected = [Depends(require_same_origin)]
@@ -73,121 +78,171 @@ def create_router():
         db.commit()
         return course_payload(course, db)
 
-    def submission_payload(row):
-        if row is None:
-            return None
-        return dict(id=row.id, text=row.text, url=row.url, status=row.status, version=row.version,
-                    submitted_at=date_iso(row.submitted_at), updated_at=date_iso(row.updated_at))
-
-    def assignment_payload(deadline, submission, instructions, feedback):
-        default_instructions = 'Подготовьте решение, опишите ход работы и проверку результата. Вставьте текст работы или добавьте HTTPS-ссылку на учебный материал. Это сдача внутри конкурсного прототипа: реальному преподавателю работа не отправляется.'
-        return dict(id=deadline.id, deadline_id=deadline.id, subject=deadline.subject, title=deadline.title, due_date=date_iso(deadline.due_date), is_done=deadline.is_done,
-                    instructions=instructions or default_instructions, feedback=feedback.get(submission.id,[]) if submission else [],
-                    submission=submission_payload(submission), overdue=deadline.due_date < campus_today())
-
-    def assignment_detail_payload(deadline, db, user):
-        from .teaching import assignment_feedback
-        submission = db.scalar(select(AssignmentSubmission).where(AssignmentSubmission.deadline_id == deadline.id,
-                                                                    AssignmentSubmission.student_id == user.id))
-        instructions = db.scalar(select(GroupWork.instructions).join(WorkDelivery).where(WorkDelivery.deadline_id == deadline.id))
-        return assignment_payload(deadline, submission, instructions, assignment_feedback(db,[submission] if submission else []))
+    def assignment_detail_payload(db, record):
+        deadline, delivery, work = record
+        submission, owner_id, lead_name = submission_for(db, deadline, delivery, work)
+        return assignment_payload(db, deadline, delivery, work, submission, owner_id, lead_name, include_history=True)
 
     @router.get('/assignments')
-    def assignments(user: User = Depends(require_student), db: Session = Depends(get_db)):
-        from .teaching import assignment_feedback
-        query = (select(Deadline, GroupWork.instructions).outerjoin(WorkDelivery, WorkDelivery.deadline_id == Deadline.id)
-                 .outerjoin(GroupWork, GroupWork.id == WorkDelivery.work_id).where(Deadline.student_id == user.id)
-                 .order_by(Deadline.due_date, Deadline.id).limit(200))
-        rows = db.execute(query).all()
-        submissions = {row.deadline_id:row for row in db.scalars(select(AssignmentSubmission).where(
-            AssignmentSubmission.student_id == user.id, AssignmentSubmission.deadline_id.in_([deadline.id for deadline,_ in rows])))}
-        feedback = assignment_feedback(db, submissions.values())
-        items = [assignment_payload(row, submissions.get(row.id), instructions, feedback) for row,instructions in rows]
-        submitted = sum(bool(item['submission'] and item['submission']['status'] == 'submitted') for item in items)
-        return dict(items=items, summary=dict(total=len(items), submitted=submitted, pending=len(items)-submitted))
+    def assignments(offset: int = Query(0, ge=0, le=2147483647), start: date | None = None, end: date | None = None,
+                    user: User = Depends(require_student), db: Session = Depends(get_db)):
+        if (start and end) and not start <= end <= start + timedelta(days=31):
+            raise HTTPException(422, 'Укажите период не длиннее месяца')
+        items = student_assignment_results(db, user.id, offset=offset, limit=201, min_date=start,
+                                           max_date=end, recent_first=bool(offset or (start and end)))
+        more = len(items) > 200
+        if more and offset == 0 and not (start or end):
+            items = student_assignment_results(db, user.id, limit=200, recent_first=True)
+        items = items[:200]
+        submitted = sum(item['status'] in SUBMITTED for item in items)
+        return dict(items=items, more=more, offset=offset,
+                    summary=dict(total=len(items), submitted=submitted, pending=len(items)-submitted))
 
     @router.get('/assignments/{deadline_id}')
     def assignment_detail(deadline_id: int, user: User = Depends(require_student), db: Session = Depends(get_db)):
-        return assignment_detail_payload(owned(db, Deadline, deadline_id, user), db, user)
+        return assignment_detail_payload(db, student_assignment(db, user.id, deadline_id))
 
-    class SubmissionBody(StrictBody):
-        text: str = Field(min_length=10, max_length=8000)
-        url: str = Field(default='', max_length=500)
+    @router.get('/assignments/{deadline_id}/files/{attachment_id}')
+    def student_attachment(deadline_id: int, attachment_id: int, user: User = Depends(require_student),
+                           db: Session = Depends(get_db)):
+        record = student_assignment(db, user.id, deadline_id)
+        submission, _, _ = submission_for(db, *record)
+        return attachment_response(db, submission.id if submission else None, attachment_id)
 
-        @field_validator('text')
-        @classmethod
-        def useful_text(cls, value):
-            value = value.strip()
-            if len(value) < 10:
-                raise ValueError('Опишите работу минимум десятью символами')
-            return value
+    def active_submission(db, user, deadline_id):
+        record = student_assignment(db, user.id, deadline_id)
+        deadline, delivery, work = record
+        if effective_state(work) != 'published':
+            raise HTTPException(409, 'Задание закрыто для изменений')
+        if work:
+            from .workspace import check_member
+            from .workspace_db import TeachingLoad
+            check_member(db, db.get(TeachingLoad, work.load_id), user.id)
+        row, owner_id, lead_name = submission_for(db, *record)
+        if user.id != owner_id or (work_policy(work)['team_lead_id'] and lead_name is None):
+            raise HTTPException(403, 'Работу команды отправляет ответственный')
+        return record, row
 
-        @field_validator('url')
-        @classmethod
-        def https_reference(cls, value):
-            value = value.strip()
-            if not value:
-                return ''
-            try:
-                parsed = urlsplit(value)
-                valid = parsed.scheme == 'https' and parsed.hostname and not parsed.username and not parsed.password and not any(char.isspace() for char in value) and '\\' not in value
-                _ = parsed.port
-            except ValueError:
-                valid = False
-            if not valid:
-                raise ValueError('Допускается только полная HTTPS-ссылка без учётных данных')
-            return value
+    def check_submission_version(row, version):
+        if version is not None and version != (row.version if row else 0):
+            raise HTTPException(409, 'Работа изменилась. Откройте актуальную версию')
+
+    class SubmissionRevision(StrictBody):
+        version: int = Field(default=0, strict=True, ge=0)
+
+    @router.post('/assignments/{deadline_id}/start', dependencies=protected)
+    def start_assignment(deadline_id: int, body: SubmissionRevision, user: User = Depends(require_student),
+                         db: Session = Depends(get_db)):
+        lock_workspace(db, user.id)
+        record, row = active_submission(db, user, deadline_id)
+        if row is not None and row.status == 'in_progress':
+            return assignment_detail_payload(db, record)
+        check_submission_version(row, body.version)
+        if row is not None:
+            raise HTTPException(409, 'Работа уже начата')
+        now = utc_now()
+        if now > effective_due(*record) and not work_policy(record.GroupWork)['allow_late']:
+            raise HTTPException(409, 'Срок сдачи истёк')
+        row = AssignmentSubmission(student_id=user.id, deadline_id=deadline_id, text='', url='',
+                                   status='in_progress', attempt_version=0, version=1, submitted_at=now, updated_at=now)
+        db.add(row)
+        db.flush()
+        recorded(db, user, 'assignments', deadline_id, 'started', after={'version': row.version})
+        result = assignment_detail_payload(db, record)
+        db.commit()
+        return result
 
     @router.post('/assignments/{deadline_id}/submit', dependencies=protected)
-    def submit_assignment(deadline_id: int, body: SubmissionBody, request: Request, response: Response, user: User = Depends(require_student), db: Session = Depends(get_db)):
-        deadline = owned(db, Deadline, deadline_id, user)
-        receipt, replay = begin_idempotent(db, request, response, user, f'assignment-submit:{deadline_id}', body.model_dump())
-        if replay is not None: return replay
-        row = db.scalar(select(AssignmentSubmission).where(AssignmentSubmission.deadline_id == deadline.id, AssignmentSubmission.student_id == user.id))
+    def submit_assignment(deadline_id: int, body: SubmissionBody, request: Request, response: Response,
+                          user: User = Depends(require_student), db: Session = Depends(get_db)):
+        from .workspace_db import TeachingLoad
+
+        lock_workspace(db, user.id)
+        record, row = active_submission(db, user, deadline_id)
+        deadline, delivery, work = record
+        receipt, replay = begin_idempotent(db, request, response, user, f'assignment-submit:{deadline_id}',
+                                           body.model_dump(exclude_unset=True))
+        if replay is not None:
+            return replay
+        check_submission_version(row, body.version)
+        policy = work_policy(work)
+        status = row.status if row else 'not_started'
+        if status not in ACTIONABLE and not (work is None and status == 'submitted'):
+            raise HTTPException(409, 'Новая версия доступна после отзыва или возврата на доработку')
         now = utc_now()
+        late = now > effective_due(deadline, delivery, work)
+        if late and not policy['allow_late']:
+            raise HTTPException(409, 'Срок сдачи истёк. Запросите продление у преподавателя')
+        count = attempt_count(db, row.id) if row else 0
+        if count >= (policy['max_attempts'] or 50) or (
+            count > 0 and not policy['allow_resubmission'] and status != 'revision_required'
+        ):
+            raise HTTPException(409, 'Исчерпаны доступные попытки сдачи')
+        provided = {method for method, value in (('text', body.text), ('url', body.url), ('files', body.files),
+                    ('complete', body.completed)) if value}
+        if not provided or not provided.issubset(policy['methods']):
+            raise HTTPException(422, 'Приложите результат одним из разрешённых способов')
+        files = attachment_payload(body.files, policy['formats'])
         if row is None:
-            row = AssignmentSubmission(student_id=user.id, deadline_id=deadline.id, text=body.text, url=body.url,
-                                       status='submitted', version=1, submitted_at=now, updated_at=now)
+            row = AssignmentSubmission(student_id=user.id, deadline_id=deadline.id, version=0)
             db.add(row)
-        else:
-            changed = db.execute(update(AssignmentSubmission).where(AssignmentSubmission.id == row.id, AssignmentSubmission.student_id == user.id,
-                       AssignmentSubmission.version == row.version).values(text=body.text, url=body.url, status='submitted', version=row.version+1, submitted_at=now, updated_at=now))
-            if changed.rowcount != 1:
-                db.rollback()
-                raise HTTPException(409, 'Работа уже изменилась. Обновите раздел перед повторной сдачей.')
-        try:
-            db.flush()
-        except IntegrityError:
-            db.rollback()
-            raise HTTPException(409, 'Работа уже сохранена другой отправкой. Обновите раздел.') from None
-        from .teaching import submission_notice
-        submission_notice(db, deadline)
-        return commit_idempotent(db, receipt, assignment_detail_payload(deadline, db, user))
+        row.text, row.url = body.text, body.url
+        row.status = 'resubmitted' if count and work else 'submitted'
+        row.version += 1
+        row.attempt_version = row.version
+        row.submitted_at = row.updated_at = now
+        db.flush()
+        attempt = SubmissionAttempt(submission_id=row.id, actor_id=user.id, version=row.version, number=count+1,
+                                    text=body.text, url=body.url, completed=body.completed, late=late, submitted_at=now)
+        db.add(attempt)
+        db.flush()
+        db.add_all(SubmissionAttachment(attempt_id=attempt.id, name=name, size=len(content), content=content)
+                   for name, content in files)
+        if work:
+            load = db.get(TeachingLoad, work.load_id)
+            notify(db, load.assignment.teacher.user_id, 'Работа отправлена на проверку', deadline.title,
+                   f'/app/teaching/{load.id}/works/{work.id}')
+        recorded(db, user, 'assignments', deadline.id, 'submitted', after={
+            'attempt_id': attempt.id, 'version': row.version, 'late': late,
+        })
+        return commit_idempotent(db, receipt, assignment_detail_payload(db, record))
 
     @router.post('/assignments/{deadline_id}/withdraw', dependencies=protected)
-    def withdraw_assignment(deadline_id: int, request: Request, response: Response, user: User = Depends(require_student), db: Session = Depends(get_db)):
-        deadline = owned(db, Deadline, deadline_id, user)
+    def withdraw_assignment(deadline_id: int, request: Request, response: Response, user: User = Depends(require_student),
+                            db: Session = Depends(get_db)):
+        lock_workspace(db, user.id)
+        record, row = active_submission(db, user, deadline_id)
         receipt, replay = begin_idempotent(db, request, response, user, f'assignment-withdraw:{deadline_id}', {})
-        if replay is not None: return replay
-        row = db.scalar(select(AssignmentSubmission).where(AssignmentSubmission.deadline_id == deadline.id, AssignmentSubmission.student_id == user.id))
-        if row is None or row.status != 'submitted':
-            raise HTTPException(409, 'Нет отправленной работы для отзыва')
-        changed = db.execute(update(AssignmentSubmission).where(AssignmentSubmission.id == row.id, AssignmentSubmission.student_id == user.id,
-                    AssignmentSubmission.version == row.version, AssignmentSubmission.status == 'submitted').values(status='withdrawn', version=row.version+1, updated_at=utc_now()))
-        if changed.rowcount != 1:
-            db.rollback()
-            raise HTTPException(409, 'Работа уже изменилась. Обновите раздел.')
-        db.flush()
-        return commit_idempotent(db, receipt, assignment_detail_payload(deadline, db, user))
+        if replay is not None:
+            return replay
+        if row is None or row.status not in ('submitted', 'resubmitted'):
+            raise HTTPException(409, 'Отозвать можно только работу, которую ещё не начали проверять')
+        row.status = 'withdrawn'
+        row.version += 1
+        row.updated_at = utc_now()
+        recorded(db, user, 'assignments', deadline_id, 'withdrawn', after={'version': row.version})
+        return commit_idempotent(db, receipt, assignment_detail_payload(db, record))
 
     @router.get('/exams')
     def exams(user: User = Depends(require_student), db: Session = Depends(get_db)):
-        grades = db.scalars(select(Grade).where(Grade.student_id == user.id).order_by(Grade.exam_date, Grade.id).limit(100)).all()
-        items = [dict(id=row.id, subject=row.subject, teacher=row.teacher, kind=row.exam_kind, exam_date=date_iso(row.exam_date),
-                      current=row.current, max_grade=row.max_grade, assessment=row.assessment, risk=row.current is not None and row.current < 65,
-                      consultation='Запишитесь на консультацию в разделе «Консультации». Подготовьте вопросы и выполненные задания.',
-                      note='Демонстрационный порог внимания — 65 баллов. Это ориентир прототипа, а не правило реального вуза.') for row in grades]
-        return dict(items=items, summary=dict(total=len(items), dated=sum(bool(row.exam_date) for row in grades), risk_count=sum(item['risk'] for item in items)))
+        from .academics import assessment_status
+        grades = db.scalars(select(Grade).where(Grade.student_id == user.id, Grade.exam_kind != '')
+                            .order_by(Grade.exam_date.asc().nulls_last(), Grade.id)).all()
+        now = campus_today()
+        items = []
+        for row in grades:
+            status = assessment_status(row, now)
+            items.append(dict(id=row.id, subject=row.subject, teacher=row.teacher, kind=row.exam_kind,
+                              exam_date=date_iso(row.exam_date), current=row.current, max_grade=row.max_grade or None,
+                              assessment=row.assessment, status=status, risk=status['code'] in {'blocked', 'failed', 'retake'}))
+        return dict(items=items, summary=dict(total=len(items), dated=sum(bool(row.exam_date) for row in grades),
+                                             risk_count=sum(item['risk'] for item in items)))
+
+    @router.get('/progress')
+    def progress(user: User = Depends(require_student), db: Session = Depends(get_db)):
+        from .academics import student_progress
+
+        return student_progress(db, user, date_iso)
 
     class NoteBody(StrictBody):
         title: str = Field(min_length=1, max_length=180)
@@ -375,11 +430,12 @@ def create_router():
     @router.get('/attendance')
     def attendance(user: User = Depends(require_student), db: Session = Depends(get_db)):
         rows = db.scalars(select(Attendance).where(Attendance.student_id == user.id).order_by(Attendance.day.desc(), Attendance.id.desc()).limit(200)).all()
-        counts = {status: sum(row.status == status for row in rows) for status in ('present', 'absent', 'excused')}
-        denominator = counts['present'] + counts['absent']
+        from .academics import attendance_summary
+
+        counts = {status: sum(row.status == status for row in rows) for status in ('present', 'absent', 'excused', 'late')}
         return dict(items=[dict(id=row.id, subject=row.subject, day=date_iso(row.day), status=row.status, note=row.note) for row in rows],
-                    summary={**counts, 'total':len(rows), 'attendance_percent':round(100*counts['present']/denominator) if denominator else None,
-                             'description':'Уважительные пропуски исключены из знаменателя. Записи вымышлены и не меняются отметками личного плана.'})
+                    summary={**counts, 'total':len(rows), 'attendance_percent':attendance_summary(row.status for row in rows)['attendance_percent'],
+                             'description':'Уважительные пропуски исключены из расчёта процента посещаемости.'})
 
     class TaskBody(StrictBody):
         title: str = Field(min_length=1, max_length=180)

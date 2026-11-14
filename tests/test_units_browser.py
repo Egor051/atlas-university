@@ -101,8 +101,8 @@ def test_vuc_application_selection_and_group_result(frontend_page):
     student.locator('.op-row').filter(has_text='Организация учебного процесса').get_by_role('button', name='Подать заявление').click()
     dialog = student.get_by_role('dialog')
     assert dialog.locator('input[type="file"]').count() == 0
-    dialog.get_by_role('checkbox', name='Образец заявления').check()
-    dialog.get_by_role('checkbox', name='Образец подтверждения статуса студента').check()
+    dialog.get_by_role('checkbox', name='Заявление').check()
+    dialog.get_by_role('checkbox', name='Подтверждение статуса студента').check()
     dialog.get_by_role('checkbox', name='Подтверждаю отправку').check()
     submit(student, 'Отправить')
     expect(student).to_have_url(re.compile(r'/app/vuc/\d+$'))

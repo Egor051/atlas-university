@@ -1,4 +1,5 @@
 """Read scoped announcements and manage their editorial workflow in the study office."""
+import re
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, Response
@@ -24,6 +25,7 @@ Sort = Literal['featured', 'newest', 'oldest']
 
 class AnnouncementBody(StrictBody):
     title: str = Field(min_length=5, max_length=180)
+    summary: str = Field(default='', max_length=700)
     body: str = Field(min_length=10, max_length=4000)
     category: Category = 'announcement'
     priority: Priority = 'normal'
@@ -32,7 +34,7 @@ class AnnouncementBody(StrictBody):
     pinned: StrictBool = False
     status: Status = 'published'
 
-    @field_validator('title', 'body', mode='before')
+    @field_validator('title', 'summary', 'body', mode='before')
     @classmethod
     def strip_text(cls, value):
         return value.strip() if isinstance(value, str) else value
@@ -62,10 +64,10 @@ def payload(row, *, excerpt=False):
                   audience=row.audience, group_id=row.group_id, group=row.group.code if row.group else None,
                   status=row.status, pinned=row.pinned, author=row.author.full_name, unit='Учебный офис',
                   created_at=date_iso(row.created_at), updated_at=date_iso(row.updated_at),
-                  published_at=date_iso(row.published_at), version=row.version)
+                  published_at=date_iso(row.published_at), version=row.version, summary=row.summary)
     if excerpt:
-        shortened = row.body[:220].rstrip()
-        result['excerpt'] = shortened + ('…' if len(row.body) > 220 else '')
+        fallback = re.split(r'\r?\n[ \t]*\r?\n', row.body.strip(), maxsplit=1)[0]
+        result['excerpt'] = row.summary or fallback
     else:
         result['body'] = row.body
     return result
@@ -85,7 +87,8 @@ def listing(db, conditions, *, category, priority, q, sort, offset, limit, staff
     if priority:
         conditions.append(Announcement.priority == priority)
     if q.strip():
-        conditions.append(or_(text_search(Announcement.title, q.strip()), text_search(Announcement.body, q.strip())))
+        conditions.append(or_(text_search(Announcement.title, q.strip()), text_search(Announcement.summary, q.strip()),
+                              text_search(Announcement.body, q.strip())))
     date = func.coalesce(Announcement.published_at, Announcement.created_at) if staff else Announcement.published_at
     order = (date.asc(), Announcement.id.asc()) if sort == 'oldest' else (date.desc(), Announcement.id.desc())
     if sort == 'featured':
@@ -191,7 +194,10 @@ def create_announcement(body: AnnouncementBody, request: Request, response: Resp
 def edit_announcement(body: AnnouncementEdit, request: Request, response: Response,
                       record_id: int = Path(ge=1, le=2147483647),
                       user: User = Depends(require_staff), db: Session = Depends(get_db)):
-    receipt, replay = begin_idempotent(db, request, response, user, f'announcement-edit-{record_id}', body.model_dump())
+    values = body.model_dump()
+    if 'summary' not in body.model_fields_set:
+        values.pop('summary')
+    receipt, replay = begin_idempotent(db, request, response, user, f'announcement-edit-{record_id}', values)
     if replay is not None:
         return replay
     row = find_announcement(db, record_id)
@@ -206,7 +212,7 @@ def edit_announcement(body: AnnouncementEdit, request: Request, response: Respon
     now = utc_now()
     first_publish = body.status == 'published' and row.published_at is None
     action = 'edited' if body.status == row.status else {'published': 'published', 'archived': 'archived', 'draft': 'withdrawn'}[body.status]
-    fields = body.model_dump(exclude={'version'})
+    fields = {key: value for key, value in values.items() if key != 'version'}
     if not any(before[key] != value for key, value in fields.items()):
         return commit_idempotent(db, receipt, dict(**before, sent=0))
     changed = db.execute(update(Announcement).where(Announcement.id == row.id, Announcement.version == body.version)

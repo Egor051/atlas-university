@@ -3,7 +3,7 @@ from pathlib import Path
 from functools import lru_cache
 import hashlib
 
-VERSION = '3.6.0'
+VERSION = '3.7.0'
 
 @lru_cache(maxsize=1)
 def build_id():

@@ -264,11 +264,6 @@ body { font-size: 14px; }
 .campus-conversation { gap: 12px; margin: 16px 0; }
 .campus-conversation li { padding: 14px; }
 .campus-conversation b,.campus-conversation time { font-size: 12px; }
-.campus-focus { padding: 2px 0 4px; }
-.focus-clock { font-size: 70px; }
-.campus-focus .field { margin: 12px 0; }
-.campus-focus > .campus-muted { margin: 12px 0; }
-.focus-layout { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,1fr); gap: 16px; align-items: start; }
 .campus-goal { gap: 10px; }
 .campus-goal > b { font-size: 24px; }
 .campus-goal > span { font-size: 13px; }
@@ -402,11 +397,6 @@ body { font-size: 14px; }
   .campus-faq details { padding: 12px 14px; }
   .campus-faq summary b { font-size: 14px; }
   .campus-definition { grid-template-columns: 58px minmax(0,1fr); }
-  .focus-layout { grid-template-columns: 1fr; gap: 0; }
-  .focus-clock { font-size: 64px; }
-  .campus-focus { padding: 0; }
-  .campus-focus .field { margin: 10px 0; }
-  .campus-focus > .campus-muted { margin: 10px 0; }
   .campus-calendar-tools .week-switch { margin-right: 0; }
   .campus-calendar-tools .week-switch h2 { font-size: 15px; }
   .campus-calendar-tools > .outline-button { font-size: 12px; }

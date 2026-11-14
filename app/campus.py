@@ -90,7 +90,7 @@ def create_router():
         esc = html.escape
         rows = db.scalars(select(PortfolioItem).where(PortfolioItem.student_id == user.id).order_by(PortfolioItem.day.desc(), PortfolioItem.id.desc())).all()
         sections = ''.join(f'<article><h2>{esc(row.title)}</h2><p>{row.day:%d.%m.%Y} · {esc(row.kind)}</p><p class="text">{esc(row.description)}</p>{"<p>" + esc(row.url) + "</p>" if row.url else ""}</article>' for row in rows)
-        doc = f'<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>АТЛАС · портфолио</title><body><main><p><strong>КОНКУРСНЫЙ ОБРАЗЕЦ · ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ</strong></p><h1>Портфолио: {esc(user.full_name)}</h1><p>{esc(user.program)} · {esc(user.group_name)}</p>{sections or "<p>Записей пока нет.</p>"}<footer>Неофициальный концепт АТЛАС Campus. Записи добавлены самим пользователем и не подтверждают квалификацию.</footer></main></body></html>'
+        doc = f'<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>АТЛАС · портфолио</title><body><main><h1>Портфолио: {esc(user.full_name)}</h1><p>{esc(user.program)} · {esc(user.group_name)}</p>{sections or "<p>Записей пока нет.</p>"}<footer>Портфолио составлено пользователем. Оно не подтверждает квалификацию.</footer></main></body></html>'
         return HTMLResponse(doc, headers={'Content-Disposition': 'attachment; filename="atlas-portfolio.html"', 'Content-Security-Policy': "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; sandbox"})
 
     @router.get('/api/campus/search')
@@ -98,6 +98,7 @@ def create_router():
         term = search_text(q.strip())
         if len(term) < 2:
             return {'items': []}
+        from .assignment_workflow import visible_deadline
         from .learning_db import StudyNote
         results = []
         specifications = [
@@ -110,6 +111,8 @@ def create_router():
         ]
         for model, title, target, category, content in specifications:
             condition = text_search(title, term) | text_search(content, term)
+            if model is Deadline:
+                condition = condition & visible_deadline()
             rows = db.scalars(select(model).where(model.student_id == user.id, condition).order_by(model.id.desc()).limit(8)).all()
             for row in rows:
                 certificate = model is DocumentRequest and request_kind(row.type) == 'certificate'

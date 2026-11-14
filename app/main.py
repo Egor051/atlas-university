@@ -70,13 +70,16 @@ class BodyLimitMiddleware:
     async def __call__(self, scope, receive, send):
         if scope['type'] != 'http':
             return await self.app(scope, receive, send)
+        assignment_upload = scope['method'] == 'POST' and re.fullmatch(
+            r'/api/learning/assignments/[0-9]+/submit/?', scope['path'])
+        max_body_size = 2 * 1024 * 1024 if assignment_upload else 32768
         body = bytearray()
         while True:
             message = await receive()
             if message['type'] == 'http.disconnect':
                 return
             body.extend(message.get('body', b''))
-            if len(body) > 32768:
+            if len(body) > max_body_size:
                 return await JSONResponse({'detail': 'Слишком большой запрос'}, status_code=413)(scope, receive, send)
             if not message.get('more_body', False):
                 break
@@ -138,7 +141,7 @@ def require_user(request: Request, db: Session = Depends(get_db)) -> User:
     if not row or as_utc(row.expires_at) <= as_utc(utc_now()):
         raise HTTPException(401, 'Сессия истекла, войдите повторно')
     if not settings.demo_mode and row.user.login in DEMO_LOGINS:
-        raise HTTPException(401, 'Демонстрационные учётные записи отключены')
+        raise HTTPException(401, 'Этот аккаунт недоступен')
     validate_expected_actor(request.headers.get('X-ATLAS-User'), row.user_id)
     return row.user
 
@@ -363,13 +366,13 @@ def fold_ics(line):
 @app.get('/api/schedule/export')
 def export_schedule(week: date | None = None, user: User = Depends(require_student), db: Session = Depends(get_db)):
     data = schedule(week, user, db)
-    lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ATLAS Campus//Contest concept//RU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:АТЛАС — вымышленное расписание', 'X-WR-TIMEZONE:Europe/Moscow', 'BEGIN:VTIMEZONE', 'TZID:Europe/Moscow', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0300', 'TZOFFSETTO:+0300', 'TZNAME:MSK', 'END:STANDARD', 'END:VTIMEZONE']
+    lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ATLAS Campus//Schedule//RU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:АТЛАС — расписание занятий', 'X-WR-TIMEZONE:Europe/Moscow', 'BEGIN:VTIMEZONE', 'TZID:Europe/Moscow', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0300', 'TZOFFSETTO:+0300', 'TZNAME:MSK', 'END:STANDARD', 'END:VTIMEZONE']
     stamp = utc_now().strftime('%Y%m%dT%H%M%SZ')
     for day in data['days']:
         for lesson in day['items']:
             start = day['date'].replace('-', '') + 'T' + lesson['start'].replace(':', '') + '00'
             end = day['date'].replace('-', '') + 'T' + lesson['end'].replace(':', '') + '00'
-            description = f"{lesson['kind']} · {lesson['teacher']}\nКонкурсный прототип. Все данные вымышлены."
+            description = f"{lesson['kind']} · {lesson['teacher']}"
             if lesson['note']:
                 description += '\n' + lesson['note']
             lines.extend(['BEGIN:VEVENT', f"UID:lesson-{user.id}-{lesson['id']}-{day['date']}@atlas-concept.local", f'DTSTAMP:{stamp}', f'DTSTART;TZID=Europe/Moscow:{start}', f'DTEND;TZID=Europe/Moscow:{end}', 'SUMMARY:' + ics_text(lesson['title']), 'LOCATION:' + ics_text(lesson['room']), 'DESCRIPTION:' + ics_text(description), 'STATUS:CONFIRMED', 'END:VEVENT'])
@@ -378,18 +381,23 @@ def export_schedule(week: date | None = None, user: User = Depends(require_stude
 
 @app.get('/api/grades')
 def grades(user:User=Depends(require_student),db:Session=Depends(get_db)):
+    from .academics import assessment_status
+
     rows=db.scalars(select(Grade).where(Grade.student_id==user.id).order_by(Grade.id)).all()
-    items=[dict(id=g.id,subject=g.subject,score=g.current,max=g.max_grade,trend=g.trend,
+    today=campus_today()
+    items=[dict(id=g.id,subject=g.subject,score=g.current,max=g.max_grade or None,trend=max(0,g.trend),
                 exam_kind=g.exam_kind,assessment=g.assessment,teacher=g.teacher,
-                exam_date=date_iso(g.exam_date),color=g.color) for g in rows]
+                exam_date=date_iso(g.exam_date),color=g.color,assessment_status=assessment_status(g,today)) for g in rows]
     avg=round(sum(g.current for g in rows if g.current is not None)/max(1,len([g for g in rows if g.current is not None]))) if rows else 0
-    return {'items':items,'average':avg,'credits_passed':len([g for g in rows if g.exam_kind=='Зачёт' and g.current is not None and g.current>=65]),
+    return {'items':items,'average':avg,'credits_passed':sum(item['assessment_status']['code']=='passed' for item in items if item['exam_kind']=='Зачёт'),
             'credits_total':len([g for g in rows if g.exam_kind=='Зачёт']),
-            'risk_count':len([g for g in rows if g.current is not None and g.current<65])}
+            'risk_count':sum(item['assessment_status']['code'] in {'blocked','failed','retake'} for item in items)}
 
 @app.get('/api/deadlines')
 def deadlines(user:User=Depends(require_student),db:Session=Depends(get_db)):
-    rows=db.scalars(select(Deadline).where(Deadline.student_id==user.id).order_by(Deadline.due_date, Deadline.id).limit(200)).all()
+    from .assignment_workflow import visible_deadline
+    rows = db.scalars(select(Deadline).where(Deadline.student_id == user.id, visible_deadline())
+                      .order_by(Deadline.due_date, Deadline.id).limit(200)).all()
     return [deadline_payload(d) for d in rows]
 
 
@@ -482,7 +490,9 @@ class DeadlineToggleBody(StrictBody):
 
 @app.post('/api/deadlines/{deadline_id}/toggle')
 def toggle_deadline(deadline_id: int, body: DeadlineToggleBody, user: User = Depends(require_student), db: Session = Depends(get_db), _: None = Depends(require_same_origin)):
-    row = db.scalar(select(Deadline).where(Deadline.id == deadline_id, Deadline.student_id == user.id))
+    from .assignment_workflow import visible_deadline
+    row = db.scalar(select(Deadline).where(Deadline.id == deadline_id, Deadline.student_id == user.id,
+                                          visible_deadline()))
     if not row:
         raise HTTPException(404, 'Задание не найдено')
     row.is_done = body.is_done
@@ -630,14 +640,14 @@ def request_document(request_id: int, preview: bool = False, theme: Literal['lig
         rows = db.scalars(select(Grade).where(Grade.student_id == user.id).order_by(Grade.id)).all()
         content = '<table><thead><tr><th>Дисциплина</th><th>Баллы</th><th>Аттестация</th></tr></thead><tbody>' + ''.join(f'<tr><td>{esc(g.subject)}</td><td>{g.current if g.current is not None else "—"}/{g.max_grade}</td><td>{esc(g.assessment)}</td></tr>' for g in rows) + '</tbody></table>'
     elif row.type == DOC_NAMES['scholarship']:
-        content = '<p>Демонстрационная справка о стипендии. Суммы вымышленной финансовой ленты не подтверждают реальное начисление или выплату. Образец не имеет юридической силы.</p>'
+        content = '<p>Сведения о начислениях и расходах доступны в разделе «Финансы».</p>'
     else:
         content = f'<h2>Обращение</h2><p class="multiline">{esc(row.comment)}</p>'
     if row.type != APPENDIX_4_NAME and row.details and row.details!='{}':
         labels={'purpose':'Назначение','copies':'Экземпляры','period':'Учебный период','format':'Формат','subject':'Дисциплина','preferred_date':'Желаемая дата'}
         content+='<h2>Сведения заявки</h2><dl>'+''.join('<dt>'+esc(labels.get(k,k))+'</dt><dd>'+esc(v)+'</dd>' for k,v in json.loads(row.details).items())+'</dl>'
     identity = '' if row.type == APPENDIX_4_NAME else f'<p><strong>{esc(user.full_name)}</strong><br>{esc(user.faculty)}<br>{esc(user.program)} · {esc(user.group_name)}<br>Учебный номер: {esc(user.student_number)}</p>'
-    document = f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>АТЛАС · образец №{row.id}</title><style nonce="{nonce}">body{{margin:0;background:#f2f3f8;color:#202338;font:16px/1.65 system-ui,sans-serif}}main{{max-width:760px;margin:40px auto;padding:40px;background:white;border:1px solid #dce0eb}}.warning{{padding:16px;border:2px solid #ad4024;color:#8d301a;font-weight:700}}small{{color:#596174}}h1{{font-size:28px}}h2{{font-size:19px}}table{{width:100%;border-collapse:collapse}}th,td{{text-align:left;padding:10px;border-bottom:1px solid #dce0eb}}.multiline{{white-space:pre-wrap;overflow-wrap:anywhere}}footer{{margin-top:40px;padding-top:20px;border-top:1px solid #dce0eb}}@media(max-width:600px){{main{{margin:0;padding:20px}}th,td{{font-size:13px;padding:6px}}}}@page{{size:A4;margin:16mm}}td,th,dd{{overflow-wrap:anywhere}}tr,footer{{break-inside:avoid}}@media print{{body{{background:white}}main{{margin:0;border:0;padding:0}}}}</style></head><body><main><div class="warning">КОНКУРСНЫЙ ОБРАЗЕЦ · ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ</div><p><strong>АТЛАС / цифровой кампус</strong><br><small>Неофициальный концепт. Не является документом образовательной организации.</small></p><h1>{esc(heading)}</h1><p>Заявка №{row.id} · подготовлена {as_utc(row.updated_at).astimezone(CAMPUS_TZ):%d.%m.%Y}</p>{identity}{content}<h2>Ответ учебного офиса</h2><p class="multiline">{esc(row.staff_message)}</p><footer>Этот образец показывает полный путь заявки в прототипе. Юридической силы не имеет. Реальная подпись, печать и интеграция с вузом отсутствуют.<br><small>Можно сохранить в PDF через печать браузера.</small></footer></main></body></html>'''
+    document = f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>АТЛАС · заявка №{row.id}</title><style nonce="{nonce}">body{{margin:0;background:#f2f3f8;color:#202338;font:16px/1.65 system-ui,sans-serif}}main{{max-width:760px;margin:40px auto;padding:40px;background:white;border:1px solid #dce0eb}}.warning{{padding:16px;border:2px solid #ad4024;color:#8d301a;font-weight:700}}small{{color:#596174}}h1{{font-size:28px}}h2{{font-size:19px}}table{{width:100%;border-collapse:collapse}}th,td{{text-align:left;padding:10px;border-bottom:1px solid #dce0eb}}.multiline{{white-space:pre-wrap;overflow-wrap:anywhere}}footer{{margin-top:40px;padding-top:20px;border-top:1px solid #dce0eb}}@media(max-width:600px){{main{{margin:0;padding:20px}}th,td{{font-size:13px;padding:6px}}}}@page{{size:A4;margin:16mm}}td,th,dd{{overflow-wrap:anywhere}}tr,footer{{break-inside:avoid}}@media print{{body{{background:white}}main{{margin:0;border:0;padding:0}}}}</style></head><body><main><div class="warning">Не имеет юридической силы</div><p><strong>АТЛАС / цифровой кампус</strong></p><h1>{esc(heading)}</h1><p>Заявка №{row.id} · подготовлена {as_utc(row.updated_at).astimezone(CAMPUS_TZ):%d.%m.%Y}</p>{identity}{content}<h2>Ответ учебного офиса</h2><p class="multiline">{esc(row.staff_message)}</p><footer>Можно сохранить в PDF через печать браузера.</footer></main></body></html>'''
     if preview:
         document = document.replace('<html lang="ru">', f'<html lang="ru" data-theme="{theme or "system"}">', 1)
         document = document.replace('</style></head>', document_preview_style() + '</style></head>', 1)
@@ -698,11 +708,13 @@ def read_all_notifications(user:User=Depends(require_user),db:Session=Depends(ge
 
 @app.get('/api/dashboard')
 def dashboard(user:User=Depends(require_student),db:Session=Depends(get_db)):
+    from .assignment_workflow import visible_deadline
     now = datetime.now(CAMPUS_TZ)
     today = now.date()
     monday=today-timedelta(days=today.weekday())
     days=get_week_schedule(db,user,monday)
-    incoming=db.scalars(select(Deadline).where(Deadline.student_id==user.id,Deadline.is_done==False).order_by(Deadline.due_date, Deadline.id).limit(3)).all()
+    incoming = db.scalars(select(Deadline).where(Deadline.student_id == user.id, Deadline.is_done.is_(False),
+                         visible_deadline(now.astimezone(timezone.utc))).order_by(Deadline.due_date, Deadline.id).limit(3)).all()
     grade_data=grades(user,db)
     recent=db.scalars(select(Notification).where(Notification.student_id==user.id).order_by(Notification.created_at.desc()).limit(3)).all()
     open_requests=db.scalar(select(func.count()).select_from(DocumentRequest).where(DocumentRequest.student_id==user.id,DocumentRequest.status.not_in(['ready', 'rejected'])))
@@ -793,6 +805,7 @@ def static_files(filename:str, v: str = ''):
     allowed={'app.js':'text/javascript','campus.js':'text/javascript','improvements.js':'text/javascript',
              'university.js':'text/javascript','campus.css':'text/css','style.css':'text/css','usability.css':'text/css',
              'university.css':'text/css','operations.css':'text/css','operations.js':'text/javascript',
+             'academics.css':'text/css','academics.js':'text/javascript',
              'units.js':'text/javascript','announcements.js':'text/javascript','announcements.css':'text/css',
              'shell.css':'text/css','viewport.js':'text/javascript','theme.css':'text/css','theme.js':'text/javascript',
              'favicon.svg':'image/svg+xml'}

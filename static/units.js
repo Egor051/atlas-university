@@ -100,7 +100,7 @@
     const header=ui.title(data.title,[item.student,item.subject,item.status_label].filter(Boolean).join(' · '),
       ui.link(tabPath(page,'cases'),data.office?'К очереди':'К моим заявлениям','outline-button'));
     const checklist=item.checklist.length?
-      `<ul>${item.checklist.map(key=>`<li>${esc(key==='sample_application'?'Образец заявления':'Образец подтверждения статуса студента')}</li>`).join('')}</ul>`:'';
+      `<ul>${item.checklist.map(key=>`<li>${esc(key==='sample_application'?'Заявление':'Подтверждение статуса студента')}</li>`).join('')}</ul>`:'';
     const summary=ui.p('Подано '+time(item.created_at))+paragraph(item.message)+checklist+
       (item.response?`<h3 class="unit-subhead">Ответ сотрудника</h3>${paragraph(item.response)}`:'')+
       `<div class="op-actions unit-actions">${buttons}${item.file_url?ui.download(item.file_url,'Скачать решение'):''}</div>`;
@@ -126,7 +126,7 @@
     if(data.unit==='vuc'){
       return ui.section('Программы и сроки приёма',ui.list(data.programs,item=>programRow(item,false),
         'Открытых программ пока нет','Опубликованные программы появятся здесь.'))+
-        ui.section('Этапы рассмотрения',ui.p('Подайте заявление с двумя учебными образцами. Сотрудник проверит его, при необходимости запросит уточнение и оформит решение. При одобрении в кабинете появится ваша учебная группа.'))+contacts;
+        ui.section('Этапы рассмотрения',ui.p('Проверьте оба пункта списка и подайте заявление. Сотрудник проверит его, при необходимости запросит уточнение и оформит решение. При одобрении в кабинете появится ваша учебная группа.'))+contacts;
     }
     const {active,updated_at:updated}=data.member;
     const membership=ui.section('Моё членство',ui.p(active?'Членство действует':'Членство не оформлено')+

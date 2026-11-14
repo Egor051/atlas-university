@@ -44,7 +44,7 @@
   const pages = [
     {id:'home',label:'Мой день',icon:'home',hint:'Ближайшая пара и важное'},
     {id:'schedule',label:'Расписание',icon:'calendar',hint:'Неделя, день, аудитории'},
-    {id:'grades',label:'Успеваемость',icon:'graduation',hint:'Оценки, баллы, зачёты и сессия'},
+    {id:'grades',label:'Успеваемость и посещаемость',icon:'graduation',hint:'Оценки, баллы, посещения и результаты аттестации'},
     {id:'plan',label:'Мой план',icon:'plan',hint:'Личные отметки выполнения учебных заданий'},
     {id:'requests',label:'Заявки',icon:'file',hint:'Подать обращение и отследить решение'},
     {id:'notifications',label:'Уведомления',icon:'bell',hint:'Новости и изменения'},
@@ -69,9 +69,9 @@
   const planningOffice = section('schedule-work','Организация занятий','calendar','Расписание, согласование и справочники',['timetable-admin','schedule-changes','registry','tables']);
   const sections = {
     student:[
-      section('records','Занятия и оценки','graduation','Расписание, оценки, посещаемость и экзамены',['schedule','grades','attendance','exams']),
-      section('learning','Учебные материалы и задания','book','Дисциплины, учебные материалы и самостоятельная подготовка',['courses','materials','assignments','quizzes','flashcards','library']),
-      section('planning','Планирование','plan','Календарь, сроки и личные инструменты',['calendar','plan','tasks','notes','focus']),
+      section('records','Занятия и оценки','graduation','Расписание, оценки, посещаемость и экзамены',['schedule','grades','exams']),
+      section('learning','Учебные материалы и задания','book','Дисциплины, учебные материалы, задания и конспекты',['courses','materials','assignments','notes']),
+      section('planning','Планирование','plan','Календарь, сроки и личные инструменты',['calendar','plan','tasks']),
       section('administration','Заявки и документы','file','Заявки, справки, финансы и правила',['requests','certificates','finance','knowledge']),
       section('communications','Переписка и консультации','send','Личная переписка, обращения и консультации',['direct','messages','consultations']),
       section('university-life','Университет','pin','Институты, кафедры и подразделения',['university','contacts','union','vuc']),
@@ -81,12 +81,12 @@
     staff:[
       section('office','Работа со студентами','file','Заявки, справки, объявления и ответы студентам',['staff','staffdesk','staffmessages','announcement-admin']),
       planningOffice,
-      section('learning','Материалы','book','Учебная библиотека и публикации',['materials','materials-admin']),
+      section('learning','Материалы','book','Учебные материалы и публикации',['materials','materials-admin']),
       account,
     ],
     teacher:[
       section('academic-work','Учебная работа','graduation','Группы, ведомости, расписание и консультации',['teaching','teach-schedule','teach-consultations','tables']),
-      section('learning','Материалы','book','Учебная библиотека и публикации',['materials','materials-admin']),
+      section('learning','Материалы','book','Учебные материалы и публикации',['materials','materials-admin']),
       account,
     ],
     scheduler:[planningOffice,account],
@@ -96,7 +96,7 @@
   };
   pages.push(...extensionPages('student'));
   staffPages.push(...extensionPages('staff'));
-  const menuIcons={exams:'certificate',materials:'copy',quizzes:'checkCircle',library:'books',tasks:'checkCircle',finance:'wallet',messages:'chat',staffmessages:'chat',teaching:'users',registry:'pin',university:'home','announcement-admin':'megaphone',announcements:'megaphone'};
+  const menuIcons={exams:'certificate',materials:'copy',tasks:'checkCircle',finance:'wallet',messages:'chat',staffmessages:'chat',teaching:'users',registry:'pin',university:'home','announcement-admin':'megaphone',announcements:'megaphone'};
   const menuFor = role => (role==='student'?pages:role==='staff'?staffPages:
     [profile,settings,notifications,...extensionPages(role)]).map(p=>menuIcons[p.id]?{...p,icon:menuIcons[p.id]}:p);
   const sectionChildren = group => {
@@ -177,7 +177,7 @@
       return {...dashboard,announcements};
     }
     if(page==='schedule')return api('schedule?week='+state.week);
-    if(page==='grades'){const [grades,deadlines]=await Promise.all([api('grades'),api('deadlines')]);return {grades,deadlines};}
+    if(page==='grades')return api('learning/progress');
     if(page==='plan')return api('deadlines');
     if(['requests','certificates'].includes(page)){
       const kind=page==='certificates'?'certificate':'request';
@@ -191,7 +191,8 @@
     if(page==='staff')return api(`staff/requests?paginated=true&limit=30&offset=${state.staffOffset}&filter=${state.staffFilter}&kind=${state.staffKind||'request'}&q=${encodeURIComponent(state.staffQuery)}`);
     return state.user;
   }
-  const contextPages=new Set(['schedule','calendar','courses','assignments','exams','tasks','events','consultations','messages','staffmessages','notes','portfolio','library']);
+  const contextPages=new Set(['schedule','calendar','courses','assignments','grades','exams','tasks','events','consultations','messages','staffmessages','notes','portfolio']);
+  const pagePath=page=>page==='notes'?'/app/learning/notes':'/app/'+page;
   function cleanContext(page, context){
     if(!contextPages.has(page))return {};
     const result={};
@@ -206,6 +207,10 @@
     const [prefix,initial,...rest]=url.pathname.split('/').filter(Boolean);
     const query=new URLSearchParams(url.search);
     if(prefix!=='app')return {};
+    const legacyStudentSections={learning:['library','flashcards','quizzes'],planning:['notes','focus'],records:['attendance']};
+    if(state.user.role==='student'&&rest.length===1&&Object.hasOwn(legacyStudentSections,initial)&&legacyStudentSections[initial].includes(rest[0])){
+      return {page:rest[0],parts:[],context:Object.fromEntries(query)};
+    }
     const group=sections[state.user.role].find(item=>item.id===initial||(initial==='university'&&item.id==='university-life'&&item.children.includes(rest[0])));
     const nested=group?.children.includes(rest[0]);
     const page=nested?rest[0]:initial;
@@ -221,7 +226,11 @@
     if(state.pending){toast('Дождитесь завершения отправки.');return;}
     if(!state.user||!closeModal())return;
     const role=state.user.role;
-    const legacy={campus:'home','work-contact':'notifications','work-notices':'notifications'};
+    const legacy={campus:'home','work-contact':'notifications','work-notices':'notifications',attendance:'grades'};
+    if(role==='student'&&['library','quizzes','flashcards','focus'].includes(page)){
+      page=page==='focus'?'tasks':'materials';
+      context={};
+    }
     const oldSection=sections[role].find(item=>item.id===page);
     page=legacy[page]|| (oldSection?sectionChildren(oldSection)[0]?.id:page);
     const valid=menuFor(role).some(item=>item.id===page);
@@ -230,7 +239,7 @@
     const detail=valid&&extension?.validParts(target,parts)?parts:[];
     const next=valid?(extension?extension.cleanQuery(target,context,detail):cleanContext(target,context)):{};
     const query=new URLSearchParams(next).toString();
-    const href=`/app/${[target,...detail].join('/')}${query?'?'+query:''}`;
+    const href=pagePath(target)+(detail.length?'/'+detail.join('/'):'')+(query?'?'+query:'');
     const previous=state.routeContext, previousPage=state.page;
     if(Object.keys(previous).length&&contextPages.has(previousPage))campus.resetRouteContext(previousPage);
     if(target!==previousPage&&['requests','certificates'].includes(target)){
@@ -258,7 +267,7 @@
     if(target==='schedule'){
       const row=next.id?$(`[data-lesson-id="${next.id}"]`):null;
       if(row){row.classList.add('search-match');row.tabIndex=-1;row.scrollIntoView({block:'center',behavior:'instant'});row.focus({preventScroll:true});}
-    }else await campus.openContext(target,next);
+    }else if(target!=='grades')await campus.openContext(target,next);
   }
   function goToUrl(url,options={}){
     const {page,parts,context}=routeFromUrl(url);
@@ -273,14 +282,14 @@
     return sections[state.user.role].find(group=>group.id===state.page||group.children.includes(state.page));
   }
   function routeLink(page,label,cls=''){
-    return `<a class="${cls}" href="/app/${page}" data-route="${page}">${esc(label)}</a>`;
+    return `<a class="${cls}" href="${pagePath(page)}" data-route="${page}">${esc(label)}</a>`;
   }
   function breadcrumbs(data){
     const role=state.user.role, root=startPage(role), group=currentSection();
     const crumbs=[['Кабинет','/app/'+root]];
     if(state.page!==root){
       if(group)crumbs.push([group.label]);
-      crumbs.push([pageTitle(state.page),'/app/'+state.page]);
+      crumbs.push([pageTitle(state.page),pagePath(state.page)]);
     }
     if(state.routeParts.length){
       for(const parent of data?.parents||[])crumbs.push([parent.title,parent.href]);
@@ -298,7 +307,7 @@
     const active=state.page===p.id;
     const attributes=`class="nav-item ${active?'active':''}" data-route="${p.id}" title="${esc(p.label)}" ${active?'aria-current="page"':''}`;
     const label=`${icon(p.icon)}<span class="nav-text">${esc(p.label)}</span>${p.id==='notifications'?`<span class="nav-badge" ${state.unread?'':'hidden'}>${state.unread}</span>`:''}${p.id==='direct'?university.unreadBadge():''}`;
-    return mobile?`<button type="button" ${attributes}>${label}</button>`:`<a href="/app/${p.id}" ${attributes}>${label}</a>`;
+    return mobile?`<button type="button" ${attributes}>${label}</button>`:`<a href="${pagePath(p.id)}" ${attributes}>${label}</a>`;
   }
   function navMarkup(menu){
     const role=state.user.role, active=currentSection();
@@ -443,7 +452,7 @@
   function lessonRows(items){return items.length?`<div class="schedule-list">${items.map(l=>`<article data-lesson-id="${Number(l.id)}" class="lesson-row"><div class="lesson-time"><b>${esc(l.start)}</b><span>${esc(l.end)}</span></div><span class="lesson-line ${esc(l.color)}"></span><div class="lesson-details"><h3>${esc(l.title)}</h3><p>${esc(l.kind)} <span>·</span> ${esc(l.teacher)}</p><div class="lesson-location">${icon('pin')} ${esc(l.room)}${l.changed?'<span class="status-tag changed">Изменение</span>':''}</div>${l.changed?`<div class="change-note">${esc(l.note)}${l.original_room||l.original_start?`<small class="change-comparison">Было: ${esc(l.original_start)} · ${esc(l.original_room)} → Стало: ${esc(l.start)} · ${esc(l.room)}</small>`:''}</div>`:''}</div></article>`).join('')}</div>`:'<p class="compact-empty">В этот день занятий нет.</p>';}
   function dueItems(items,interactive=false){if(!items.length)return empty('checkCircle','Всё под контролем','Незавершённых заданий пока нет.');return `<div class="deadline-list">${items.map(d=>`<div class="deadline-item ${d.is_done?'done':''}">${interactive?`<input type="checkbox" class="task-checkbox" data-deadline="${d.id}" ${(deadlineWrites.get(Number(d.id))?.done??d.is_done)?'checked':''} ${deadlineWrites.has(Number(d.id))?'disabled':''} aria-label="Выполнено: ${esc(d.title)}" />`:`<div class="deadline-cal ${dueDays(d.due_date)<=2?'urgent':''}"><b>${asDate(d.due_date).getDate()}</b><span>${dateFmt(d.due_date,{month:'short'})}</span></div>`}<div class="deadline-info"><button class="deadline-open" data-route="assignments" data-record-id="${Number(d.id)}"><b>${esc(d.title)}</b></button><p>${esc(d.subject)}</p>${interactive?`<small>${dateFmt(d.due_date)} · ${d.is_done?'Выполнено':relative(d.due_date)}</small>`:''}</div>${!interactive?`<span class="due-label ${dueDays(d.due_date)<=2?'urgent':''}">${relative(d.due_date)}</span>`:''}</div>`).join('')}</div>`;}
   function dashboard(d){
-    const next=d.next_lesson;const risks=d.grades.items.filter(x=>x.score!==null&&x.score<65);const firstName=d.profile.full_name.split(' ')[0];
+    const next=d.next_lesson;const risks=d.grades.items.filter(x=>['blocked','failed','retake'].includes(x.assessment_status?.code));const firstName=d.profile.full_name.split(' ')[0];
     const deadlines=`<section class="card card-pad">${cardHead('Ближайшие сроки','assignments','Все задания')}${dueItems(d.deadlines.slice(0,2))}</section>`;
     const todayLessons=d.today.length?`<section class="card card-pad">${cardHead('Занятия сегодня','schedule','Расписание')}${lessonRows(d.today)}</section>`:'';
     const notices=d.notifications.slice(0,2).map(n=>{
@@ -455,8 +464,8 @@
     return head('',`${greeting()}, ${esc(firstName)}`,`${dateFmt(today(),{weekday:'long',day:'numeric',month:'long'})} · ${esc(d.profile.group)}`)+
       `<div class="home-actions"><button class="outline-button" data-route="assignments">${icon('send')} Сдать работу</button><button class="outline-button" data-action="new-request" data-type="study">${icon('file')} Заказать справку</button><button class="outline-button" data-route="messages">${icon('user')} Написать в деканат</button></div>
       <div class="home-overview"><section class="next-class"><div class="next-class-label">${icon('calendar')}<span>${next?'Ближайшее занятие':'Ближайших занятий нет'}</span>${next?`<time>${next.date===today()?'Сегодня':dateFmt(next.date,{weekday:'short',day:'numeric',month:'short'})}</time>`:''}</div><h2>${next?esc(next.title):'Сегодня можно отдохнуть'}</h2><p>${next?`<strong>${esc(next.start)}–${esc(next.end)}</strong> · ${esc(next.room)}${next.teacher?` · ${esc(next.teacher)}`:''}`:'Расписание появится здесь после публикации.'}</p>${next?.changed?`<p class="change-note">${esc(next.note)}</p>`:''}<button class="mini-link" data-route="schedule" data-date="${esc(next?.date||today())}" data-record-id="${Number(next?.id||0)}">Открыть расписание ${icon('arrow')}</button></section>
-      <div class="stats home-stats"><button class="stat" data-route="grades"><span class="stat-label">Средний балл</span><span class="stat-value">${d.grades.items.length?d.grades.average:'—'}<small>/ 100</small></span><span class="stat-sub">Мои оценки ${icon('right')}</span></button><button class="stat" data-route="assignments"><span class="stat-label">Скоро сдавать</span><span class="stat-value">${d.deadlines.length}</span><span class="stat-sub">К заданиям ${icon('right')}</span></button><button class="stat" data-route="requests"><span class="stat-label">Заявки в работе</span><span class="stat-value">${d.open_requests}</span><span class="stat-sub">Узнать статус ${icon('right')}</span></button></div></div>
-      ${risks.length?`<div class="home-attention">${icon('alert')}<span><b>${esc(risks[0].subject)}: ${risks[0].score} / 100.</b> </span><button class="mini-link" data-route="grades">К оценкам ${icon('arrow')}</button></div>`:''}
+      <div class="stats home-stats"><button class="stat" data-route="grades"><span class="stat-label">Средний балл</span><span class="stat-value">${d.grades.items.some(row=>row.score!=null)?d.grades.average:'—'}</span><span class="stat-sub">Учебные результаты ${icon('right')}</span></button><button class="stat" data-route="assignments"><span class="stat-label">Скоро сдавать</span><span class="stat-value">${d.deadlines.length}</span><span class="stat-sub">К заданиям ${icon('right')}</span></button><button class="stat" data-route="requests"><span class="stat-label">Заявки в работе</span><span class="stat-value">${d.open_requests}</span><span class="stat-sub">Узнать статус ${icon('right')}</span></button></div></div>
+      ${risks.length?`<div class="home-attention">${icon('alert')}<span><b>${esc(risks[0].subject)} · ${esc(risks[0].assessment_status.label)}</b></span><button class="mini-link" data-route="exams" data-subject="${esc(risks[0].subject)}">К аттестации ${icon('arrow')}</button></div>`:''}
       ${window.ATLASAnnouncements.timeline(d.announcements)}
       <div class="home-sections"><div class="home-widget-column">${deadlines}${notifications}</div><div class="home-widget-column">${todayLessons}${shortcuts}</div></div>`;
   }
@@ -471,15 +480,6 @@
       <div class="schedule-info"><span>${visibleCount} занятий · ${state.scheduleMode==='day'?'Выбранный день':'Неделя'} · МСК (UTC+3)</span><span>Регулярное расписание с учётом переносов</span></div>
       ${state.scheduleMode==='day'?`<section class="card card-pad day-view">${cardHead(dateFmt(state.day,{weekday:'long',day:'numeric',month:'long'}))}${lessonRows(visibleDays[0].items)}</section>`:`<div class="week-grid">${visibleDays.map((day,i)=>`<section class="day-column"><div class="day-head ${day.date===today()?'today':''}"><div><span>${weekdays[i]}</span><b>${asDate(day.date).getDate()}</b></div><span>${day.date===today()?'Сегодня':day.items.length+' зан.'}</span></div><div class="day-lessons">${day.items.length?day.items.map(l=>`<article class="day-lesson ${esc(l.color)} ${l.changed?'lesson-changed':''}"><div class="day-lesson-time">${esc(l.start)}–${esc(l.end)}</div><h3>${esc(l.title)}</h3><span class="lesson-kind">${esc(l.kind)}</span><p>${esc(l.teacher)}</p><div class="lesson-location">${icon('pin')} ${esc(l.room)}</div>${l.changed?`<div class="change-note">${icon('alert')} ${esc(l.note)}${l.original_room||l.original_start?`<small class="change-comparison">Было: ${esc(l.original_start)} · ${esc(l.original_room)} → Стало: ${esc(l.start)} · ${esc(l.room)}</small>`:''}</div>`:''}</article>`).join(''):'<div class="week-empty">Свободный день<span>Время для себя</span></div>'}</div></section>`).join('')}</div>`}`;
   }
-  function gradesPage(d){
-    const g=d.grades;const risks=g.items.filter(x=>x.score!==null&&x.score<65);const exams=g.items.filter(x=>x.exam_date);
-    if(!g.items.length)return head('Мой прогресс','Успеваемость','Результаты появятся после публикации учебным офисом.')+`<section class="card card-pad">${empty('graduation','Оценки ещё не опубликованы','Пока здесь нет дисциплин с результатами. Это не означает нулевой балл.')}</section>`;
-    return head('Видеть прогресс — легче двигаться','Успеваемость','Понятная картина по дисциплинам, зачётам и предстоящей сессии.',`<button class="outline-button" data-route="courses">${icon('book')} Учебные материалы</button>`)+
-      `<div class="grade-summary"><div class="card summary-metric"><span class="summary-icon">${icon('graduation')}</span><div><b>${g.average}<small> / 100</small></b><p>Средний текущий балл</p></div></div><div class="card summary-metric"><span class="summary-icon teal">${icon('checkCircle')}</span><div><b>${g.credits_passed}<small> / ${g.credits_total}</small></b><p>Зачёты получены</p></div></div><div class="card summary-metric"><span class="summary-icon orange">${icon('alert')}</span><div><b>${g.risk_count}</b><p>В зоне внимания</p></div></div></div>
-      <details class="card disclosure metric-explanation"><summary>Как читать показатели</summary><div class="disclosure-body"><p>Средний балл — сумма опубликованных текущих баллов, делённая на число дисциплин с оценкой, с округлением. Отсутствующая оценка не считается нулём. Стрелка показывает изменение относительно предыдущей учебной недели. Все шкалы и порог 65 условные.</p></div></details>${risks.length?`<section class="attention-panel"><span class="attention-label">${icon('alert')} Нужно внимание</span><div><h2>${esc(risks[0].subject)}</h2><p>До учебного ориентира 65 — ещё ${65-risks[0].score} баллов.</p></div><button class="outline-button" data-route="consultations" data-subject="${esc(risks[0].subject)}">Консультация ${icon('arrow')}</button></section>`:''}
-      <section class="card card-pad">${cardHead('Мои дисциплины')}<div class="grade-table-wrap"><table class="grade-table"><caption class="sr-only">Текущие баллы и форма контроля по дисциплинам</caption><thead><tr><th scope="col">Дисциплина</th><th scope="col">Прогресс</th><th scope="col">Баллы</th><th scope="col">Контроль</th></tr></thead><tbody>${g.items.map(x=>`<tr data-record-id="${Number(x.id)}"><th scope="row"><span class="subject-name">${esc(x.subject)}</span><span class="subject-prof">${esc(x.teacher)}</span></th><td><progress class="${x.score!==null&&x.score<65?'risk':x.score>=90?'excellent':''}" max="${Number(x.max)||100}" value="${Number(x.score)||0}" aria-label="${esc(x.subject)}: ${x.score??'нет оценки'} из ${Number(x.max)||100}"></progress><small class="progress-caption">${x.score===null?'Пока без оценки':x.score<65?'Нужно внимание':x.score>=90?'Отличный результат':'В хорошем темпе'}</small></td><td><b class="grade-points">${x.score??'—'}</b><span class="small-delta ${x.trend<0?'down':''}">${x.trend>0?'↗ +'+x.trend:x.trend<0?'↘ '+x.trend:'Без изменений'}</span></td><td><span class="status-tag ${x.exam_kind==='Зачёт'?'green':'blue'}">${esc(x.exam_kind)}</span><span class="assessment">${esc(x.assessment)}</span></td></tr>`).join('')}</tbody></table></div><div class="note-callout">${icon('info')}<span>Баллы ниже 65 отмечены для внимания.</span></div></section>
-      <details class="card disclosure session-card"><summary>Даты сессии ${icon('right')}</summary><div class="disclosure-body"><div class="exam-list">${exams.length?exams.map(x=>`<div class="exam-box"><span class="exam-date">${dateFmt(x.exam_date,{day:'numeric',month:'short'})}</span><b>${esc(x.subject)}</b><span>${esc(x.exam_kind)} · ${esc(x.teacher)}</span></div>`).join(''):empty('graduation','Сессия ещё не назначена','Даты появятся после публикации учебным офисом.')}</div><button class="mini-link" data-route="exams">Сессия и зачёты ${icon('arrow')}</button></div></details>`;
-  }
   function filterButtons(items,current,attribute){return `<div class="filter-tabs" aria-label="Фильтр списка">${items.map(([id,label,count])=>`<button ${attribute}="${id}" aria-pressed="${current===id}">${esc(label)}${count!==undefined?`<span>${count}</span>`:''}</button>`).join('')}</div>`;}
   function pagination(data,kind){return data.total>data.limit?`<nav class="pagination" aria-label="Страницы списка"><span>${data.offset+1}–${Math.min(data.offset+data.items.length,data.total)} из ${data.total}</span><div><button class="square-btn" data-pager="${kind}" data-offset="${Math.max(0,data.offset-data.limit)}" aria-label="Предыдущая страница" ${data.offset?'':'disabled'}>${icon('left')}</button><button class="square-btn" data-pager="${kind}" data-offset="${data.offset+data.limit}" aria-label="Следующая страница" ${data.has_more?'':'disabled'}>${icon('right')}</button></div></nav>`:'';}
   function planPage(items){
@@ -487,12 +487,7 @@
     return head('','Мой план','Личные отметки выполнения заданий. Для отправки работы откройте «Сдать работу».',`<button class="primary-button" data-route="assignments">${icon('send')} Сдать работу</button>`)+
       `<div class="plan-summary"><span>${icon('checkCircle')} Выполнено <b>${done} из ${items.length}</b></span><progress max="${Math.max(items.length,1)}" value="${done}" aria-label="Прогресс выполнения заданий"></progress><span>${urgent.length?`${urgent.length} со сроком в ближайшие 3 дня`:'Ближайших срочных дел нет'}</span><button class="mini-link" data-route="tasks">Личные задачи ${icon('arrow')}</button></div><section class="card card-pad">${cardHead('Учебные задания')}${filterButtons([['active','Предстоят',active.length],['done','Выполнены',done],['all','Все',items.length]],state.planFilter,'data-plan-filter')}${visible.length?dueItems(visible,true):empty('checkCircle',state.planFilter==='done'?'Выполненных заданий пока нет':'Все задания отмечены',state.planFilter==='done'?'Поставьте отметку у выполненного задания.':'Посмотрите отправленные работы или добавьте собственную задачу.')}<p class="list-footnote">Отметка сохраняется в вашем плане и не заменяет сдачу работы.</p></section>`;
   }
-  const legacyRequestCopy = new Map([
-    ['Демонстрационный документ подготовлен. Все данные вымышлены.','Документ подготовлен.'],
-    ['Вымышленная заявка для демонстрации сценария.','Заявка сохранена.'],
-  ]);
-  const requestCopy = value => legacyRequestCopy.get(value) ?? value;
-  function requestRow(r,staff=false){return `<button class="request-row ${r.status==='ready'?'request-is-ready':''}" data-action="request-details" data-id="${r.id}"><span class="file-glyph ${r.status==='ready'?'ready':''}">${icon(r.status==='ready'?'checkCircle':'file')}</span><span class="request-row-main"><b>${esc(r.type)}</b><small>№ ${r.id} · ${timestampDate(r.created_at,{day:'numeric',month:'short'})}${staff?` · ${esc(r.student_name)} · ${esc(r.group)}`:''}</small>${r.staff_message?`<span class="request-preview">${esc(requestCopy(r.staff_message).slice(0,110))}</span>`:''}</span><span class="request-row-end">${badge(r)}<small>${r.status==='ready'?'Открыть результат':r.status==='rejected'?'Посмотреть причину':`Ориентир: ${dateFmt(r.due_at,{day:'numeric',month:'short'})}`}</small></span>${icon('right')}</button>`;}
+  function requestRow(r,staff=false){return `<button class="request-row ${r.status==='ready'?'request-is-ready':''}" data-action="request-details" data-id="${r.id}"><span class="file-glyph ${r.status==='ready'?'ready':''}">${icon(r.status==='ready'?'checkCircle':'file')}</span><span class="request-row-main"><b>${esc(r.type)}</b><small>№ ${r.id} · ${timestampDate(r.created_at,{day:'numeric',month:'short'})}${staff?` · ${esc(r.student_name)} · ${esc(r.group)}`:''}</small>${r.staff_message?`<span class="request-preview">${esc(r.staff_message.slice(0,110))}</span>`:''}</span><span class="request-row-end">${badge(r)}<small>${r.status==='ready'?'Открыть результат':r.status==='rejected'?'Посмотреть причину':`Ориентир: ${dateFmt(r.due_at,{day:'numeric',month:'short'})}`}</small></span>${icon('right')}</button>`;}
   function certificateCard(service){
     const basis=service.source_url?`<p class="hint"><a href="${esc(service.source_url)}" target="_blank" rel="noopener noreferrer">${esc(service.basis)}</a></p>`:'';
     return `<article class="card card-pad certificate-service">
@@ -569,7 +564,7 @@
   }
   function drawPage(){
     const target=$('#page-content'), page=state.page, data=state.data[page];if(!target||!data)return;
-    const renders={home:dashboard,schedule:schedulePage,grades:gradesPage,plan:planPage,requests:requestsPage,certificates:requestsPage,notifications:notificationsPage,profile:profilePage,staff:staffPage};
+    const renders={home:dashboard,schedule:schedulePage,grades:window.ATLASAcademics.render,plan:planPage,requests:requestsPage,certificates:requestsPage,notifications:notificationsPage,profile:profilePage,staff:staffPage};
     const extension=extensionFor(page);
     if(extension){
       target.innerHTML=extension.render(page,data);
@@ -581,6 +576,7 @@
     }else{
       target.innerHTML=campus.has(page)?campus.render(page,data):renders[page](data);
       campus.afterRender(page);
+      if(page==='grades')window.ATLASAcademics.bind(target,data,state.routeContext);
     }
     target.removeAttribute('aria-busy');
   }
@@ -657,7 +653,7 @@
       <div class="selected-service" id="selected-service"></div><div id="service-details" class="service-detail-fields"></div>
       <div class="field"><label for="doc-comment" id="comment-label">Комментарий</label>
       <textarea id="doc-comment" name="comment" maxlength="1200" rows="4" aria-describedby="comment-hint">${esc(comment)}</textarea>
-      <div class="field-meta"><span id="comment-hint">Не вводите настоящие персональные данные.</span><span id="comment-count">${comment.length} / 1200</span></div></div>
+      <div class="field-meta"><span id="comment-hint">Не вводите персональные данные.</span><span id="comment-count">${comment.length} / 1200</span></div></div>
       <div class="draft-note"></div><div id="request-error" class="inline-error" role="alert" hidden></div>
       <div class="modal-actions"><button class="muted-button" type="button" data-action="close-modal">Сохранить на потом</button>
       <button class="primary-button" type="submit">${icon('send')} ${kind==='certificate'?'Отправить заказ':'Отправить заявку'}</button></div></form>`,{label});
@@ -707,7 +703,7 @@
     finally{operation.finish(validationFocus);}
   }
   function requestHistoryPager(r){const total=r.history_total??r.history?.length??0,limit=r.history_limit||100,offset=r.history_offset||0;return total>limit?`<nav class="pagination" aria-label="Страницы истории заявки"><span role="status">${offset+1}–${Math.min(total,offset+(r.history||[]).length)} из ${total}</span><div><button type="button" class="outline-button" data-action="request-history" data-id="${Number(r.id)}" data-offset="${Math.max(0,offset-limit)}" ${offset?'':'disabled'}>Ранее</button><button type="button" class="outline-button" data-action="request-history" data-id="${Number(r.id)}" data-offset="${offset+limit}" ${r.history_has_more?'':'disabled'}>Позже</button></div></nav>`:'';}
-  function requestHistoryMarkup(r){return `<section class="detail-block" data-request-history data-id="${Number(r.id)}"><ol class="request-history">${(r.history||[]).map(event=>`<li><span class="history-mark">${icon('check')}</span><div><b>${esc(statusNames[event.status]||event.status)}</b><time>${stamp(event.created_at)} МСК · ${esc(event.actor_name||'Система')}</time>${event.message?`<p class="user-text">${esc(event.actor_role==='system'?requestCopy(event.message):event.message)}</p>`:''}</div></li>`).join('')}</ol>${requestHistoryPager(r)}</section>`;}
+  function requestHistoryMarkup(r){return `<section class="detail-block" data-request-history data-id="${Number(r.id)}"><ol class="request-history">${(r.history||[]).map(event=>`<li><span class="history-mark">${icon('check')}</span><div><b>${esc(statusNames[event.status]||event.status)}</b><time>${stamp(event.created_at)} МСК · ${esc(event.actor_name||'Система')}</time>${event.message?`<p class="user-text">${esc(event.message)}</p>`:''}</div></li>`).join('')}</ol>${requestHistoryPager(r)}</section>`;}
   async function loadRequestHistory(id,offset,button){const epoch=state.sessionEpoch,uid=state.user?.id,modalId=state.modalId,section=$('[data-request-history]');if(!section)return;const revision=Number(section.dataset.revision||0)+1;section.dataset.revision=String(revision);section.setAttribute('aria-busy','true');button.disabled=true;try{const r=await api(`${state.user.role==='staff'?'staff/':''}requests/${Number(id)}?history_limit=100&history_offset=${Number(offset)}`);if(epoch!==state.sessionEpoch||uid!==state.user?.id||modalId!==state.modalId||!section.isConnected||Number(section.dataset.revision)!==revision)return;const holder=document.createElement('div');holder.innerHTML=requestHistoryMarkup(r);section.replaceWith(holder.firstElementChild);$('[data-request-history] .pagination button:not(:disabled)')?.focus({preventScroll:true});}catch(e){if(!e.stale){toast(e.message);if(button.isConnected)button.disabled=false;}}finally{section.removeAttribute('aria-busy');}}
   function requestDetailFields(fields){
     return fields.length?`<dl class="service-details-summary">${fields.map(({label,value})=>
@@ -732,7 +728,7 @@
         ${requestDetailFields(details)}
         ${r.comment?`<div class="detail-block"><h3>Комментарий студента</h3><p class="user-text">${esc(r.comment)}</p></div>`:''}
         ${r.staff_message?`<div class="staff-answer ${r.status==='rejected'?'answer-rejected':''}"><span>${icon(r.status==='rejected'?'info':'checkCircle')}</span>
-        <div><h3>${r.status==='rejected'?'Причина отклонения':'Ответ учебного офиса'}</h3><p class="user-text">${esc(requestCopy(r.staff_message))}</p></div></div>`:''}${result}`;
+        <div><h3>${r.status==='rejected'?'Причина отклонения':'Ответ учебного офиса'}</h3><p class="user-text">${esc(r.staff_message)}</p></div></div>`:''}${result}`;
       const enrollment=Array.isArray(r.certificate_enrollment)?
         disclosure('Сведения для приложения № 4',r.certificate_enrollment.length?requestDetailFields(r.certificate_enrollment):
           '<p>В реестре нет подтверждённых сведений для подготовки справки.</p>'):'';
@@ -783,7 +779,7 @@
       if(e.status===409)error.insertAdjacentHTML('beforeend',` <button class="mini-link" type="button" data-action="request-details" data-id="${id}">Обновить заявку</button>`);
     }finally{operation.finish(validationFocus);}
   }
-  const searchWords={home:'главная сегодня пары',schedule:'пары когда аудитория неделя преподаватель',grades:'оценки оценка успеваемость результаты баллы',plan:'план сроки дедлайны отметки',requests:'обращение заявление подать статус',certificates:'справка справку документ заказать военный комиссариат',notifications:'новости объявления уведомления прочитать',courses:'учебный план материалы лекции дисциплины предметы',assignments:'задания сдать работа работы лабораторная отправить пересдать',exams:'экзамен сессия зачёт допуск калькулятор',attendance:'посещения пропуски журнал',tasks:'дела задачи список',notes:'заметки конспекты запись',flashcards:'запоминать повторение карточки',quizzes:'тест тесты самопроверка',focus:'таймер помодоро время учёба',consultations:'консультация консультации записаться преподаватель',messages:'деканат вопрос написать помощь переписка ответ',library:'библиотека книги взять вернуть',events:'события мероприятия кружки участие',finance:'деньги стипендия оплата долг',contacts:'телефон адрес кабинет контакты корпуса',knowledge:'помощь правила как вопросы',portfolio:'портфолио проекты достижения',profile:'профиль имя группа курс факультет',settings:'настройки сеансы выход безопасность'};
+  const searchWords={home:'главная сегодня пары',schedule:'пары когда аудитория неделя преподаватель',grades:'оценки оценка успеваемость результаты баллы посещения пропуски журнал',plan:'план сроки дедлайны отметки',requests:'обращение заявление подать статус',certificates:'справка справку документ заказать военный комиссариат',notifications:'новости объявления уведомления прочитать',courses:'учебный план материалы лекции дисциплины предметы',assignments:'задания сдать работа работы лабораторная отправить пересдать',exams:'экзамен сессия зачёт допуск калькулятор',tasks:'дела задачи список',notes:'заметки конспекты запись',consultations:'консультация консультации записаться преподаватель',messages:'деканат вопрос написать помощь переписка ответ',events:'события мероприятия кружки участие',finance:'деньги стипендия оплата долг',contacts:'телефон адрес кабинет контакты корпуса',knowledge:'помощь правила как вопросы',portfolio:'портфолио проекты достижения',profile:'профиль имя группа курс факультет',settings:'настройки сеансы выход безопасность'};
   const normalise=value=>String(value).toLocaleLowerCase('ru').replaceAll('ё','е').trim();
   const matchesPage=(p,q)=>normalise(q).split(/\s+/).every(word=>normalise(`${p.label} ${p.hint} ${searchWords[p.id]||''}`).includes(word));
   function searchModal(){
@@ -854,7 +850,7 @@
                 <button class="primary-button login-submit" type="submit">Войти в кабинет ${icon('arrow')}</button>
               </div>
             </form>
-            ${state.config.demo_mode?'<button class="outline-button demo-trigger" type="button" data-action="demo-picker" aria-haspopup="dialog">Попробовать демо</button>':''}
+            ${state.config.demo_mode?'<button class="outline-button demo-trigger" type="button" data-action="demo-picker" aria-haspopup="dialog">Выбрать аккаунт</button>':''}
           </div>
         </section>
       </div>
@@ -870,7 +866,7 @@
   function demoDialog(){
     const groups=[['Студенты',[0,1]],['Преподаватели',[3,8,9,10]],['Сотрудники',[2,4,5,6,7]]];
     return `<dialog class="demo-dialog" id="demo-dialog" aria-labelledby="demo-title">
-      <header class="modal-head"><div><h2 id="demo-title">Попробовать демо</h2><p>Выберите аккаунт для входа в кабинет.</p></div><button type="button" class="close-btn" data-action="demo-close" aria-label="Закрыть выбор аккаунта" autofocus>${icon('close')}</button></header>
+      <header class="modal-head"><div><h2 id="demo-title">Выбрать аккаунт</h2><p>Выберите аккаунт для входа в кабинет.</p></div><button type="button" class="close-btn" data-action="demo-close" aria-label="Закрыть выбор аккаунта" autofocus>${icon('close')}</button></header>
       <div class="inline-error" id="demo-error" role="alert" hidden></div>
       <div class="demo-list">${groups.map(([role,indices])=>`<section aria-label="${role}"><h3>${role}</h3>${indices.map(i=>{const u=demoAccounts[i];return `<button type="button" class="demo-user" data-demo="${i}">${avatar(u)}<span><b>${esc(u.full_name)}</b><small>${esc(u.description)}</small></span>${icon('arrow')}</button>`;}).join('')}</section>`).join('')}</div>
     </dialog>`;
@@ -1084,6 +1080,6 @@
   window.addEventListener('offline',()=>toast('Нет сети. Показаны уже загруженные данные; для сохранения нужен сервер.'));
   async function boot(){try{state.config=await api('config');}catch{/* Fail closed: do not advertise demo credentials if config is unavailable. */}try{state.user=await api('me');await campus.prepare();if(!state.user)return;await enterRoute();startPolling();}catch{showLogin();}}
   const context={state,api,deadlinePending:id=>deadlineWrites.has(Number(id)),$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,monday,refreshUnread,newRequestModal,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
-  improvements.init(context);campus.init(context);extensions.forEach(ext=>ext.init(context));
+  improvements.init(context);campus.init(context);window.ATLASAcademics.init(context);extensions.forEach(ext=>ext.init(context));
   boot();
 })();

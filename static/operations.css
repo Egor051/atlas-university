@@ -19,6 +19,7 @@
 .op-row p { margin-top: 4px; }
 .op-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0 12px; }
 .op-form-grid .field { min-width: 0; }
+.op-form-grid .field[hidden] { display: none; }
 .op-form-grid select, .op-form-grid input { width: 100%; min-width: 0; }
 .op-summary { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(140px,100%),1fr)); gap: 12px; }
 .op-summary div { padding: 12px; border-radius: 10px; background: var(--atlas-surface-alt); }
@@ -30,6 +31,13 @@
 .op-errors, [data-op-import-error] { color: var(--atlas-danger-text); margin: 10px 0; }
 [data-op-import-error] { white-space: pre-wrap; overflow-wrap: anywhere; }
 .op-map { margin: 10px 0; }
+.assignment-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(155px, 100%), 1fr)); column-gap: 12px; }
+.assignment-attempt { margin-block: 10px; min-width: 0; padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; overflow-wrap: anywhere; }
+.assignment-attempt summary { cursor: pointer; font-weight: 600; }
+.assignment-files { padding-inline-start: 1rem; margin-block: 8px; overflow-wrap: anywhere; }
+.assignment-files li { margin-block: 5px; }
+.assignment-files small { margin-inline-start: 8px; color: var(--muted); }
+#campus-assignment-files { max-width: 100%; min-width: 0; }
 .op-section input[type="file"] { min-width: 0; max-width: 100%; }
 .unit-checklist {
   min-width: 0;

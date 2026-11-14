@@ -5,16 +5,11 @@
     {id:'courses',label:'Мои дисциплины',icon:'book',group:'study',hint:'Курсы, материалы, модули и учебный план'},
     {id:'assignments',label:'Сдача работ',icon:'send',group:'study',hint:'Задания, ответ, ссылка на проект и повторная сдача'},
     {id:'exams',label:'Сессия и зачёты',icon:'graduation',group:'study',hint:'Экзамены, допуски и калькулятор баллов'},
-    {id:'attendance',label:'Посещаемость',icon:'checkCircle',group:'study',hint:'Личный журнал посещений по дисциплинам'},
     {id:'calendar',label:'Календарь',icon:'calendar',group:'study',hint:'Пары, дедлайны, экзамены и записи в одном календаре'},
     {id:'tasks',label:'Личные задачи',icon:'plan',group:'study',hint:'Добавить своё дело, срок и приоритет'},
     {id:'notes',label:'Конспекты',icon:'file',group:'study',hint:'Создавать, искать и редактировать личные заметки'},
-    {id:'flashcards',label:'Карточки памяти',icon:'sparkles',group:'study',hint:'Вопросы и ответы с интервальным повторением'},
-    {id:'quizzes',label:'Самопроверка',icon:'graduation',group:'study',hint:'Учебные тесты, разбор ответов и история попыток'},
-    {id:'focus',label:'Таймер и журнал занятий',icon:'clock',group:'study',hint:'Таймер самостоятельной работы и журнал учебных минут'},
     {id:'consultations',label:'Консультации',icon:'user',group:'services',hint:'Записаться к преподавателю и отменить запись'},
     {id:'messages',label:'Вопросы в учебный офис',icon:'send',group:'services',hint:'Переписка, вопрос деканату, ответ и история'},
-    {id:'library',label:'Библиотека',icon:'book',group:'services',hint:'Каталог книг, выдача, сроки возврата и мои книги'},
     {id:'events',label:'Жизнь кампуса',icon:'calendar',group:'services',hint:'Кружки, мероприятия, запись и отмена участия'},
     {id:'finance',label:'Финансы',icon:'file',group:'services',hint:'Начисления, оплата и стипендия'},
     {id:'contacts',label:'Контакты и корпуса',icon:'pin',group:'services',hint:'Преподаватели, службы, аудитории и часы приёма'},
@@ -25,7 +20,7 @@
     {id:'staffmessages',label:'Вопросы студентов',icon:'send',staff:true,hint:'Ответить на вопрос и закрыть обращение'},
   ];
   let c;
-  const local = {query:{},filter:{assignments:'pending',tasks:'active'},offset:{},scope:{},context:{},ticketOffsets:{},pendingKeys:{},duration:25,calendarMode:matchMedia('(max-width: 700px)').matches?'day':'week',catalog:'documents',revealed:false,card:null,quiz:null,quizResult:null,calendarDay:null,calendarWeek:null,timer:null,timerTick:null};
+  const local = {query:{},filter:{assignments:'pending',tasks:'active'},offset:{},scope:{},context:{},ticketOffsets:{},pendingKeys:{},calendarMode:matchMedia('(max-width: 700px)').matches?'day':'week',catalog:'documents',calendarDay:null,calendarWeek:null};
   let serviceSearchTimer;
   const esc = v => c.esc(v);
   const icon = n => c.icon(n);
@@ -35,11 +30,11 @@
   const current = () => c.state.data[c.state.page];
   const match = (row,q) => !q||Object.values(row).filter(v=>typeof v==='string'||typeof v==='number').join(' ').toLocaleLowerCase('ru').includes(q.toLocaleLowerCase('ru'));
   const filtered = (d,page) => items(d).filter(x=>match(x,local.query[page]||''));
-  const action = (name,label,id='',extra='') => {const row=items(current()).find(x=>x.id===Number(id))||(local.card?.id===Number(id)?local.card:null);if(id!==''&&/^(task-|note-|flashcard-|portfolio-|focus-delete)/.test(name)&&row?.record_token&&!extra.includes('data-record-token'))extra+=' data-record-token="'+esc(row.record_token)+'"';return `<button type="button" class="outline-button" data-c-action="${name}"${id!==''?` data-id="${esc(id)}"`:''} ${extra}>${esc(label)}</button>`;};
+  const action = (name,label,id='',extra='') => {const row=items(current()).find(x=>x.id===Number(id));if(id!==''&&/^(task-|note-|portfolio-)/.test(name)&&row?.record_token&&!extra.includes('data-record-token'))extra+=' data-record-token="'+esc(row.record_token)+'"';return `<button type="button" class="outline-button" data-c-action="${name}"${id!==''?` data-id="${esc(id)}"`:''} ${extra}>${esc(label)}</button>`;};
   const primary = (name,label,id='',extra='') => `<button type="button" class="primary-button" data-c-action="${name}"${id!==''?` data-id="${esc(id)}"`:''} ${extra}>${icon('plus')}${esc(label)}</button>`;
   const link = (page,label) => `<button class="mini-link" data-route="${esc(page)}">${esc(label)} ${icon('arrow')}</button>`;
   const contextLink = (page,label,context={}) => `<button type="button" class="mini-link" data-route="${esc(page)}"${context.id?` data-record-id="${Number(context.id)}"`:''}${context.subject?` data-subject="${esc(context.subject)}"`:''}${context.date?` data-date="${esc(context.date)}"`:''}${context.kind?` data-kind="${esc(context.kind)}"`:''}>${esc(label)} ${icon('arrow')}</button>`;
-  const servicePages=new Set(['consultations','library','events','messages','staffmessages','finance','staffdesk']);
+  const servicePages=new Set(['consultations','events','messages','staffmessages','finance','staffdesk']);
   const pageSize=20;
   const pageParams=(key,extra={})=>new URLSearchParams({limit:String(pageSize),offset:String(local.offset[key]||0),...extra}).toString();
   const serviceQuery=page=>(local.query[page]||local.context[page]?.subject||'').slice(0,100);
@@ -60,6 +55,15 @@
       if(!items(result).length)throw new Error('Не удалось загрузить всю неделю. Обновите календарь.');offset+=result.limit||300;
     }
     throw new Error('Слишком много записей для одной недели. Уточните записи в учебном офисе.');
+  }
+  async function weeklyAssignments(week){
+    const all=[];let offset=0;
+    for(let page=0;page<100;page++){
+      const batch=await c.api('learning/assignments?'+new URLSearchParams({start:week,end:c.addDays(week,6),offset}));
+      all.push(...items(batch));if(!batch.more)return {items:all};
+      offset+=items(batch).length;
+    }
+    throw new Error('За неделю слишком много заданий. Уточните расписание в учебном офисе.');
   }
   async function pendingMutation(path,body){
     const source=JSON.stringify([c.state.user?.id,path,body]);
@@ -123,14 +127,13 @@
   function refreshPreservingInput(){const active=document.activeElement;const value=active?.value;const pos=active?.selectionStart;const id=active?.id;c.drawPage();const replacement=id?document.getElementById(id):null;if(replacement){replacement.focus({preventScroll:true});if(typeof pos==='number')try{replacement.setSelectionRange(pos,pos);}catch{/* Select and date inputs have no selection. */}if(value!==undefined&&replacement.value!==value)replacement.value=value;}}
   async function pageApi(key,path,extra={}){const epoch=c.state.sessionEpoch,loadingId=c.state.loadingId,page=c.state.page;let result=await c.api(path+'?'+pageParams(key,extra));if(epoch===c.state.sessionEpoch&&loadingId===c.state.loadingId&&page===c.state.page&&result.offset>0&&result.offset>=result.total){local.offset[key]=Math.max(0,Math.floor((result.total-1)/result.limit)*result.limit);result=await c.api(path+'?'+pageParams(key,extra));}return result;}
   async function load(page) {
+    if(page==='assignments')return c.api('learning/assignments?offset='+Number(local.offset.assignments||0));
     const api=c.api;
-    const learning={courses:'courses',assignments:'assignments',exams:'exams',attendance:'attendance',tasks:'tasks',notes:'notes',flashcards:'flashcards',focus:'focus-sessions'};
+    const learning={courses:'courses',assignments:'assignments',exams:'exams',tasks:'tasks',notes:'notes'};
     if(learning[page])return api('learning/'+learning[page]);
-    if(page==='quizzes'){const [quizzes,attempts]=await Promise.all([api('learning/quizzes'),api('learning/quiz-attempts')]);return {quizzes,attempts};}
     if(page==='portfolio')return api('campus/portfolio');
     if(page==='settings'){const [sessions,preferences]=await Promise.all([api('account/sessions'),api('services/preferences')]);return {sessions,preferences};}
     if(page==='consultations'){const [slots,bookings]=await Promise.all([pageApi('consultations','services/consultations',{q:serviceQuery(page),scope:local.scope[page]||'upcoming',...recordFilter(page)}),pageApi('bookings','services/bookings')]);return {slots,bookings};}
-    if(page==='library'){const [catalog,loans]=await Promise.all([pageApi('library','services/library',{q:serviceQuery(page),...recordFilter(page)}),pageApi('loans','services/loans')]);return {catalog,loans};}
     if(page==='events'){const [events,registrations]=await Promise.all([pageApi('events','services/events',{q:serviceQuery(page),filter:local.filter[page]||'all',scope:local.scope[page]||'upcoming',...recordFilter(page)}),pageApi('registrations','services/registrations')]);return {events,registrations};}
     if(page==='messages')return pageApi(page,'services/tickets',{q:local.query[page]||'',filter:local.filter[page]||'all',...recordFilter(page)});
     if(page==='staffmessages')return pageApi(page,'staff/tickets',{q:local.query[page]||'',filter:local.filter[page]||'all',...recordFilter(page)});
@@ -138,7 +141,7 @@
     if(page==='staffdesk'){const [overview,slots]=await Promise.all([api('staff/overview'),pageApi('staffslots','staff/consultations')]);return {overview,slots};}
     if(page==='calendar'){
       const day=local.calendarDay||c.today();const week=local.calendarWeek||c.monday(day);local.calendarWeek=week;
-      const [schedule,assignments,exams,tasks,bookings,registrations]=await Promise.all([api('schedule?week='+week),api('learning/assignments'),api('learning/exams'),api('learning/tasks'),allCalendarRecords('services/bookings',week),allCalendarRecords('services/registrations',week)]);
+      const [schedule,assignments,exams,tasks,bookings,registrations]=await Promise.all([api('schedule?week='+week),weeklyAssignments(week),api('learning/exams'),api('learning/tasks'),allCalendarRecords('services/bookings',week),allCalendarRecords('services/registrations',week)]);
       return {schedule,assignments,exams,tasks,bookings,registrations};
     }
     return api('services/'+page);
@@ -149,19 +152,49 @@
     const rows=filtered(d,'courses');const all=items(d);const modules=all.flatMap(x=>x.modules||[]);
     return title('courses','Материалы семестра и ваш прогресс по учебным модулям.',link('assignments','К сдаче работ'))+stats([[all.length,'дисциплин'],[all.reduce((n,x)=>n+Number(x.credits||0),0),'зачётных единиц'],[`${modules.filter(x=>x.is_done).length} / ${modules.length}`,'модулей изучено']])+contextNotice('courses')+toolbar('courses')+`<div class="compact-list" data-c-list>${rows.map(x=>`<article class="card compact-row" data-campus-record-id="${Number(x.id)}"><div class="row-copy"><h2>${esc(x.subject)}</h2><p>${esc(x.teacher)} · ${Number(x.credits)} з. е.</p><div class="row-progress"><progress max="100" value="${Number(x.progress)||0}" aria-label="Изучение курса ${esc(x.subject)}"></progress><span>${Number(x.progress)||0}% изучено</span></div></div>${action('course','Открыть',x.id,`aria-label="Открыть курс: ${esc(x.subject)}"`)}</article>`).join('')||c.empty('search','Дисциплина не найдена','Попробуйте другое название или преподавателя.')}</div><p class="list-footnote">Отметки модулей — личный прогресс, они не изменяют оценки.</p>`;
   }
+  const workStatuses={not_started:'Не начато',in_progress:'В работе',submitted:'Отправлено',in_review:'На проверке',
+    revision_required:'Требуется доработка',resubmitted:'Повторно отправлено',accepted:'Принято',completed:'Завершено',withdrawn:'Отозвано'};
+  const workKinds={homework:'Домашняя работа',lab:'Лабораторная работа',practice:'Практическая работа',test:'Контрольная работа',
+    independent:'Самостоятельная работа',essay:'Реферат',talk:'Доклад',project:'Проектная работа',term_paper:'Курсовая работа',
+    individual:'Индивидуальная работа',group:'Групповая работа'};
+  const pendingWork=x=>x.state!=='archived'&&['not_started','in_progress','withdrawn','revision_required'].includes(x.status);
   function assignments(d){
-    const mode=local.filter.assignments||'pending';const all=items(d);const sent=all.filter(x=>x.submission?.status==='submitted').length;
-    const rows=filtered(d,'assignments').filter(x=>mode==='submitted'?x.submission?.status==='submitted':mode==='pending'?x.submission?.status!=='submitted':true).sort((a,b)=>a.due_date.localeCompare(b.due_date));
-    return title('assignments','Откройте задание, прочитайте инструкцию и отправьте работу.',link('plan','Личные отметки в плане'))+stats([[all.length,'всего заданий'],[sent,'отправлено'],[all.filter(x=>x.submission?.status!=='submitted'&&c.asDate(x.due_date)<c.asDate(c.today())).length,'просрочено']])+contextNotice('assignments')+toolbar('assignments',[['pending','К сдаче'],['submitted','Отправлены'],['all','Все']])+`<div class="compact-list" data-c-list>${rows.map(x=>`<article class="card compact-row assignment-row" data-campus-record-id="${Number(x.id)}"><div class="row-copy"><h2>${esc(x.title)}</h2><p>${esc(x.subject)} · до ${c.dateFmt(x.due_date)}</p>${x.submission?`<small>Версия ${Number(x.submission.version)} · ${c.stamp(x.submission.updated_at)} МСК</small>`:''}</div><div class="row-end">${pill(x.submission?.status==='submitted'?'Отправлено':c.relative(x.due_date),x.submission?.status==='submitted'?'success':c.asDate(x.due_date)<c.asDate(c.today())?'warning':'')}${action('assignment',x.submission?.status==='submitted'?'Открыть работу':'Сдать работу',x.id)}</div></article>`).join('')||c.empty('checkCircle',mode==='pending'?'Все работы отправлены':'Работ по этому фильтру нет','Выберите другой фильтр, чтобы посмотреть остальные задания.')}</div>`;
+    const mode=local.filter.assignments||'pending',all=items(d),sent=all.filter(x=>!pendingWork(x)&&x.state!=='archived').length;
+    const rows=filtered(d,'assignments').filter(x=>mode==='submitted'?(!pendingWork(x)&&x.state!=='archived'):mode==='pending'?pendingWork(x):true)
+      .sort((a,b)=>a.due_date.localeCompare(b.due_date));
+    const cards=rows.map(x=>{
+      const actionable=pendingWork(x), label=x.state==='archived'?'В архиве':x.status==='not_started'?(x.overdue?'Просрочено':c.relative(x.due_date)):workStatuses[x.status];
+      const tone=x.overdue||x.status==='revision_required'?'warning':!actionable&&x.state!=='archived'?'success':'';
+      const type=x.custom_kind||workKinds[x.kind];
+      return `<article class="card compact-row assignment-row" data-campus-record-id="${Number(x.id)}"><div class="row-copy">
+        <h2>${esc(x.title)}</h2><p>${esc(x.subject)} · до ${c.dateFmt(x.due_date)}${x.due_at?' · '+moscowTime(x.due_at)+' МСК':''}</p>
+        ${type?`<small>${esc(type)}</small>`:''}</div><div class="row-end">${pill(label||'Открыть',tone)}
+        ${action('assignment',actionable&&x.can_submit?'Сдать работу':'Открыть работу',x.id)}</div></article>`;
+    }).join('');
+    const pages=d.offset||d.more?`<nav class="campus-pagination" aria-label="Страницы заданий"><span role="status">${d.offset+1}–${d.offset+all.length}</span><div>
+      ${action('service-page','Назад','','data-page-key="assignments" data-offset="'+Math.max(0,d.offset-200)+'" '+(d.offset?'':'disabled'))}
+      ${action('service-page','Далее','','data-page-key="assignments" data-offset="'+(d.offset+200)+'" '+(d.more?'':'disabled'))}</div></nav>`:'';
+    return title('assignments','Откройте задание, прочитайте инструкцию и отправьте работу.',link('plan','Личные отметки в плане'))+
+      stats([[all.length,pages?'заданий на странице':'всего заданий'],[sent,'отправлено'],[all.filter(x=>x.state!=='archived'&&x.overdue).length,'просрочено']])+
+      contextNotice('assignments')+toolbar('assignments',[['pending','К сдаче'],['submitted','Отправлены'],['all','Все']])+
+      `<div class="compact-list" data-c-list>${cards||c.empty('checkCircle','Работ по этому фильтру нет','Выберите другой фильтр, чтобы посмотреть остальные задания.')}</div>`+pages;
   }
   function exams(d){
-    const rows=filtered(d,'exams');return title('exams','Даты контроля и карта подготовки. Баллы и правила относятся только к этому концепту.',link('consultations','Записаться на консультацию'))+contextNotice('exams')+toolbar('exams')+grid(rows,x=>`<article class="card campus-tile" data-campus-record-id="${Number(x.id)}"><div class="campus-tile-top">${pill(x.kind==='credit'?'Зачёт':x.kind==='exam'?'Экзамен':x.kind)}${pill(x.risk?'Нужно внимание':'В плане',x.risk?'warning':'success')}</div><h2>${esc(x.subject)}</h2><p class="campus-date">${x.exam_date?c.dateFmt(x.exam_date,{day:'numeric',month:'long',year:'numeric'}):'Дата пока не назначена'}</p><p>${esc(x.teacher)}</p><p>Текущие баллы: <strong>${x.current??'—'} / ${x.max_grade||100}</strong></p>${textDetails(x.consultation||'Согласуйте подготовку на консультации.','Подготовка к контролю')}<div class="campus-tile-bottom">${contextLink('courses','Материалы курса',{subject:x.subject})}${contextLink('assignments','Задания',{subject:x.subject})}${contextLink('consultations','Консультация',{subject:x.subject})}</div></article>`,'Контроль ещё не назначен','Даты появятся в этом разделе после заполнения учебного плана.')+
+    const rows=filtered(d,'exams');
+    const actions={consultations:'Уточнить на консультации',courses:'Открыть материалы курса'};
+    return title('exams','Даты, допуск и результаты промежуточной аттестации.',link('grades','Учебные результаты'))+contextNotice('exams')+toolbar('exams')+grid(rows,x=>{
+      const status=x.status;
+      const fields=[['Преподаватель',x.teacher],['Место',x.location],['Допуск',status.admission],['Результат',status.result],
+        ['Накопленные баллы',x.current!=null?`${x.current}${x.max_grade?' / '+x.max_grade:''}`:'']];
+      return `<article class="card campus-tile" data-campus-record-id="${Number(x.id)}" data-assessment-status="${esc(status.code)}">
+        <div class="campus-tile-top">${pill(x.kind)}${pill(status.label,status.tone)}</div><h2>${esc(x.subject)}</h2>
+        ${x.exam_date?`<p class="campus-date"><time datetime="${esc(x.exam_date)}">${c.dateFmt(x.exam_date,{day:'numeric',month:'long',year:'numeric'})}</time></p>`:''}
+        <dl class="academic-exam-fields">${fields.filter(([,value])=>value).map(([label,value])=>`<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
+        ${status.explanation?paragraph(status.explanation):''}
+        <div class="campus-tile-bottom">${actions[status.action]?contextLink(status.action,actions[status.action],{subject:x.subject}):''}${contextLink('grades','Посмотреть успеваемость',{subject:x.subject})}</div>
+      </article>`;
+    },'Аттестаций пока нет','Здесь появятся дисциплины, по которым назначена форма контроля.')+
       fold('Рассчитать баллы до цели',`<p class="campus-muted">Посчитайте, сколько баллов нужно набрать. Это личный расчёт, он не меняет оценки и не обещает допуск.</p><div class="campus-form-grid">${field('current','Уже набрано',40,{type:'number',min:0,max:100})}${field('target','Моя цель',65,{type:'number',min:0,max:100})}${field('remaining','Ещё можно набрать',40,{type:'number',min:0,max:100})}</div><output class="campus-calculation" id="grade-calculation" aria-live="polite">До цели 25 баллов; нужно набрать 63% оставшихся баллов.</output>`);
-  }
-  function attendance(d){
-    const rows=filtered(d,'attendance');const all=items(d);const attended=all.filter(x=>['present','late'].includes(x.status)).length;const labels={present:'Присутствовал(а)',absent:'Отсутствие',excused:'Уважительная причина',late:'Опоздание'};
-    const groups=[...new Set(all.map(x=>x.subject))].map(subject=>{const entries=all.filter(x=>x.subject===subject);return `<div class="campus-attendance-summary"><b>${esc(subject)}</b><span>${entries.filter(x=>['present','late'].includes(x.status)).length} / ${entries.length}</span><progress max="${entries.length||1}" value="${entries.filter(x=>['present','late'].includes(x.status)).length}" aria-label="Посещения ${esc(subject)}"></progress></div>`;}).join('');
-    return title('attendance','Посещения по дисциплинам и даты занятий.')+stats([[all.length,'записей занятий'],[attended,'посещено, включая опоздания'],[d.summary?.attendance_percent===null?'—':(d.summary?.attendance_percent??(all.length?Math.round(attended/all.length*100):0))+'%','уважительные пропуски исключены']])+fold('Посещаемость по дисциплинам',groups||'<p>Записей ещё нет.</p>')+toolbar('attendance')+section('История посещений',rows.length?`<div class="campus-log">${rows.map(x=>`<article><time>${c.dateFmt(x.day,{day:'numeric',month:'short'})}</time><div><b>${esc(x.subject)}</b><p>${esc(x.note||'Учебное занятие')}</p></div>${pill(labels[x.status]||x.status,x.status==='absent'?'warning':'')}</article>`).join('')}</div>`:c.empty('calendar','Посещений не найдено','Попробуйте изменить поиск.'));
   }
 
   function tasks(d){
@@ -170,21 +203,6 @@
   }
   function notes(d){
     const rows=filtered(d,'notes');return title('notes','Личные заметки. Полный текст открывается в редакторе.',primary('note-new','Новый конспект'))+toolbar('notes')+`<div class="compact-list" data-c-list>${rows.map(x=>`<article class="card compact-row" data-campus-record-id="${Number(x.id)}"><div class="row-copy"><h2>${esc(x.title)}</h2><p>${esc(x.subject||'Без дисциплины')} · ${c.stamp(x.updated_at)}</p><p class="note-preview">${esc(x.body.slice(0,110))}${x.body.length>110?'…':''}</p></div><div class="row-end">${action('note-edit','Открыть',x.id,`aria-label="Открыть конспект: ${esc(x.title)}"`)}${action('note-delete','Удалить',x.id)}</div></article>`).join('')||c.empty('file','Конспектов пока нет','Сохраните объяснение, формулу или план подготовки.',primary('note-new','Создать конспект'))}</div>`;
-  }
-  function flashcards(d){
-    const mode=local.filter.flashcards||'all';const rows=filtered(d,'flashcards').filter(x=>mode==='due'?x.is_due:true);
-    return title('flashcards','Вспоминайте ответ перед тем, как посмотреть его. Повторения планируются на сервере.',primary('flashcard-new','Новая карточка'))+stats([[items(d).length,'карточек'],[items(d).filter(x=>x.is_due).length,'пора повторить'],[items(d).reduce((n,x)=>n+Number(x.reviews||0),0),'повторений']])+toolbar('flashcards',[['all','Все'],['due','К повторению']])+grid(rows,x=>`<article class="card campus-tile" data-campus-record-id="${Number(x.id)}"><div class="campus-tile-top">${pill(x.subject)}${pill(x.is_due?'Пора повторить':'На '+c.dateFmt(x.due_date,{day:'numeric',month:'short'}),x.is_due?'warning':'')}</div><h2>${esc(x.front)}</h2><p class="campus-muted">Повторений: ${Number(x.reviews||0)}. Успешных: ${Number(x.known_count||0)}.</p><div class="campus-tile-bottom">${action('flashcard-open','Повторить карточку',x.id)}${action('flashcard-delete','Удалить',x.id)}</div></article>`,'Карточек для повторения нет','Добавьте вопросы по курсу или переключитесь на все карточки.');
-  }
-  function quizzes(d){
-    return title('quizzes','Короткие учебные тесты с разбором. Они помогают готовиться и не меняют ваши официальные баллы.')+toolbar('quizzes')+grid(filtered(d.quizzes,'quizzes'),x=>`<article class="card campus-tile" data-campus-record-id="${Number(x.id)}"><div class="campus-tile-top">${pill(x.subject)}${pill(x.question_count+' вопроса')}</div><h2>${esc(x.title)}</h2><p>Попыток: ${Number(x.attempts||0)} · лучший результат: ${x.best_percent===null||x.best_percent===undefined?'пока нет':esc(x.best_percent)+'%'}</p><div class="campus-tile-bottom">${action('quiz-open','Пройти самопроверку',x.id)}</div></article>`)+fold('История попыток ('+items(d.attempts).length+')',items(d.attempts).length?`<div class="campus-log">${items(d.attempts).map(x=>`<article><span class="campus-score">${Number(x.percent??(x.total?Math.round(x.score/x.total*100):0))}%</span><div><b>${esc(x.title||x.quiz_title||'Учебная самопроверка')}</b><p>${c.stamp(x.created_at)} МСК · ${Number(x.score)} из ${Number(x.total)}</p></div></article>`).join('')}</div>`:c.empty('graduation','Попыток пока нет','Пройдите любой тест — результат сохранится здесь.'));
-  }
-
-  function focus(d){
-    const total=d.summary?.minutes??items(d).reduce((n,x)=>n+Number(x.minutes||0),0);
-    const week=Number(d.summary?.week_minutes||0);
-    const timer=section('Таймер для учёбы',`<div class="campus-focus"><output id="focus-clock" class="focus-clock" aria-label="Осталось времени">${String(local.duration).padStart(2,'0')}:00</output><label class="field"><span>Длительность</span><select id="focus-duration" aria-label="Длительность таймера" ${local.timer?'disabled':''}>${[[25,'25 минут'],[45,'45 минут'],[15,'15 минут'],[5,'5 минут — короткий старт']].map(([value,label])=>`<option value="${value}" ${value===local.duration?'selected':''}>${label}</option>`).join('')}</select></label><div class="campus-button-row">${action('timer-start',local.timer?.running?'Пауза':local.timer?'Продолжить':'Начать')}${action('timer-reset','Сбросить')}</div><p id="focus-state" class="campus-muted" aria-live="polite">Выберите задачу и начните. Таймер работает в этой вкладке.</p>${primary('focus-log','Записать занятие')}</div>`);
-    const summary=section('Время занятий',stats([[Number(d.summary?.today_minutes||0),'мин. сегодня'],[week,'мин. на этой неделе'],[Number(total),'мин. за всё время']]));
-    return title('focus','Сосредоточьтесь на одной задаче. Завершённое занятие можно записать в личный журнал.')+`<div class="focus-layout">${timer}${summary}</div>`+fold('Мой журнал ('+(d.summary?.total??items(d).length)+')',items(d).length?`<div class="campus-log">${items(d).map(x=>`<article><span class="campus-score">${Number(x.minutes)} м.</span><div><b>${esc(x.subject||'Самостоятельная работа')}</b><p>${c.stamp(x.created_at)} МСК · добавлено вручную</p></div>${action('focus-delete','Удалить запись',x.id)}</article>`).join('')}</div>`:'<p class="compact-empty">Занятий пока нет. После работы добавьте предмет и число минут.</p>')+info('Таймер не сохраняет занятие автоматически. Журнал хранится на сервере, таймер — в текущей вкладке.');
   }
   function consultations(d){
     const rows=items(d.slots);const history=items(d.bookings);const ctx=local.context.consultations;
@@ -199,11 +217,6 @@
     const page=staff?'staffmessages':'messages';const rows=items(d);
     return title(page,staff?'Вопросы студентов и история ответов.':'Задайте вопрос деканату. Ответ появится в этой переписке.',staff?'':primary('ticket-new','Задать вопрос'))+contextNotice(page)+toolbar(page,[['all','Все'],['open','Открыты'],['closed','Закрыты']])+`<div class="compact-list" data-c-list>${rows.map(x=>{const last=x.messages?.at(-1);const label=x.status==='closed'?'Закрыт':last?.actor_role==='staff'?(staff?'Ответ отправлен':'Есть ответ'):(staff?'Нужен ответ':'Ждёт ответа');return `<article class="card compact-row" data-campus-record-id="${Number(x.id)}"><div class="row-copy"><h2>${esc(x.title)}</h2><p>${staff?esc((x.student_name||'Студент')+' · '+(x.group||''))+' · ':''}№ ${Number(x.id)} · ${c.stamp(x.updated_at)}</p>${last?`<p class="note-preview">${esc(last.body.slice(0,120))}${last.body.length>120?'…':''}</p>`:''}</div><div class="row-end">${pill(label,x.status==='closed'||last?.actor_role==='staff'?'success':'')}${action('ticket-open','Открыть диалог',x.id)}</div></article>`;}).join('')||c.empty('send','Диалогов по этому запросу нет',staff?'Измените поиск или фильтр.':'Измените поиск или создайте вопрос — его увидит сотрудник учебного офиса.')}</div>`+pager(d,page,'Диалоги');
   }
-  function library(d){
-    const history=items(d.loans);
-    const historyHTML=history.length||d.loans?.total?section('Мой формуляр и история',`<div class="campus-log">${history.map(x=>`<article><span class="campus-hub-icon">${icon('book')}</span><div><b>${esc(x.book.title)}</b><p>${['active','borrowed'].includes(x.status)?'Вернуть до '+c.dateFmt(x.due_date)+' · '+c.relative(x.due_date):'Книга возвращена'}</p></div>${['active','borrowed'].includes(x.status)?action('loan-return','Вернуть',x.id):pill('Возвращена','success')}</article>`).join('')}</div>`+pager(d.loans,'loans','История выдач')):'';
-    return title('library','Учебные книги и личный формуляр. Выдача и возврат сохраняются в базе.',link('materials','Учебные материалы'))+historyHTML+toolbar('library')+grid(items(d.catalog),x=>`<article class="card campus-tile" data-campus-record-id="${Number(x.id)}"><div class="campus-tile-top">${pill(x.subject)}${pill(x.available+' из '+x.total+' доступно',x.available?'success':'warning')}</div><h2>${esc(x.title)}</h2><p class="campus-muted">${esc(x.author)}</p>${textDetails(x.description)}<div class="campus-tile-bottom">${x.my_loan_id?action('loan-return','Вернуть книгу',x.my_loan_id):action('book-borrow',x.available>0?'Взять на 14 дней':'Все экземпляры выданы',x.id,x.available>0?'':'disabled')}</div></article>`,'Книг не найдено','Попробуйте название предмета или автора.')+pager(d.catalog,'library','Библиотечный каталог')+info('Электронные версии книг недоступны.');
-  }
   function events(d){
     const mode=local.filter.events||'all';const rows=items(d.events).filter(x=>mode==='mine'?x.my_registration_id:mode==='available'?x.registered_count<x.capacity&&new Date(x.start_at)>new Date():true);
     const history=items(d.registrations);const historyHTML=history.length||d.registrations?.total?section('Моё участие и история',`<div class="campus-log">${history.map(x=>`<article><span class="campus-hub-icon">${icon('calendar')}</span><div><b>${esc(x.event.title)}</b><p>${c.stamp(x.event.start_at)} МСК · ${esc(x.event.location)}</p><small>${['active','registered'].includes(x.status)?'Участие сохранено':'Участие отменено'}</small></div>${['active','registered'].includes(x.status)?contextLink('events','Открыть запись',{id:x.event_id,date:moscowDay(x.event.start_at)}):pill('Отменено')}</article>`).join('')}</div>`+pager(d.registrations,'registrations','История участия')):'';
@@ -211,7 +224,7 @@
   }
   const money = v => new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:2}).format(Number(v||0)/100);
   function finance(d){
-    return title('finance','Стипендии, начисления и расходы.',`<button class="outline-button" data-action="new-request" data-type="tuition">${icon('send')} Вопрос об оплате</button>`)+`<div class="finance-summary">${[[money(d.summary?.credits_kopecks),'Поступления'],[money(d.summary?.debits_kopecks),'Расходы'],[money(d.summary?.balance_kopecks),'Разница']].map(([value,label])=>`<div class="card"><b>${esc(value)}</b><span>${label}</span></div>`).join('')}</div>`+info('Приём платежей отключён. Банковские данные не нужны.')+toolbar('finance')+section('Операции учебного года',filtered(d,'finance').length?`<div class="campus-log">${filtered(d,'finance').map(x=>`<article><time>${c.dateFmt(x.date,{day:'numeric',month:'short'})}</time><div><b>${esc(x.description)}</b><p>${x.direction==='credit'?'Поступление':'Расход'}</p></div><strong class="campus-money ${x.direction==='credit'?'positive':''}">${x.direction==='credit'?'+':'−'}${money(x.amount_kopecks)}</strong></article>`).join('')}</div>`:c.empty('file','Операций не найдено','Проверьте поиск.'))+pager(d,'finance','Финансовые операции')+fold('Поддержка и документы',`<div class="campus-button-row"><button class="outline-button" data-action="new-request" data-type="scholarship">Справка о стипендии</button><button class="outline-button" data-action="new-request" data-type="social_support">Материальная поддержка</button><button class="outline-button" data-action="new-request" data-type="tax">Справка об оплате</button></div>`);
+    return title('finance','Стипендии, начисления и расходы.',`<button class="outline-button" data-action="new-request" data-type="tuition">${icon('send')} Вопрос об оплате</button>`)+`<div class="campus-flow finance-flow">`+`<div class="finance-summary">${[[money(d.summary?.credits_kopecks),'Поступления'],[money(d.summary?.debits_kopecks),'Расходы'],[money(d.summary?.balance_kopecks),'Разница']].map(([value,label])=>`<div class="card"><b>${esc(value)}</b><span>${label}</span></div>`).join('')}</div>`+info('Приём платежей отключён. Банковские данные не нужны.')+toolbar('finance')+section('Операции учебного года',filtered(d,'finance').length?`<div class="campus-log">${filtered(d,'finance').map(x=>`<article><time>${c.dateFmt(x.date,{day:'numeric',month:'short'})}</time><div><b>${esc(x.description)}</b><p>${x.direction==='credit'?'Поступление':'Расход'}</p></div><strong class="campus-money ${x.direction==='credit'?'positive':''}">${x.direction==='credit'?'+':'−'}${money(x.amount_kopecks)}</strong></article>`).join('')}</div>`:c.empty('file','Операций не найдено','Проверьте поиск.'))+pager(d,'finance','Финансовые операции')+fold('Поддержка и документы',`<div class="campus-button-row"><button class="outline-button" data-action="new-request" data-type="scholarship">Справка о стипендии</button><button class="outline-button" data-action="new-request" data-type="social_support">Материальная поддержка</button><button class="outline-button" data-action="new-request" data-type="tax">Справка об оплате</button></div>`)+`</div>`;
   }
 
   function contacts(d){
@@ -243,7 +256,7 @@
   }
   function calendar(d){
     const entries=[];for(const day of d.schedule.days)for(const x of day.items)entries.push({day:day.date,time:x.start,title:x.title,body:`${x.room} · ${x.teacher}`,target:'schedule',id:x.id,subject:x.title,kind:'Пара'});
-    for(const x of items(d.assignments))entries.push({day:x.due_date,time:'23:59',title:x.title,body:x.subject,target:'assignments',id:x.id,subject:x.subject,kind:'Дедлайн'});
+    for(const x of items(d.assignments))if(x.state!=='archived')entries.push({day:x.due_date,time:x.due_at?moscowTime(x.due_at):'23:59',title:x.title,body:x.subject,target:'assignments',id:x.id,subject:x.subject,kind:'Дедлайн'});
     for(const x of items(d.exams))if(x.exam_date)entries.push({day:x.exam_date,time:'',title:x.subject,body:x.teacher,target:'exams',id:x.id,subject:x.subject,kind:'Контроль'});
     for(const x of items(d.tasks))if(x.due_date&&!x.is_done)entries.push({day:x.due_date,time:'',title:x.title,body:x.subject,target:'tasks',id:x.id,subject:x.subject,kind:'Моя задача'});
     for(const x of items(d.bookings))if(['active','booked'].includes(x.status))entries.push({day:moscowDay(x.slot.start_at),time:c.stamp(x.slot.start_at),sortTime:moscowTime(x.slot.start_at),title:x.slot.subject,body:x.slot.room,target:'consultations',id:x.slot_id,subject:x.slot.subject,kind:'Консультация'});
@@ -258,7 +271,7 @@
     const o=d.overview;const requestStats=o.requests||{};const openTickets=typeof o.tickets==='number'?o.tickets:o.tickets?.open??o.open_tickets??0;
     return title('staffdesk','Сопровождение учебной жизни: сводка, запись на консультации, события и объявления.')+stats([[Number(requestStats.submitted||0)+Number(requestStats.review||0)+Number(requestStats.processing||0)+Number(requestStats.needs_info||0),'заявок в работе'],[openTickets,'открытых диалогов'],[d.slots.total??items(d.slots).length,'слотов консультаций']])+`<div class="campus-button-row campus-spaced">${link('staff','Очередь заявлений')}${link('staffmessages','Ответить на вопросы')}${link('schedule-changes','Согласование расписания')}${link('work-notices','Рабочие уведомления')}${link('materials-admin','Публикации')}${link('university','Университет')}${primary('staff-slot','Создать консультацию')}${primary('staff-event','Новое мероприятие')}${link('announcement-admin','Управление объявлениями')}</div>`+section('Опубликованные консультации',items(d.slots).length?`<div class="campus-log">${items(d.slots).map(x=>`<article><span class="campus-hub-icon">${icon('calendar')}</span><div><b>${esc(x.subject)}</b><p>${esc(x.teacher)} · ${c.stamp(x.start_at)} МСК · ${esc(x.room)}</p></div>${pill(`${x.booked_count??0} / ${x.capacity} мест`)}</article>`).join('')}</div>`:c.empty('calendar','Слотов пока нет','Создайте первую консультацию.'))+pager(d.slots,'staffslots','Опубликованные консультации')+info('Пульт не открывает личные оценки, конспекты, расписание или финансы студентов. Сотрудник видит только данные, необходимые для обращений и услуг.');
   }
-  const renders={courses,assignments,exams,attendance,calendar,tasks,notes,flashcards,quizzes,focus,consultations,messages:d=>messages(d),staffmessages:d=>messages(d,true),library,events,finance,contacts,knowledge,portfolio,settings,staffdesk};
+  const renders={courses,assignments,exams,calendar,tasks,notes,consultations,messages:d=>messages(d),staffmessages:d=>messages(d,true),events,finance,contacts,knowledge,portfolio,settings,staffdesk};
 
   async function openCourse(id){
     await detailLoading('Учебный курс',async()=>{
@@ -270,28 +283,69 @@
     c.modal(c.modalHead(heading,'Загружаем…')+'<p role="status">Загружаем данные…</p>',{wide:true,label:heading});const modalId=c.state.modalId;
     try{const html=await loader(modalId);if(modalId===c.state.modalId)c.modal(html,{wide:true,label:heading});}catch(error){if(!error.stale&&modalId===c.state.modalId)c.modal(c.modalHead(heading,'Не удалось открыть')+`<p role="alert">${esc(error.message)}</p>`,{label:heading});}
   }
+  function workAttachments(id,files){
+    return files.length?`<ul class="assignment-files">${files.map(file=>`<li><a download href="/api/learning/assignments/${Number(id)}/files/${Number(file.id)}">${esc(file.name)}</a><small>${Math.ceil(file.size/1024)} КБ</small></li>`).join('')}</ul>`:'';
+  }
+  function workNote(entry){
+    return `<li><b>${esc(entry.author)} · версия ${Number(entry.version)}${entry.score===null?'':' · '+Number(entry.score)+' баллов'}</b>
+      <small>${c.stamp(entry.created_at)} МСК</small>${entry.comment?paragraph(entry.comment):''}</li>`;
+  }
   async function assignmentModal(id){
-    const epoch=c.state.sessionEpoch,page=c.state.page;let x=items(current()).find(x=>x.id===Number(id));
-    if(!x)x=await c.api('learning/assignments/'+Number(id));if(epoch!==c.state.sessionEpoch||page!==c.state.page)return;
-    const feedback=x.feedback?.length?fold('Обратная связь преподавателя',`<ol class="op-log">${x.feedback.map(entry=>`<li><b>${esc(entry.author)} · версия ${Number(entry.version)}${entry.score===null?'':' · '+Number(entry.score)+' баллов'}</b><small>${c.stamp(entry.created_at)} МСК</small>${paragraph(entry.comment)}</li>`).join('')}</ol>`):'';
-    formModal('assignment','Сдать работу',x.title,`<p class="campus-muted">${esc(x.subject)} · до ${c.dateFmt(x.due_date)}</p>${paragraph(x.instructions||'Подготовьте решение и отправьте его в форме ниже.')}<div class="campus-task-state"><p><strong>Личный план:</strong> <label><input type="checkbox" data-deadline="${Number(x.deadline_id||x.id)}" ${x.is_done?'checked':''} /> Я выполнил(а) это задание</label></p><p>Личная отметка не отправляет работу и не выставляет оценку. Статус сдачи: <strong>${x.submission?.status==='submitted'?'работа отправлена':x.submission?.status==='withdrawn'?'работа отозвана':'ещё не отправлена'}</strong>.</p><div class="campus-button-row">${contextLink('courses','Материалы по предмету',{subject:x.subject})}${contextLink('consultations','Подготовиться на консультации',{subject:x.subject})}</div></div>`+field('text','Текст ответа',x.submission?.text||'',{rows:5,required:true,minlength:10,maxlength:8000,hint:'От 10 до 8000 символов. Файлы можно приложить HTTPS-ссылкой.'})+field('url','HTTPS-ссылка на работу (необязательно)',x.submission?.url||'',{type:'url',maxlength:500}),{id:x.id,submit:x.submission?'Сохранить новую версию':'Отправить работу',wide:true,after:(x.submission?.status==='submitted'?action('withdraw','Отозвать работу',x.id):'')+feedback});
+    const epoch=c.state.sessionEpoch,page=c.state.page,modalId=c.state.modalId;
+    try{
+      const x=await c.api('learning/assignments/'+Number(id));
+      if(epoch!==c.state.sessionEpoch||page!==c.state.page||modalId!==c.state.modalId)return;
+      const expiring=Date.parse(x.due_at)-Date.now();
+      const dueLabel=x.due_at?c.stamp(x.due_at)+' МСК':c.dateFmt(x.due_date);
+      const actions=x.can_withdraw?action('withdraw','Отозвать работу',x.id):'';
+      const revise=x.feedback.find(f=>f.action==='revise');
+      const visibleFeedback=x.feedback.filter(f=>f.comment||f.score!==null);
+      const feedback=visibleFeedback.length?fold('Обратная связь преподавателя',
+        `<ol class="op-log">${visibleFeedback.map(workNote).join('')}</ol>`):'';
+      const versions=x.attempts.length?fold('История версий',x.attempts.map(attempt=>`<details class="assignment-attempt">
+        <summary>Попытка ${Number(attempt.number)} · ${c.stamp(attempt.submitted_at)} МСК${attempt.late?' · сдано с опозданием':''}</summary>
+        ${attempt.text?paragraph(attempt.text):''}${external(attempt.url,'Открыть работу')}${attempt.completed?paragraph('Отмечено выполнение'):''}
+        ${workAttachments(x.id,attempt.files)}${attempt.feedback.length?`<p>${attempt.feedback.map(entry=>esc(entry.action==='accept'?'Принято':entry.action==='revise'?'Возвращено на доработку':entry.action==='complete'?'Завершено':entry.action==='review'?'Взято на проверку':'Есть комментарий')).join(' · ')}</p>`:''}</details>`).join('')):'';
+      const start=x.can_submit&&x.status==='not_started'?action('assignment-start','Отметить начало работы',x.id):'';
+      const content=`<p class="campus-muted">${esc(x.subject)} · до ${esc(dueLabel)}</p>
+        <p>${pill(x.state==='archived'?'В архиве':workStatuses[x.status],x.overdue?'warning':'')}
+        ${x.max_points!==null?pill('Максимум '+x.max_points+' баллов'):''}
+        ${x.overdue?pill(x.allow_late?'Просрочено · поздняя сдача открыта':'Срок сдачи истёк','warning'):expiring>=0&&expiring<86400000?pill('Срок истекает сегодня','warning'):''}</p>
+        ${x.description?paragraph(x.description):''}${paragraph(x.instructions)}
+        ${x.criteria?fold('Критерии оценивания',paragraph(x.criteria)):''}
+        ${x.materials.length?fold('Дополнительные материалы',x.materials.map((href,i)=>external(href,'Материал '+(i+1))).join('')):''}
+        ${x.is_team?paragraph(x.team_lead?'Ответственный за общую отправку: '+x.team_lead:'Ответственный за отправку недоступен'):''}
+        ${x.status==='revision_required'&&revise?info('Нужно исправить: '+revise.comment):''}
+        <div class="campus-task-state"><p><strong>Личный план:</strong> <label><input type="checkbox" data-deadline="${Number(x.deadline_id||x.id)}" ${x.is_done?'checked':''} /> Я выполнил(а) это задание</label></p>
+        <div class="campus-button-row">${contextLink('courses','Материалы по предмету',{subject:x.subject})}${contextLink('consultations','Подготовиться на консультации',{subject:x.subject})}</div></div>`;
+      if(!x.can_submit){
+        c.modal(c.modalHead('Сдать работу',x.title)+content+actions+feedback+versions,{label:'Сдать работу',wide:true});
+        return;
+      }
+      const methods=x.methods, files=methods.includes('files')?`<div class="field"><label for="campus-assignment-files">Файлы работы</label>
+        <input id="campus-assignment-files" name="files" type="file" multiple accept="${esc(x.formats.map(ext=>'.'+ext).join(','))}">
+        <span class="hint">До трёх файлов, 1 МиБ суммарно. Выбранные файлы сохраняются при отправке.</span></div>`:'';
+      const completed=methods.includes('complete')?'<label class="campus-module-check"><input name="completed" type="checkbox"> Работа выполнена</label>':'';
+      const inputs=`<input type="hidden" name="version" value="${Number(x.submission?.version||0)}">`+
+        (methods.includes('text')?field('text','Текст ответа',x.status==='withdrawn'?x.submission.text:'',{rows:5,minlength:10,maxlength:8000}):'')+
+        (methods.includes('url')?field('url','HTTPS-ссылка на работу',x.status==='withdrawn'?x.submission.url:'',{type:'url',maxlength:500}):'')+files+completed;
+      const label=x.attempts.length?'Отправить новую версию':'Отправить работу';
+      formModal('assignment','Сдать работу',x.title,content+start+inputs,{id:x.id,submit:label,wide:true,after:feedback+versions});
+    }catch(error){if(!error.stale&&epoch===c.state.sessionEpoch&&page===c.state.page)c.toast(error.message);}
+  }
+  async function encodeWorkFiles(input){
+    const files=Array.from(input?.files||[]);
+    if(files.length>3||files.reduce((total,file)=>total+file.size,0)>1024*1024||files.some(file=>!file.size))
+      throw new Error('Можно приложить до трёх непустых файлов размером не более 1 МиБ суммарно.');
+    return Promise.all(files.map(async file=>{
+      const bytes=new Uint8Array(await file.arrayBuffer());
+      let binary='';
+      for(let offset=0;offset<bytes.length;offset+=8192)binary+=String.fromCharCode(...bytes.subarray(offset,offset+8192));
+      return {name:file.name,content:btoa(binary)};
+    }));
   }
   function taskModal(x={}){formModal('task',x.id?'Изменить задачу':'Новая задача','Личное дело, срок и приоритет',field('title','Что сделать',x.title||'',{required:true,minlength:3,maxlength:180})+field('subject','Дисциплина / контекст',x.subject||local.context.tasks?.subject||'',{maxlength:130})+field('due_date','Срок',x.due_date||c.addDays(c.today(),1),{type:'date',required:true})+field('priority','Приоритет',x.priority||'normal',{choices:[['high','Высокий'],['normal','Обычный'],['low','Низкий']]}),{id:x.id||'',recordToken:x.record_token||''});}
   function noteModal(x={}){formModal('note',x.id?'Конспект':'Новый конспект','Сохранение в личном кабинете',field('title','Название',x.title||'',{required:true,minlength:3,maxlength:180})+field('subject','Дисциплина',x.subject||'',{maxlength:130})+field('body','Конспект',x.body||'',{rows:8,required:true,maxlength:12000}),{id:x.id||'',recordToken:x.record_token||'',wide:true});}
-  function flashcardModal(){formModal('flashcard','Новая карточка','Короткий вопрос и один понятный ответ',field('subject','Дисциплина','',{required:true,maxlength:130})+field('front','Вопрос','',{rows:3,required:true,minlength:1,maxlength:500})+field('back','Ответ','',{rows:5,required:true,minlength:1,maxlength:3000}));}
-  function showFlashcard(){
-    const x=local.card;if(!x)return;c.modal(c.modalHead('Повторить карточку',x.subject)+`<div class="campus-flashcard"><span class="page-kicker">ВОПРОС</span><h3>${esc(x.front)}</h3>${local.revealed?`<div class="campus-flashcard-back"><span class="page-kicker">ОТВЕТ</span>${paragraph(x.back)}</div><p class="campus-muted">Оцените, удалось ли вспомнить самостоятельно.</p><div class="campus-button-row">${action('flashcard-again','Повторить ещё',x.id)}${action('flashcard-known','Помню',x.id)}</div>`:action('flashcard-reveal','Показать ответ')}</div>`,{label:'Карточка для повторения'});
-  }
-  async function openQuiz(id){
-    local.quizResult=null;
-    await detailLoading('Самопроверка',async modalId=>{
-      const q=await c.api('learning/quizzes/'+id);if(modalId!==c.state.modalId)return '';local.quiz=q;
-      return c.modalHead(q.title,q.subject)+`<form data-c-form="quiz" data-id="${Number(q.id)}"><div class="campus-quiz">${q.questions.map((question,i)=>`<fieldset><legend>${i+1}. ${esc(question.prompt)}</legend>${question.options.map((option,j)=>`<label><input type="radio" name="question-${i}" value="${j}" required />${esc(option)}</label>`).join('')}</fieldset>`).join('')}</div><div class="inline-error" data-c-error role="alert" hidden></div><div class="modal-actions"><button class="primary-button" type="submit">${icon('check')} Проверить ответы</button></div></form>`;
-    });
-  }
-  function quizResult(result){
-    c.modal(c.modalHead('Разбор самопроверки',`${Number(result.score)} из ${Number(result.total)} · ${Number(result.percent)}%`)+`<div class="campus-quiz-results">${result.results.map((x,i)=>`<article class="${x.selected===x.correct?'correct':'incorrect'}"><h3>${i+1}. ${esc(typeof x.question==='string'?x.question:local.quiz?.questions[i]?.prompt||'Вопрос')}</h3><p>Ваш ответ: ${esc(x.selected_text??local.quiz?.questions[i]?.options[x.selected]??x.selected)}</p><p>Верный ответ: ${esc(x.correct_text??local.quiz?.questions[i]?.options[x.correct]??x.correct)}</p>${paragraph(x.explanation)}</article>`).join('')}</div><div class="modal-actions"><button class="primary-button" data-action="close-modal">Готово</button></div>`,{wide:true,label:'Результаты самопроверки'});
-  }
   async function ticketModal(id){
     const staff=c.state.user.role==='staff';const prefix=staff?'staff':'services';
     await detailLoading('Диалог с учебным офисом',async()=>{
@@ -302,7 +356,7 @@
   function portfolioModal(x={}){formModal('portfolio',x.id?'Изменить запись':'Добавить в портфолио','Личный журнал учебных результатов',field('title','Название',x.title||'',{required:true,minlength:3,maxlength:180})+field('kind','Тип',x.kind||'project',{choices:portfolioKinds})+field('day','Дата',x.day||c.today(),{type:'date',required:true})+field('description','Что сделано',x.description||'',{rows:6,maxlength:6000})+field('url','HTTPS-ссылка (необязательно)',x.url||'',{type:'url',maxlength:500}),{id:x.id||'',recordToken:x.record_token||'',wide:true});}
   function staffSlotModal(){const start=c.addDays(c.today(),2)+'T12:00';formModal('staff-slot','Новая консультация','Время вводится по Москве (UTC+3)',field('teacher','Преподаватель','',{required:true,minlength:2,maxlength:120})+field('subject','Дисциплина','',{required:true,minlength:3,maxlength:130})+field('start_at','Начало',start,{type:'datetime-local',required:true})+field('end_at','Окончание',start.replace('12:00','13:00'),{type:'datetime-local',required:true})+field('room','Аудитория / формат','А-301',{required:true,maxlength:80})+field('capacity','Число мест',5,{type:'number',min:1,max:100,required:true}));}
   function staffEventModal(){const start=c.addDays(c.today(),4)+'T16:00';formModal('staff-event','Новое мероприятие','Укажите время, место и условия записи',field('title','Название','',{required:true,minlength:5,maxlength:180})+field('category','Категория','academic',{choices:[['academic','Учёба'],['science','Наука'],['career','Карьера'],['sport','Спорт'],['community','Сообщество']]})+field('description','Описание','',{rows:5,minlength:10,maxlength:4000,required:true})+field('start_at','Начало (МСК)',start,{type:'datetime-local',required:true})+field('end_at','Окончание (МСК)',start.replace('16:00','17:00'),{type:'datetime-local',required:true})+field('location','Место','Актовый зал',{required:true,minlength:3,maxlength:150})+field('capacity','Число мест',30,{type:'number',min:1,max:500,required:true}));}
-  function confirmMutation(name,id,text){if(!c.closeModal())return;const labels={'task-delete':'Удалить задачу','note-delete':'Удалить конспект','flashcard-delete':'Удалить карточку','portfolio-delete':'Удалить запись','focus-delete':'Удалить занятие',withdraw:'Отозвать работу','ticket-close':'Закрыть диалог','revoke-sessions':'Завершить сеансы'};const label=labels[name]||'Подтвердить';c.modal(c.modalHead(label,text)+`<div class="modal-actions"><button class="muted-button" data-action="close-modal">Отмена</button>${action(name,label,id,'data-confirmed="true"')}</div>`,{label:'Подтверждение действия'});}
+  function confirmMutation(name,id,text){if(!c.closeModal())return;const labels={'task-delete':'Удалить задачу','note-delete':'Удалить конспект','portfolio-delete':'Удалить запись',withdraw:'Отозвать работу','ticket-close':'Закрыть диалог','revoke-sessions':'Завершить сеансы'};const label=labels[name]||'Подтвердить';c.modal(c.modalHead(label,text)+`<div class="modal-actions"><button class="muted-button" data-action="close-modal">Отмена</button>${action(name,label,id,'data-confirmed="true"')}</div>`,{label:'Подтверждение действия'});}
   async function mutate(path,body={},success='Сохранено',button=null){
     if(c.state.pending)return null;const epoch=c.state.sessionEpoch;const page=c.state.page;c.state.pending++;if(button)button.disabled=true;
     try{const pending=await pendingMutation(path,body);if(epoch!==c.state.sessionEpoch)return null;const result=await c.api(path,{method:'POST',body:JSON.stringify(body),headers:{'Idempotency-Key':pending.key,...(button?.dataset.recordToken?{'X-ATLAS-Record':button.dataset.recordToken}:{})}});pending.clear();c.state.pending=Math.max(0,c.state.pending-1);if(epoch!==c.state.sessionEpoch)return null;c.closeModal();if(page===c.state.page)await c.updatePage({quiet:true});if(epoch!==c.state.sessionEpoch||page!==c.state.page)return null;c.refreshUnread();c.toast(success);return result;}
@@ -316,28 +370,25 @@
     if(name==='clear-context'){resetRouteContext(el.dataset.contextPage);c.replaceRouteContext();return c.updatePage();}
     if(name==='course')return openCourse(id);
     if(name==='assignment')return assignmentModal(id);
+    if(name==='assignment-start'){
+      const result=await mutate(`learning/assignments/${id}/start`,{version:0},'Работа отмечена как начатая.',el);
+      if(result&&c.state.page==='assignments')return assignmentModal(id);
+      return;
+    }
     if(name==='task-new')return taskModal();
     if(name==='task-edit')return taskModal(find());
     if(name==='note-new')return noteModal();
     if(name==='note-edit')return noteModal(find());
-    if(name==='flashcard-new')return flashcardModal();
-    if(name==='flashcard-open'){local.card=find();local.revealed=false;return showFlashcard();}
-    if(name==='flashcard-reveal'){local.revealed=true;return showFlashcard();}
-    if(name==='flashcard-known'||name==='flashcard-again')return mutate(`learning/flashcards/${id}/review`,{known:name==='flashcard-known'},name==='flashcard-known'?'Следующее повторение запланировано.':'Карточка остаётся для повторения.',el);
-    if(name==='quiz-open')return openQuiz(id);
     if(name==='ticket-new')return formModal('ticket','Задать вопрос','Ответ сотрудника появится в этом диалоге',field('topic','Тема','academic',{choices:ticketTopics})+field('title','Короткий заголовок',local.context.messages?.subject?'Консультация: '+local.context.messages.subject:'',{required:true,minlength:5,maxlength:180})+field('message','Вопрос',local.context.messages?.subject?'Подскажите, пожалуйста, как подготовиться по дисциплине «'+local.context.messages.subject+'» и выбрать время консультации.':'',{rows:6,minlength:10,maxlength:4000,required:true}),{submit:'Отправить вопрос',wide:true});
     if(name==='ticket-open')return ticketModal(id);
     if(name==='portfolio-new')return portfolioModal();
     if(name==='portfolio-edit')return portfolioModal(find());
-    if(name==='focus-log')return formModal('focus','Записать учебное занятие','Личный учёт самостоятельной работы',field('subject','Предмет или задача','',{required:true,maxlength:130})+field('minutes','Продолжительность, минут',local.timer?.completed?local.timer.duration:25,{type:'number',min:1,max:180,required:true}));
-    if(name==='timer-start')return timerToggle(el);
-    if(name==='timer-reset'){stopTimer();c.drawPage();return;}
     if(name.startsWith('calendar-')){const from=local.calendarWeek||c.monday(c.today());const next=name==='calendar-today'?c.monday(c.today()):c.addDays(from,name==='calendar-prev'?-7:7);if(Math.abs(c.asDate(next)-c.asDate(c.today()))>360*86400000){c.toast('Календарь доступен в пределах года.');return;}local.calendarWeek=next;local.calendarDay=name==='calendar-today'?c.today():next;return c.updatePage();}
     if(name==='staff-slot')return staffSlotModal();
     if(name==='staff-event')return staffEventModal();
-    const deleteRoutes={'focus-delete':`learning/focus-sessions/${id}/delete`,'task-delete':`learning/tasks/${id}/delete`,'note-delete':`learning/notes/${id}/delete`,'flashcard-delete':`learning/flashcards/${id}/delete`,'portfolio-delete':`campus/portfolio/${id}/delete`};
+    const deleteRoutes={'task-delete':`learning/tasks/${id}/delete`,'note-delete':`learning/notes/${id}/delete`,'portfolio-delete':`campus/portfolio/${id}/delete`};
     if(deleteRoutes[name]){if(!el.dataset.confirmed)return confirmMutation(name,id,'«'+(find()?.title||find()?.front||find()?.subject||'Учебная запись')+'» будет удалена из вашего кабинета.');return mutate(deleteRoutes[name],{},'Запись удалена.',el);}
-    const mutations={withdraw:[`learning/assignments/${id}/withdraw`,'Работа отозвана. Можно отправить новую версию.'],'consultation-book':[`services/consultations/${id}/book`,'Запись на консультацию сохранена.'],'booking-cancel':[`services/bookings/${id}/cancel`,'Запись отменена.'],'event-register':[`services/events/${id}/register`,'Вы записаны на мероприятие.'],'event-cancel':[`services/registrations/${id}/cancel`,'Участие отменено.'],'book-borrow':[`services/library/${id}/borrow`,'Книга записана в ваш формуляр.'],'loan-return':[`services/loans/${id}/return`,'Книга возвращена.'],'ticket-close':[`${c.state.user.role==='staff'?'staff':'services'}/tickets/${id}/close`,'Диалог закрыт. История сохранена.'],'revoke-sessions':['account/sessions/revoke-others','Остальные сеансы завершены.']};
+    const mutations={withdraw:[`learning/assignments/${id}/withdraw`,'Работа отозвана. Можно отправить новую версию.'],'consultation-book':[`services/consultations/${id}/book`,'Запись на консультацию сохранена.'],'booking-cancel':[`services/bookings/${id}/cancel`,'Запись отменена.'],'event-register':[`services/events/${id}/register`,'Вы записаны на мероприятие.'],'event-cancel':[`services/registrations/${id}/cancel`,'Участие отменено.'],'ticket-close':[`${c.state.user.role==='staff'?'staff':'services'}/tickets/${id}/close`,'Диалог закрыт. История сохранена.'],'revoke-sessions':['account/sessions/revoke-others','Остальные сеансы завершены.']};
     if(mutations[name]){if(['withdraw','ticket-close','revoke-sessions'].includes(name)&&!el.dataset.confirmed)return confirmMutation(name,id,name==='revoke-sessions'?'Текущий сеанс продолжит работать. Остальные потребуют нового входа.':name==='withdraw'?'Текущая версия останется в кабинете; можно отправить работу снова.':'Переписка останется доступной, новые сообщения в этот диалог будут закрыты.');return mutate(mutations[name][0],{},mutations[name][1],el);}
   }
   async function submit(form){
@@ -353,10 +404,12 @@
       const id=Number(form.dataset.id);let path,body,success='Сохранено';
     if(name==='task'){path='learning/tasks'+(id?'/'+id:'');body={title:values.title.trim(),subject:values.subject.trim(),due_date:values.due_date,priority:values.priority};if(id)body.is_done=!!items(current()).find(x=>x.id===id)?.is_done;}
     if(name==='note'){path='learning/notes'+(id?'/'+id:'');body={title:values.title.trim(),subject:values.subject.trim(),body:values.body};}
-    if(name==='flashcard'){path='learning/flashcards';body={subject:values.subject.trim(),front:values.front.trim(),back:values.back.trim()};}
-    if(name==='assignment'){path=`learning/assignments/${id}/submit`;body={text:values.text.trim(),url:values.url.trim()};success='Версия работы сохранена в учебном кабинете.';}
-    if(name==='quiz'){path=`learning/quizzes/${id}/attempt`;body={answers:c.$$('fieldset',form).map((_,i)=>Number(values['question-'+i]))};}
-    if(name==='focus'){path='learning/focus-sessions';body={subject:values.subject.trim(),minutes:Number(values.minutes)};}
+    if(name==='assignment'){
+      path=`learning/assignments/${id}/submit`;
+      const files=await encodeWorkFiles(form.elements.files);if(!currentForm())return;
+      body={text:(values.text||'').trim(),url:(values.url||'').trim(),version:Number(values.version),completed:values.completed==='on',files};
+      success='Версия работы отправлена.';
+    }
     if(name==='ticket'){path='services/tickets';body={topic:values.topic,title:values.title.trim(),message:values.message.trim()};success='Вопрос сохранён. Следите за ответом в диалоге.';}
     if(name==='ticket-reply'){path=`${c.state.user.role==='staff'?'staff':'services'}/tickets/${id}/messages`;body={message:values.message.trim()};success='Сообщение отправлено.';}
     if(name==='portfolio'){path='campus/portfolio'+(id?'/'+id:'');body={title:values.title.trim(),kind:values.kind,day:values.day,description:values.description,url:values.url.trim()};}
@@ -372,27 +425,12 @@
       const result=await c.api(path,{method:'POST',body:JSON.stringify(body),headers});if(!currentForm())return;
       form.dataset.dirty='false';try{await c.clearFormDraft(form);}catch(e){if(!e.stale)c.toast('Запись сохранена. Очистить черновик пока не удалось.');}if(!currentForm())return;
       if(name==='ticket-reply')delete local.ticketOffsets[id];release();c.closeModal();if(page===c.state.page)await c.updatePage({quiet:true});if(epoch!==c.state.sessionEpoch||page!==c.state.page)return;c.refreshUnread();
-      if(name==='quiz')quizResult(result);else if(name==='ticket-reply')await ticketModal(id);
+      if(name==='ticket-reply')await ticketModal(id);
       if(name==='preferences')document.body.classList.toggle('compact-campus',body.compact_mode);c.toast(success);
     }catch(e){if(!e.stale&&currentForm()){error.hidden=false;error.textContent=e.message;button.textContent='Повторить сохранение';validationFocus=c.showFieldErrors?.(e,form);}}
     finally{release();if(form._atlasDraft)form._atlasDraft.submitting=false;if(currentForm()){controls.forEach(x=>x.disabled=false);if(validationFocus?.isConnected&&!validationFocus.disabled)validationFocus.focus();}}
   }
-  function stopTimer(){clearInterval(local.timerTick);local.timerTick=null;local.timer=null;}
-  function timerToggle(el){
-    const now=Date.now();
-    if(!local.timer){const duration=Number(c.$('#focus-duration')?.value||25);local.timer={duration,remaining:duration*60,endsAt:now+duration*60000,running:true,completed:false};}
-    else if(local.timer.running){local.timer.remaining=Math.max(0,Math.ceil((local.timer.endsAt-now)/1000));local.timer.running=false;}
-    else{if(local.timer.completed)return;local.timer.endsAt=now+local.timer.remaining*1000;local.timer.running=true;}
-    clearInterval(local.timerTick);local.timerTick=setInterval(timerPaint,500);c.drawPage();timerPaint();
-  }
-  function timerPaint(){
-    if(!local.timer){const clock=c.$('#focus-clock');if(clock)clock.textContent=String(local.duration).padStart(2,'0')+':00';return;}const t=local.timer;if(t.running)t.remaining=Math.max(0,Math.ceil((t.endsAt-Date.now())/1000));
-    if(t.remaining===0&&!t.completed){t.completed=true;t.running=false;clearInterval(local.timerTick);c.toast('Учебный отрезок завершён. Сделайте паузу и запишите результат.');}
-    const clock=c.$('#focus-clock');if(clock)clock.textContent=String(Math.floor(t.remaining/60)).padStart(2,'0')+':'+String(t.remaining%60).padStart(2,'0');
-    const button=c.$('[data-c-action="timer-start"]');if(button){button.textContent=t.completed?'Завершено':t.running?'Пауза':'Продолжить';button.disabled=t.completed;}
-    const status=c.$('#focus-state');if(status)status.textContent=t.completed?'Готово. Можно записать занятие и сделать перерыв.':t.running?'Выделенное время для одной задачи.':'Таймер на паузе.';
-  }
-  function afterRender(page){if(page==='focus'){timerPaint();if(local.timer&&c.$('#focus-duration'))c.$('#focus-duration').value=String(local.timer.duration);}if(page==='settings'&&current()?.preferences)document.body.classList.toggle('compact-campus',!!current().preferences.compact_mode);}
+  function afterRender(page){if(page==='settings'&&current()?.preferences)document.body.classList.toggle('compact-campus',!!current().preferences.compact_mode);}
   function clearFilters(page){clearTimeout(serviceSearchTimer);local.query[page]='';local.filter[page]='all';local.offset[page]=0;delete local.context[page];}
   function resetRouteContext(page){
     if(!Object.hasOwn(local.context,page))return;
@@ -422,13 +460,12 @@
     });
     document.addEventListener('change',async e=>{
       if(e.target.dataset.cSelectFilter){local.filter[e.target.dataset.cSelectFilter]=e.target.value;c.drawPage();c.$('[data-c-select-filter]')?.focus({preventScroll:true});return;}
-      if(e.target.id==='focus-duration'){local.duration=Number(e.target.value)||25;timerPaint();return;}
       if(e.target.id==='calendar-date'){const day=e.target.value;if(day){if(Math.abs(c.asDate(day)-c.asDate(c.today()))>360*86400000){c.toast('Выберите дату в пределах года.');return;}local.calendarWeek=c.monday(day);local.calendarDay=day;await c.updatePage();}return;}
       const module=e.target.closest('[data-c-module]');if(module){if(c.state.pending){module.checked=!module.checked;return;}module.disabled=true;c.state.pending++;try{await c.api(`learning/courses/${Number(module.dataset.course)}/modules/${Number(module.dataset.cModule)}`,{method:'POST',body:JSON.stringify({is_done:module.checked})});c.state.pending--;c.toast('Прогресс модуля сохранён.');const row=items(c.state.data.courses).find(x=>x.id===Number(module.dataset.course));if(row){const mod=row.modules.find(x=>x.id===Number(module.dataset.cModule));if(mod)mod.is_done=module.checked;row.progress=Math.round(row.modules.filter(x=>x.is_done).length/row.modules.length*100);}const badge=module.closest('details')?.querySelector('summary .campus-pill');if(badge){badge.textContent=module.checked?'Изучено':'К изучению';badge.classList.toggle('success',module.checked);}c.drawPage();module.disabled=false;}catch(error){if(!error.stale){c.state.pending=Math.max(0,c.state.pending-1);module.checked=!module.checked;module.disabled=false;c.toast(error.message);}}return;}
       const task=e.target.closest('[data-c-task]');if(task){const row=items(current()).find(x=>x.id===Number(task.dataset.cTask));if(!row)return;const body={is_done:task.checked};const result=await mutate('learning/tasks/'+row.id+'/toggle',body,task.checked?'Задача выполнена.':'Задача снова в работе.',task);if(!result&&task.isConnected)task.checked=!task.checked;}
     });
   }
-  function reset(){stopTimer();clearTimeout(serviceSearchTimer);local.query={};local.filter={assignments:'pending',tasks:'active'};local.offset={};local.scope={};local.context={};local.ticketOffsets={};local.pendingKeys={};local.duration=25;local.catalog='documents';local.card=local.quiz=local.quizResult=null;local.revealed=false;local.calendarDay=local.calendarWeek=null;document.body.classList.remove('compact-campus');}
+  function reset(){clearTimeout(serviceSearchTimer);local.query={};local.filter={assignments:'pending',tasks:'active'};local.offset={};local.scope={};local.context={};local.ticketOffsets={};local.pendingKeys={};local.catalog='documents';local.calendarDay=local.calendarWeek=null;document.body.classList.remove('compact-campus');}
   const catalogOptions=[['documents','Справки'],['academic','Учёба'],['finance','Финансы'],['campus','Кампус'],['other','Другое'],['all','Все услуги']];
   window.ATLASCampus={pages,has:page=>Object.hasOwn(renders,page),init,prepare,prepareRoute,openContext,clearFilters,resetRouteContext,openResult,load,render:(page,d)=>renders[page](d),afterRender,reset,catalogFilter:()=>`<div class="campus-catalog-head"><h2>Каталог услуг</h2><div class="filter-tabs" aria-label="Категория услуги">${catalogOptions.map(([key,label])=>`<button data-catalog-category="${key}" aria-pressed="${key===local.catalog}">${label}</button>`).join('')}</div></div>`,catalogTypes:types=>local.catalog==='all'?types:types.filter(t=>(t.category||'documents')===local.catalog)};
 })();

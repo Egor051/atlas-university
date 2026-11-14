@@ -175,7 +175,7 @@
   function library(data){
     if(!data.sections){
       return title('Учебные материалы','Лекции, презентации и задания по дисциплинам.',
-        isStudent()?appLink('/app/library','Книги и формуляр','outline-button'):appLink('/app/materials-admin','Публикации','outline-button'))+
+        isStudent()?appLink('/app/learning/notes','Мои конспекты','outline-button'):appLink('/app/materials-admin','Публикации','outline-button'))+
         materialFilters('materials',data)+(data.items.length?materialCards(data.items):empty('Материалы не найдены','Измените поиск или фильтры.'))+pager('materials',data);
     }
     const slides=data.kind==='slides';

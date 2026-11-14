@@ -65,7 +65,8 @@ def test_additive_legacy_migration_preserves_records_and_is_repeatable():
                 ('0002_workflow',), ('0003_listing_indexes',), ('0004_full_campus',), ('0005_contest_hardening',),
                 ('0006_audit_integrity',), ('0007_university_library_direct',), ('0008_academic_workspace',),
                 ('0009_student_units',), ('0010_campus_announcements',), ('0011_certificate_issues',),
-                ('0012_global_notifications',),
+                ('0012_global_notifications',), ('0013_academic_points',), ('0014_assignment_workflow',),
+                ('0015_announcement_summaries',), ('0016_trim_bundled_copy',),
             ]
             assert database.execute('SELECT body,target FROM notifications WHERE id=201').fetchone() == ('Preserve notice', '/app/requests')
 
@@ -176,7 +177,7 @@ def test_ready_transcript_contains_owner_grades_and_concept_label():
         document = student.get(f'/api/requests/{row["id"]}/document')
         assert document.status_code == 200
         assert 'Инженерия ПО' in document.text and 'Теория вероятностей' not in document.text
-        assert 'КОНКУРСНЫЙ ОБРАЗЕЦ' in document.text
+        assert 'Не имеет юридической силы' in document.text
         assert 'attachment' in document.headers['content-disposition']
 
 

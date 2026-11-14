@@ -16,10 +16,10 @@ CERTIFICATE_DETAILS = {
         'required_data': 'Назначение и количество экземпляров. Имя, направление, курс и группу берём из профиля.',
     },
     'transcript': {'required_data': 'Учебный период и формат. Оценки берём из учебной ведомости.',
-                   'basis': 'Пример университетской услуги — выписка из учебной карточки',
+                   'basis': 'Требования к выписке из учебной карточки',
                    'source_url': 'https://misis.ru/students/sto-services/studserv/reference/sp3/'},
     'scholarship': {'required_data': 'При необходимости укажите период в комментарии.',
-                    'basis': 'Пример университетской услуги — справка о выплатах',
+                    'basis': 'Требования к справке о выплатах',
                     'source_url': 'https://misis.ru/students/sto-services/studserv/reference/sp11/'},
     'tax': {'required_data': 'В комментарии можно указать период и назначение запроса.'},
     APPENDIX_4: {

@@ -1,6 +1,17 @@
 {$DOMAIN} {
 	encode zstd gzip
-	request_body {
+	@submission_upload {
+		method POST
+		path_regexp ^/api/learning/assignments/[0-9]+/submit/?$
+	}
+	@regular_request not {
+		method POST
+		path_regexp ^/api/learning/assignments/[0-9]+/submit/?$
+	}
+	request_body @submission_upload {
+		max_size 2097152
+	}
+	request_body @regular_request {
 		max_size 64KB
 	}
 	reverse_proxy web:8000

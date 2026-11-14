@@ -217,7 +217,7 @@
 
 /* Compact view changes shared spacing without scaling text or hit areas. */
 .compact-campus :is(.content, .modal, .card-pad, .campus-tile, .disclosure-body) { padding: var(--atlas-card-pad); }
-.compact-campus :is(.home-sections, .grid-dashboard, .campus-grid, .campus-metrics, .compact-list, .grade-summary, .requests-layout, .service-catalog, .focus-layout, .day-picker, .week-grid, .ops-grid) { gap: var(--atlas-gap); }
+.compact-campus :is(.home-sections, .grid-dashboard, .campus-grid, .campus-metrics, .compact-list, .grade-summary, .requests-layout, .service-catalog, .day-picker, .week-grid, .ops-grid) { gap: var(--atlas-gap); }
 .compact-campus :is(.title-row, .campus-section, .modal-head, .disclosure, .filter-tabs, .field, .campus-toolbar) { margin-bottom: var(--atlas-gap); }
 .compact-campus :is(.compact-row, .campus-metric, .lesson-row, .deadline-item, .notice-preview, .notification-full, .request-row, .campus-log > article, .disclosure > summary, .day-lesson, .day-pick, .service-card) { padding-block: var(--atlas-row-pad); }
 .compact-campus :is(.primary-button, .outline-button, .muted-button, .danger-button, .quiet-button, .mini-link, .filter-tabs button, .field :is(input:not([type="checkbox"]):not([type="radio"]),select), .search-field, .search-trigger) {

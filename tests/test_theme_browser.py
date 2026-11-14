@@ -97,7 +97,7 @@ def test_certificate_preview_uses_current_theme_and_prints_on_light_paper(fronte
     with page.expect_popup() as opened:
         preview.click()
     document = opened.value
-    expect(document.locator('.warning')).to_contain_text('ВСЕ ДАННЫЕ ВЫМЫШЛЕНЫ')
+    expect(document.locator('.warning')).to_have_text('Не имеет юридической силы')
     assert 'theme=dark' in document.url
     expect(document.locator('body')).to_have_css('background-color', DARK)
     expect(document.locator('footer')).to_have_css('border-top-color', 'rgb(66, 61, 83)')

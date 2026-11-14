@@ -7,6 +7,7 @@ already be running. The stack is stopped afterwards; its test volumes remain.
 """
 from __future__ import annotations
 import argparse
+from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
@@ -237,6 +238,42 @@ with SessionLocal() as db:
             assert sum(item['target'] == reminder_target for item in b.call('/api/notifications?filter=deadline')) == 1
             assert all(item['target'] != reminder_target for item in a.call('/api/notifications?filter=deadline'))
             report['checks'].append('PostgreSQL concurrent reminders count committed inserts and store one notice for its owner')
+            teacher = Client(report['origin'], context)
+            teacher.call('/api/login', {'login': 'orlov.demo', 'password': 'AtlasTeach!2026-M'})
+            load = teacher.call('/api/teaching')['items'][0]
+            works = f'/api/teaching/{load["id"]}/works'
+            assignment_title = 'Приёмка учебной работы по HTTPS'
+            work = teacher.call(works, {
+                'title': assignment_title, 'instructions': 'Приложите описание алгоритма и результаты проверки.',
+                'due_at': (datetime.now(timezone.utc) + timedelta(days=5)).isoformat(),
+                'methods': ['text', 'files'], 'formats': ['txt'], 'max_points': 10,
+            }, expected=201)
+            visible = a.call('/api/learning/assignments')['items']
+            assigned = next(row for row in visible if row['title'] == assignment_title)
+            deadline_path = f'/api/learning/assignments/{assigned["id"]}'
+            sample_bytes = b'One checked handoff\n' * 4000
+            sent = a.call(deadline_path + '/submit', {
+                'text': 'Первый вариант с результатами проверки.',
+                'files': [{'name': 'решение.txt', 'content': b64encode(sample_bytes).decode('ascii')}],
+            })
+            attachment = deadline_path + f'/files/{sent["attempts"][0]["files"][0]["id"]}'
+            assert a.call(attachment) == sample_bytes
+            b.call(attachment, expected=404)
+            review = f'{works}/{work["id"]}/feedback/{sent["submission"]["id"]}'
+            teacher.call(review, {'action': 'revise', 'submitted_version': sent['submission']['attempt_version'],
+                                  'comment': 'Добавьте проверку на пустом графе.'}, expected=201)
+            fixed = a.call(deadline_path + '/submit', {'text': 'Добавлена проверка на пустом графе.'})
+            assert len(fixed['attempts']) == 2
+            before = next(row['score'] for row in a.call('/api/grades')['items']
+                          if row['subject'] == load['discipline'])
+            acceptance = {'action': 'accept', 'submitted_version': fixed['submission']['attempt_version'], 'score': 7}
+            key = {'Idempotency-Key': uuid.uuid4().hex}
+            accepted = teacher.call(review, acceptance, expected=201, headers=key)
+            assert teacher.call(review, acceptance, headers=key) == accepted
+            after = next(row['score'] for row in a.call('/api/grades')['items']
+                         if row['subject'] == load['discipline'])
+            assert after == before + 7
+            report['checks'].append('HTTPS PostgreSQL work upload over 64 KB, private download, revision and one positive award')
             # Fill only synthetic sessions in this newly created test database.
             # Distinct addresses are injected solely by Caddyfile.test's local
             # trusted-proxy route, so the account cap is tested across IP locks.

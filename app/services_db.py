@@ -150,12 +150,12 @@ def seed_services(db):
         if db.scalar(select(ConsultationSlot.id).where(ConsultationSlot.seed_key == seed_key)) is None:
             db.add(ConsultationSlot(seed_key=seed_key, teacher=teacher, subject=subject, start_at=at(offset, 15), end_at=at(offset, 16), room=room, capacity=4, booked_count=0))
     events = [
-        ('hackathon', 'Кампус-хакатон: сервисы для студентов', 'science', 'Соберите команду и предложите решение учебной задачи. Конкурсный демонстрационный сценарий.', 5, 'Коворкинг, корпус А', 24),
+        ('hackathon', 'Кампус-хакатон: сервисы для студентов', 'science', 'Соберите команду, предложите решение учебной задачи и представьте его на разборе.', 5, 'Коворкинг, корпус А', 24),
         ('career', 'Мастерская резюме и портфолио', 'career', 'Разбор структуры резюме, рассказа о проектах и подготовки к учебной стажировке.', 3, 'Центр карьеры, Б-210', 20),
         ('science', 'Как подготовить студенческую статью', 'science', 'Исследовательский вопрос, план работы и аккуратные ссылки на источники.', 7, 'Библиотека, читальный зал', 16),
         ('sport', 'Студенческая прогулка и спортивный час', 'sport', 'Открытая встреча для знакомства и отдыха после занятий.', 4, 'Спортивный зал, корпус В', 30),
         ('volunteer', 'Встреча волонтёрского клуба', 'community', 'Знакомство с направлениями добровольческих проектов кампуса.', 8, 'Студенческий центр, А-105', 15),
-        ('mobility', 'Академическая мобильность: первые шаги', 'academic', 'Как собрать учебный план обмена и сформулировать вопросы координатору.', 10, 'Онлайн · ссылка не предоставляется в концепте', 40),
+        ('mobility', 'Академическая мобильность: первые шаги', 'academic', 'Как собрать учебный план обмена и сформулировать вопросы координатору.', 10, 'Онлайн', 40),
     ]
     for key, title, category, description, offset, location, capacity in events:
         seed_key = 'demo-event-' + key
@@ -197,8 +197,8 @@ def seed_services(db):
         if db.scalar(select(FinanceEntry.id).where(FinanceEntry.student_id == user.id).limit(1)) is None:
             amount = 420000 if user.login == 'alina.demo' else 560000
             for offset in (60, 30, 0):
-                db.add(FinanceEntry(student_id=user.id, date=day-timedelta(days=offset), description='Демонстрационная академическая стипендия', direction='credit', amount_kopecks=amount))
-            db.add(FinanceEntry(student_id=user.id, date=day-timedelta(days=10), description='Демонстрационная плата за проживание', direction='debit', amount_kopecks=85000 if user.login == 'alina.demo' else 95000))
+                db.add(FinanceEntry(student_id=user.id, date=day-timedelta(days=offset), description='Академическая стипендия', direction='credit', amount_kopecks=amount))
+            db.add(FinanceEntry(student_id=user.id, date=day-timedelta(days=10), description='Плата за проживание', direction='debit', amount_kopecks=85000 if user.login == 'alina.demo' else 95000))
         if db.get(StudentPreference, user.id) is None:
             db.add(StudentPreference(student_id=user.id, email_notifications=False, deadline_reminders=True, compact_mode=False, weekly_goal=8 if user.login == 'alina.demo' else 10))
     db.flush()
