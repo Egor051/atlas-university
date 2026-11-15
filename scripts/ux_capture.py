@@ -17,10 +17,9 @@ from playwright.sync_api import sync_playwright, expect
 from browser_check import start_server, stop_server, ready, visit
 
 ROOT = Path(__file__).resolve().parents[1]
-STUDENT = ['home', 'schedule', 'grades', 'plan', 'requests', 'notifications', 'profile',
-           'campus', 'courses', 'assignments', 'exams', 'attendance', 'calendar', 'tasks',
-           'notes', 'flashcards', 'quizzes', 'focus', 'consultations', 'messages', 'library',
-           'events', 'finance', 'contacts', 'knowledge', 'portfolio', 'settings']
+STUDENT = ['home', 'schedule', 'grades', 'requests', 'notifications', 'profile',
+           'courses', 'assignments', 'exams', 'materials', 'consultations', 'messages',
+           'events', 'finance', 'contacts', 'knowledge', 'settings']
 STAFF = ['staff', 'staffdesk', 'staffmessages', 'profile', 'settings']
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
 
@@ -49,7 +48,7 @@ def run(phase):
                         for width, height in WIDTHS:
                             page.set_viewport_size({'width': width, 'height': height})
                             page.screenshot(path=str(destination / f'{width}-login.png'), full_page=True)
-                    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
+                    page.get_by_role('button',name='Или выбрать демо-аккаунт',exact=True).click()
                     page.locator(f'[data-demo="{account}"]').click()
                     ready(page)
                     for width, height in WIDTHS:

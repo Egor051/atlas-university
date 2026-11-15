@@ -10,7 +10,12 @@ from improvement_crossbrowser import STAFF, STUDENT
 from improvement_runtime import ROOT, browser_login, browser_ready, geometry, isolated_server, report_start, save_report
 
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
-SECTIONS = ['records', 'learning', 'planning', 'administration', 'communications', 'university', 'campus-life', 'account']
+STUDENT_REDIRECTS = {'records': 'schedule', 'learning': 'courses', 'administration': 'requests',
+                     'communications': 'direct', 'university-life': 'university', 'campus-life': 'events',
+                     'account': 'profile', 'planning': 'assignments', 'calendar': 'schedule', 'plan': 'assignments',
+                     'tasks': 'assignments', 'learning/notes': 'courses', 'portfolio': 'profile'}
+ROLE_REDIRECTS = {'student': STUDENT_REDIRECTS, 'staff': {'office': 'staff', 'account': 'profile'},
+                  'teacher': {'learning': 'materials', 'account': 'profile'}}
 NEW_STUDENT = ['materials', 'materials/1', 'direct', 'university/digital', 'university/digital/systems',
                'university/digital/systems/mikhail-orlov']
 SHOTS = {'grades', 'campus', 'staff', 'learning', 'materials', 'materials/1', 'university/digital/systems/mikhail-orlov',
@@ -30,12 +35,12 @@ def main():
     axe = (ROOT / 'node_modules' / 'axe-core' / 'axe.min.js').read_text(encoding='utf-8')
     routes = [STUDENT[:], STAFF[:]]
     if args.phase != 'before':
-        routes[0] += SECTIONS
+        routes[0] += list(STUDENT_REDIRECTS)
         routes[1] += ['office', 'account']
     if args.phase == 'complete':
         routes[0] += NEW_STUDENT
-        routes[1] += ['direct', 'materials', 'materials-admin', 'communications', 'university']
-        routes.append(['teacher', 'direct', 'materials', 'materials-admin', 'university', 'learning', 'communications', 'account', 'profile', 'settings'])
+        routes[1] += ['direct', 'materials', 'materials-admin', 'university']
+        routes.append(['teacher', 'direct', 'materials', 'materials-admin', 'university', 'learning', 'account', 'profile', 'settings'])
     try:
         with isolated_server() as server, sync_playwright() as automation:
             base = server['base']
@@ -55,7 +60,8 @@ def main():
                             url = base + '/app/' + route
                             page.goto(url, wait_until='domcontentloaded')
                             browser_ready(page)
-                            assert page.url == url, (actor, url, page.url)
+                            destination = ROLE_REDIRECTS[actor].get(route, route)
+                            assert page.url == base + '/app/' + destination, (actor, url, page.url)
                             report['geometry'].append(dict(engine=engine, actor=actor, route=route, **geometry(page)))
                             if engine == 'chromium' and route in SHOTS and (index == 0 or route in {'staff', 'teacher'}):
                                 name = f'{args.phase}-{actor}-{width}-{route.replace("/", "-")}.png'

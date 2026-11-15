@@ -38,8 +38,8 @@ def test_mobile_core_is_one_tap_and_other_sections_are_grouped(frontend_page, wi
     menu.click()
     expect(page.locator('.nav-group.is-open')).to_have_count(1)
     page.locator('[data-nav-group="learning"] .nav-group-toggle').click()
-    page.locator('.nav-stack [data-route="notes"]').click()
-    expect(page.locator('#page-title')).to_have_text('Конспекты')
+    page.locator('.nav-stack [data-route="assignments"]').click()
+    expect(page.locator('#page-title')).to_have_text('Сдача работ')
     expect(menu).to_have_attribute('aria-expanded', 'false')
     page.keyboard.press('Control+k')
     page.locator('#search-input').fill('оценки')
@@ -67,30 +67,30 @@ def test_certificate_history_precedes_searchable_certificate_catalog(frontend_pa
 def test_dirty_form_survives_escape_and_network_failure_then_saves(frontend_page):
     page, base = frontend_page
     enter(page, base)
-    visit(page, base, 'notes')
-    page.locator('.page-actions [data-c-action="note-new"]').click()
-    form = page.locator('form[data-c-form="note"]')
-    marker = 'UX note ' + uuid.uuid4().hex
+    visit(page, base, 'messages')
+    page.locator('.page-actions [data-c-action="ticket-new"]').click()
+    form = page.locator('form[data-c-form="ticket"]')
+    marker = 'UX ticket ' + uuid.uuid4().hex
     form.locator('[name="title"]').fill(marker)
-    form.locator('[name="body"]').fill('Содержимое конспекта сохраняется после ошибки сети.')
+    form.locator('[name="message"]').fill('Текст вопроса сохраняется после ошибки сети.')
     page.keyboard.press('Escape')
     expect(page.locator('.unsaved-warning')).to_be_visible()
     page.locator('[data-action="continue-edit"]').click()
     expect(form.locator('[name="title"]')).to_have_value(marker)
-    page.route('**/api/learning/notes', lambda route: route.abort('failed')
+    page.route('**/api/services/tickets', lambda route: route.abort('failed')
                if route.request.method == 'POST' else route.continue_())
     form.locator('[type="submit"]').click()
     expect(form.locator('[data-c-error]')).to_be_visible()
-    expect(form.locator('[name="body"]')).to_have_value('Содержимое конспекта сохраняется после ошибки сети.')
-    page.unroute('**/api/learning/notes')
-    with page.expect_response(lambda r: r.url.endswith('/api/learning/notes') and r.request.method == 'POST') as response:
+    expect(form.locator('[name="message"]')).to_have_value('Текст вопроса сохраняется после ошибки сети.')
+    page.unroute('**/api/services/tickets')
+    with page.expect_response(lambda r: r.url.endswith('/api/services/tickets') and r.request.method == 'POST') as response:
         form.locator('[type="submit"]').click()
     assert response.value.status == 201
     expect(page.locator('.modal')).to_have_count(0)
     expect(page.locator('.compact-row h2', has_text=marker)).to_be_visible()
 
 
-def test_search_opens_request_and_marks_exact_grade_and_deadline(frontend_page):
+def test_search_opens_request_assignment_and_marks_exact_grade(frontend_page):
     page, base = frontend_page
     enter(page, base)
     marker = 'ExactResult' + uuid.uuid4().hex
@@ -106,15 +106,19 @@ def test_search_opens_request_and_marks_exact_grade_and_deadline(frontend_page):
     expect(page.get_by_role('dialog')).to_have_attribute('aria-label', f'Заявка № {request_id}')
     expect(page.locator('.detail-block .user-text', has_text=marker)).to_be_visible()
     page.locator('.close-btn').click()
-    for endpoint, target in [('grades', 'grades'), ('deadlines', 'plan')]:
+    for endpoint, target in [('grades', 'grades'), ('learning/assignments', 'assignments')]:
         data = page.request.get(base + '/api/' + endpoint).json()
         row = (data['items'] if isinstance(data, dict) else data)[0]
         query = row.get('subject') if target == 'grades' else row['title']
         page.keyboard.press('Control+k')
         page.locator('#search-input').fill(query)
         page.locator(f'[data-search-target="{target}"][data-search-id="{row["id"]}"]').click()
-        expect(page.locator('.search-match')).to_be_focused()
-        expect(page.locator('.search-match')).to_contain_text(query)
+        if target == 'grades':
+            expect(page.locator('.search-match')).to_be_focused()
+            expect(page.locator('.search-match')).to_contain_text(query)
+        else:
+            expect(page).to_have_url(base + f'/app/assignments?id={row["id"]}')
+            expect(page.get_by_role('dialog', name='Сдать работу')).to_contain_text(query)
 
 
 def test_course_disclosure_keyboard_and_live_module_status(frontend_page):

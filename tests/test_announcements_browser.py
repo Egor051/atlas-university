@@ -1,5 +1,6 @@
 """A real office-to-student publication through the browser and API."""
 import os
+import re
 from uuid import uuid4
 
 import pytest
@@ -68,13 +69,33 @@ def test_announcement_preview_publish_and_home_layout(frontend_page):
         student.wait_for_function("() => document.querySelector('#announcement-timeline-items').scrollTop > 0")
         viewport.press('Home')
         card = item.locator('xpath=ancestor::article')
-        panel = card.locator('details')
-        expect(panel.locator('.announcement-excerpt')).to_be_hidden()
+        button = card.locator('.announcement-preview-toggle')
+        full = card.locator('.announcement-summary')
+        teaser = card.locator('.announcement-teaser')
+        collapsed = teaser.inner_text()
+        assert collapsed.startswith('Начало длинного анонса.') and collapsed.endswith('…')
+        assert summary.startswith(collapsed[:-1])
+        assert summary[len(collapsed) - 1:].lstrip('.…')[:1].isspace()
+        expect(full).to_be_hidden()
+        expect(card.get_by_role('button', name='Прочитать анонс')).to_have_count(0)
         card.locator('.announcement-meta').click()
-        expect(panel.locator('.announcement-excerpt')).to_have_text(summary)
-        expect(panel.locator('.announcement-excerpt')).to_be_visible()
-        panel.locator('summary').press('Enter')
-        expect(panel.locator('.announcement-excerpt')).to_be_hidden()
+        expect(button).to_have_attribute('aria-expanded', 'false')
+        height = card.bounding_box()['height']
+        next_top = card.evaluate('node => node.parentElement.nextElementSibling.offsetTop')
+        button.press('Space')
+        expect(button).to_be_focused()
+        expect(button).to_have_attribute('aria-expanded', 'true')
+        expect(full).to_have_text(summary)
+        expect(full).to_be_visible()
+        expect(teaser).to_be_hidden()
+        expect(student).to_have_url(base + '/app/home')
+        student.wait_for_function('node => !node.getAnimations().length', arg=button.element_handle())
+        assert card.bounding_box()['height'] > height
+        assert card.evaluate('node => node.parentElement.nextElementSibling.offsetTop') > next_top
+        full.click()
+        expect(button).to_have_attribute('aria-expanded', 'false')
+        expect(full).to_be_hidden()
+        expect(teaser).to_have_text(collapsed)
         timeline.get_by_role('button', name='Важные').click()
         expect(item).to_have_count(0)
         timeline.get_by_role('button', name='Срочные').click()
@@ -101,3 +122,53 @@ def test_announcement_preview_publish_and_home_layout(frontend_page):
         expect(student.get_by_role('heading', name=title)).to_be_visible()
         expect(student.locator('.announcement-detail')).to_be_visible()
     assert errors == []
+
+
+@pytest.mark.parametrize('width,theme,compact', [(360, 'light', False), (390, 'dark', True)])
+def test_timeline_short_missing_and_unicode_previews(frontend_page, width, theme, compact):
+    office, base = frontend_page
+    login(office, base, 'dean.demo', 'AtlasStaff!2026-D')
+    marker = uuid4().hex[:6]
+    symbol = '👩‍🎓'
+    long_title = 'ДлинныйЗаголовок' * 10 + marker
+    short = 'Аудитория уточнена.'
+    long_summary = symbol * 170 + '\n<b>Последняя строка анонса</b>'
+    records = [
+        ('Короткий ' + marker, short, 'Текст для короткого анонса.'),
+        ('Без анонса ' + marker, '', 'Начало статьи. ' * 25 + '\n\nОкончание статьи.'),
+        (long_title, long_summary, 'Полный текст отдельной публикации.'),
+    ]
+    for title, summary, body in records:
+        response = office.request.post(base + '/api/staff/announcements', headers={'X-Requested-With': 'ATLAS'},
+                                       data={'title': title, 'summary': summary, 'body': body})
+        assert response.status == 201, response.text()
+    with office.context.browser.new_context(viewport={'width': width, 'height': 850}, color_scheme=theme,
+                                            reduced_motion='reduce', has_touch=True) as context:
+        student = context.new_page()
+        login(student, base, 'alina.demo', 'AtlasDemo!2026-A')
+        response = student.request.post(base + '/api/services/preferences', headers={'X-Requested-With': 'ATLAS'},
+                                        data={'compact_mode': compact})
+        assert response.ok, response.text()
+        student.reload()
+        timeline = student.get_by_role('region', name='Объявления')
+        if compact:
+            expect(student.locator('body')).to_have_class('compact-campus')
+        short_card, fallback, long_card = [timeline.get_by_role('link', name=title, exact=True).locator('xpath=ancestor::article')
+                                           for title, _, _ in records]
+        expect(short_card.locator('.announcement-excerpt')).to_have_text(short)
+        expect(short_card.get_by_role('button')).to_have_count(0)
+        expect(fallback.locator('.announcement-excerpt')).to_have_text(re.compile(r'^Начало статьи\..*…$'))
+        expect(fallback.get_by_role('button')).to_have_count(0)
+        button = long_card.get_by_role('button')
+        expect(button.locator('.announcement-teaser')).to_have_text(symbol * 159 + '…')
+        button.tap()
+        expect(button).to_have_attribute('aria-expanded', 'true')
+        assert button.locator('.announcement-summary').text_content() == long_summary
+        assert button.evaluate('node => node.getAnimations().length') == 0
+        expect(button.locator('b')).to_have_count(0)
+        assert student.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        button.press('Enter')
+        expect(button.locator('.announcement-summary')).to_be_hidden()
+        long_card.get_by_role('link', name=long_title).click()
+        expect(student.locator('.announcement-detail .announcement-body')).to_have_text(records[-1][2])
+        assert student.evaluate('document.documentElement.scrollWidth <= innerWidth')

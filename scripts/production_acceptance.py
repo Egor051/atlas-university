@@ -31,7 +31,7 @@ PAGES = [
     "home", "schedule", "grades", "plan", "requests", "certificates", "notifications",
     "announcements", "announcement-admin", "direct",
     "profile", "campus", "courses", "materials", "assignments", "exams",
-    "calendar", "tasks", "learning/notes",
+    "calendar", "planning", "tasks", "notes", "learning/notes",
     "consultations", "messages", "events", "finance", "contacts",
     "knowledge", "portfolio", "settings", "staff", "staffdesk", "staffmessages",
 ]

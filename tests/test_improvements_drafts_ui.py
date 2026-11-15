@@ -36,7 +36,7 @@ def test_request_survives_expired_cookie_and_same_user_reauthentication(frontend
     page.context.clear_cookies()
     page.locator('#request-form button[type=submit]').click()
     expect(page.locator('#login-form')).to_be_visible()
-    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
+    page.get_by_role('button',name='Или выбрать демо-аккаунт',exact=True).click()
     page.locator('[data-demo="0"]').click()
     expect(page.locator('#request-form')).to_be_visible()
     expect(page.locator('#doc-comment')).to_have_value(text)
@@ -56,16 +56,16 @@ def test_long_assignment_draft_has_compact_key_and_survives_reload(frontend_page
     page.locator(f'[data-c-action="assignment"][data-id="{assignment_id}"]').first.click()
     expect(page.locator('form[data-c-form="assignment"] [name="text"]')).to_have_value(text)
 
-def test_note_draft_cannot_appear_for_another_account(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'notes')
-    page.locator('[data-c-action="note-new"]').click()
-    form=page.locator('[data-c-form="note"]');text='Личный вымышленный текст '+str(uuid.uuid4())
-    form.locator('[name="title"]').fill('Черновик Алины');form.locator('[name="body"]').fill(text)
+def test_ticket_draft_cannot_appear_for_another_account(frontend_page):
+    page,base=frontend_page;enter(page,base);visit(page,base,'messages')
+    page.locator('[data-c-action="ticket-new"]').click()
+    form=page.locator('[data-c-form="ticket"]');text='Личный вымышленный текст '+str(uuid.uuid4())
+    form.locator('[name="title"]').fill('Черновик Алины');form.locator('[name="message"]').fill(text)
     expect(form.locator('[data-personal-draft]')).to_contain_text('Черновик сохранён',timeout=10000)
-    page.context.clear_cookies();page.goto(base);page.get_by_role('button',name='Выбрать аккаунт',exact=True).click();page.locator('[data-demo="1"]').click()
+    page.context.clear_cookies();page.goto(base);page.get_by_role('button',name='Или выбрать демо-аккаунт',exact=True).click();page.locator('[data-demo="1"]').click()
     expect(page.locator('#page-title')).to_contain_text('Марк')
-    visit(page,base,'notes');page.locator('[data-c-action="note-new"]').click()
-    expect(page.locator('[data-c-form="note"] [name="body"]')).not_to_have_value(text)
+    visit(page,base,'messages');page.locator('[data-c-action="ticket-new"]').click()
+    expect(page.locator('[data-c-form="ticket"] [name="message"]')).not_to_have_value(text)
 
 def test_server_validation_points_to_field_without_losing_input(frontend_page):
     page,base=frontend_page;enter(page,base);visit(page,base,'assignments')
@@ -84,18 +84,18 @@ def test_server_validation_points_to_field_without_losing_input(frontend_page):
     expect(form.locator('[name="url"]')).not_to_have_attribute('aria-invalid','true')
 
 def test_offline_indicator_persists_and_reconnection_keeps_form(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'notes')
-    page.locator('[data-c-action="note-new"]').click()
-    form=page.locator('[data-c-form="note"]')
+    page,base=frontend_page;enter(page,base);visit(page,base,'messages')
+    page.locator('[data-c-action="ticket-new"]').click()
+    form=page.locator('[data-c-form="ticket"]')
     form.locator('[name="title"]').fill('Вымышленный офлайн-черновик')
-    form.locator('[name="body"]').fill('Текст должен сохраниться при восстановлении связи.')
+    form.locator('[name="message"]').fill('Текст должен сохраниться при восстановлении связи.')
     page.context.set_offline(True)
     page.wait_for_timeout(5500)  # Past the old ephemeral toast lifetime.
     expect(page.locator('#connection-state')).to_contain_text('Нет сети')
     expect(page.locator('#refresh-current')).to_be_disabled()
     page.context.set_offline(False)
     expect(page.locator('#connection-state')).not_to_contain_text('Нет сети')
-    expect(form.locator('[name="body"]')).to_have_value('Текст должен сохраниться при восстановлении связи.')
+    expect(form.locator('[name="message"]')).to_have_value('Текст должен сохраниться при восстановлении связи.')
     form.locator('button[type=submit]').click()
     expect(form).to_have_count(0)
 

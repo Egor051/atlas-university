@@ -16,7 +16,7 @@ def test_hierarchy_links_back_forward_reload_and_role_boundaries(frontend_page, 
     page, base = frontend_page
     page.set_viewport_size({'width': width, 'height': 900})
     page.goto(base + '/app/records/grades')
-    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
+    page.get_by_role('button',name='Или выбрать демо-аккаунт',exact=True).click()
     page.locator('[data-demo="0"]').click()
     expect(page).to_have_url(base + '/app/grades')
     expect(page.locator('#page-title')).to_have_text('Успеваемость и посещаемость')
@@ -53,18 +53,18 @@ def test_hierarchy_links_back_forward_reload_and_role_boundaries(frontend_page, 
 def test_desktop_sidebar_persists_and_accordion_tracks_route(frontend_page):
     page, base = frontend_page
     page.goto(base + '/app/grades')
-    page.get_by_role('button', name='Выбрать аккаунт', exact=True).click()
+    page.get_by_role('button', name='Или выбрать демо-аккаунт', exact=True).click()
     page.locator('[data-demo="0"]').click()
     page.wait_for_url('**/app/grades')
     nav = page.get_by_role('navigation', name='Основная навигация')
     records = nav.get_by_role('button', name='Занятия и оценки')
-    planning = nav.get_by_role('button', name='Планирование')
+    learning = nav.get_by_role('button', name='Учебные материалы и задания')
     expect(records).to_have_attribute('aria-expanded', 'true')
-    planning.click()
+    learning.click()
     expect(records).to_have_attribute('aria-expanded', 'false')
-    expect(planning).to_have_attribute('aria-expanded', 'true')
+    expect(learning).to_have_attribute('aria-expanded', 'true')
     expect(nav.locator('[aria-expanded=true]')).to_have_count(1)
-    planning.press('Enter')
+    learning.press('Enter')
     expect(nav.locator('[aria-expanded=true]')).to_have_count(0)
     expect(nav.get_by_text('Обзор раздела', exact=True)).to_have_count(0)
     expect(nav.get_by_text('Все разделы', exact=True)).to_have_count(0)
@@ -85,7 +85,7 @@ def test_mobile_drawer_and_demo_dialog_restore_focus(frontend_page):
     page, base = frontend_page
     page.set_viewport_size({'width': 320, 'height': 620})
     page.goto(base)
-    trigger = page.get_by_role('button', name='Выбрать аккаунт', exact=True)
+    trigger = page.get_by_role('button', name='Или выбрать демо-аккаунт', exact=True)
     expect(page.locator('[data-demo="0"]')).to_be_hidden()
     trigger.click()
     dialog = page.get_by_role('dialog', name='Выбрать аккаунт')
@@ -171,7 +171,7 @@ def test_schedule_context_survives_bookmark_and_brand_uses_versioned_icon(fronte
     assert page.request.get(base + icon).headers['content-type'] == 'image/svg+xml'
     assert page.request.get(base + '/static/favicon.svg').headers['cache-control'] == 'no-cache'
     expect(page.locator('.logo-mark').first).to_have_attribute('src', icon)
-    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
+    page.get_by_role('button',name='Или выбрать демо-аккаунт',exact=True).click()
     page.locator('[data-demo="0"]').click()
     action = page.locator('.next-class [data-route=schedule]')
     day = action.get_attribute('data-date')
@@ -180,12 +180,15 @@ def test_schedule_context_survives_bookmark_and_brand_uses_versioned_icon(fronte
     page.reload()
     expect(page.locator('#page-title')).to_have_text('Расписание')
     expect(page.locator(f'[data-day="{day}"]')).to_have_attribute('aria-pressed', 'true')
+    page.goto(f'{base}/app/planning/calendar?date={day}')
+    expect(page).to_have_url(f'{base}/app/schedule?date={day}')
+    expect(page.locator(f'[data-day="{day}"]')).to_have_attribute('aria-pressed', 'true')
 
 
 def test_single_keyboard_refresh_disables_repeat_until_response(frontend_page):
     page, base = frontend_page
     page.goto(base + '/app/staff')
-    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
+    page.get_by_role('button',name='Или выбрать демо-аккаунт',exact=True).click()
     page.locator('[data-demo="2"]').click()
     expect(page.locator('#page-title')).to_have_text('Учебный офис')
     button = page.get_by_role('button', name='Обновить данные раздела')

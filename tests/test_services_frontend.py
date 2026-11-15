@@ -25,7 +25,7 @@ def go(page, address, route, title):
 
 
 def enter_staff(page):
-    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
+    page.get_by_role('button',name='Или выбрать демо-аккаунт',exact=True).click()
     page.locator("button[data-demo='2']").click()
     page.wait_for_url('**/app/staff')
     expect(page.locator('#page-title')).to_have_text('Учебный офис')

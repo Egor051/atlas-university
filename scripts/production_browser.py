@@ -25,8 +25,10 @@ from improvement_runtime import ROOT, browser_login, browser_visit, geometry, is
 
 
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
-LEGACY_ROUTES = {'notes': 'learning/notes', 'attendance': 'grades', 'library': 'materials',
-                 'flashcards': 'materials', 'quizzes': 'materials', 'focus': 'tasks'}
+LEGACY_ROUTES = {'plan': 'assignments', 'tasks': 'assignments', 'planning': 'assignments',
+                 'calendar': 'schedule', 'notes': 'courses', 'learning/notes': 'courses',
+                 'portfolio': 'profile', 'attendance': 'grades', 'library': 'materials',
+                 'flashcards': 'materials', 'quizzes': 'materials', 'focus': 'assignments'}
 KEY_SCREENS = {"home", "schedule", "requests", "certificates", "announcements", "direct", "staff", "announcement-admin"}
 FEATURE_CONTROLS = {
     "home": ".announcement-timeline",
@@ -345,6 +347,9 @@ class Acceptance:
                         self.case(f"{engine} {actor} {width}px {route}",
                             lambda page=page, actor=actor, route=route: self.read_page(page, engine, actor, route),
                             page=page, engine=engine, actor=actor)
+            for route in LEGACY_ROUTES:
+                self.case(f"{engine} retired route {route}", lambda route=route: self.read_page(a, engine, "alina", route),
+                          page=a, engine=engine, actor="alina")
             for route in ("home", "schedule", "grades", "requests", "certificates", "announcements", "direct", "notifications"):
                 self.case(f"{engine} mark 360px {route}", lambda route=route: self.read_page(b, engine, "mark", route),
                           page=b, engine=engine, actor="mark")

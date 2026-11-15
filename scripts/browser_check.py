@@ -114,7 +114,7 @@ def layout(page, name):
 
 def login(page, base, account):
     page.goto(base, wait_until='networkidle')
-    page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
+    page.get_by_role('button',name='Или выбрать демо-аккаунт',exact=True).click()
     page.locator(f'[data-demo="{account}"]').click()
     ready(page)
 
@@ -153,7 +153,7 @@ def run():
                 for width, height, prefix in [(1440,1000,'desktop'),(768,1024,'tablet'),
                                                (390,844,'mobile'),(360,800,'minimum')]:
                     page.set_viewport_size({'width':width,'height':height})
-                    for section in ['home','schedule','grades','plan','requests','notifications','profile']:
+                    for section in ['home','schedule','grades','assignments','requests','notifications','profile']:
                         visit(page, base, section)
                         name='dashboard' if section=='home' else section
                         layout(page, f'{section}-{width}')
@@ -178,21 +178,19 @@ def run():
                 assert 'Инженерия ПО' not in calendar
                 passed('Day/week navigation, keyboard focus, real private ICS download')
 
-                visit(page, base, 'plan')
-                task = a.request.get(base+'/api/deadlines').json()[0]
-                checkbox = page.locator(f'[data-deadline="{task["id"]}"]')
-                checkbox.check()
-                expect(checkbox).to_have_count(0)
+                work = a.request.get(base+'/api/learning/assignments').json()['items'][0]
+                visit(page, base, f'assignments?id={work["id"]}')
+                checkbox = page.locator(f'[data-deadline="{work["id"]}"]')
+                desired = not work['is_done']
+                checkbox.set_checked(desired)
+                expect(checkbox).to_be_enabled()
                 page.reload(wait_until='networkidle')
                 ready(page)
-                saved = next(x for x in a.request.get(base+'/api/deadlines').json() if x['id']==task['id'])
-                assert saved['is_done']
-                page.locator('[data-plan-filter="done"]').click()
-                expect(page.locator('[data-plan-filter="done"]')).to_be_focused()
-                expect(page.locator(f'[data-deadline="{task["id"]}"]')).to_be_checked()
-                screenshot(page, 'mobile-plan-done')
-                page.locator(f'[data-deadline="{task["id"]}"]').uncheck()
-                passed('Task completion persists after reload; undo works')
+                expect(checkbox).to_be_checked(checked=desired)
+                screenshot(page, 'mobile-assignment-mark')
+                checkbox.set_checked(work['is_done'])
+                expect(checkbox).to_be_enabled()
+                passed('The mark in the assignment persists after reload and can be undone')
 
                 visit(page, base, 'certificates')
                 page.locator('[data-request-view="services"]').first.click()
@@ -313,14 +311,14 @@ def run():
                 visit(mark,base,'grades')
                 expect(mark.locator('#page-content')).to_contain_text('Учебных результатов пока нет')
                 screenshot(mark,'mobile-empty-grades')
-                visit(mark,base,'plan')
+                visit(mark,base,'assignments')
                 expect(mark.locator('.empty-state')).to_be_visible()
-                layout(mark,'empty-plan-390')
-                screenshot(mark,'mobile-empty-plan')
+                layout(mark,'empty-assignments-390')
+                screenshot(mark,'mobile-empty-assignments')
                 visit(mark,base,'notifications')
                 expect(mark.locator('.empty-state')).to_be_visible()
                 screenshot(mark,'mobile-empty-notifications')
-                passed('Genuine empty database states render meaningful grades, plan and notification messages')
+                passed('Genuine empty database states render meaningful grades, assignment and notification messages')
 
                 visit(page,base,'profile')
                 page.locator('.danger-button[data-action="logout"]').click()

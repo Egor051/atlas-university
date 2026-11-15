@@ -20,9 +20,8 @@ from improvement_runtime import ROOT, browser_ready, isolated_server
 ACCOUNTS = {'student': 0, 'office': 2, 'teacher': 3, 'dispatcher': 4, 'admin': 5, 'union': 6, 'vuc': 7}
 VIEWPORTS = {360: 800, 390: 844, 768: 1024, 1440: 960}
 ROLE_PAGES = {
-    'student': ('home schedule grades plan requests notifications profile certificates courses assignments exams '
-                'attendance calendar tasks notes flashcards quizzes focus consultations messages library events finance '
-                'contacts knowledge portfolio settings university materials direct union vuc announcements'),
+    'student': ('home schedule grades requests notifications profile certificates courses assignments exams '
+                'consultations messages events finance contacts knowledge settings university materials direct union vuc announcements'),
     'office': ('staff staffdesk staffmessages profile settings notifications university materials materials-admin direct '
                'timetable-admin schedule-changes registry tables announcements announcement-admin'),
     'teacher': ('profile settings notifications university materials materials-admin direct teacher teaching teach-schedule '
@@ -35,14 +34,11 @@ ROLE_PAGES = {
 MODAL_ACTIONS = {
     'home': ['[data-action="search"]', '[data-action="new-request"]'],
     'assignments': ['[data-c-action="assignment"]'],
-    'tasks': ['[data-c-action="task-new"]', '[data-c-action="task-edit"]', '[data-c-action="task-delete"]'],
-    'notes': ['[data-c-action="note-new"]', '[data-c-action="note-edit"]'],
     'flashcards': ['[data-c-action="flashcard-new"]', '[data-c-action="flashcard-open"]'],
     'quizzes': ['[data-c-action="quiz-open"]'],
     'focus': ['[data-c-action="focus-log"]'],
     'messages': ['[data-c-action="ticket-new"]', '[data-c-action="ticket-open"]'],
     'staffmessages': ['[data-c-action="ticket-open"]'],
-    'portfolio': ['[data-c-action="portfolio-new"]', '[data-c-action="portfolio-edit"]'],
     'settings': ['[data-c-action="revoke-sessions"]'],
     'staffdesk': ['[data-c-action="staff-slot"]', '[data-c-action="staff-event"]'],
     'staff': ['[data-action="request-details"]'],
@@ -66,10 +62,9 @@ MODAL_ACTIONS = {
                    '[data-unit-action="edit-result"]', '[data-unit-action^="step-"]'],
 }
 INTERACTIONS = {
-    'home': ['.home-links > summary', '[data-announcement-priority="important"]'],
+    'home': ['.home-links > summary', '.announcement-preview-toggle', '[data-announcement-priority="important"]'],
     'grades': ['.metric-explanation > summary', '.session-card > summary'],
     'schedule': ['[data-view="day"]', '[data-view="week"]'],
-    'calendar': ['[data-calendar-view="day"]', '[data-calendar-view="week"]', '.calendar-options > summary'],
     'requests': ['[data-request-view="services"]', '[data-request-filter="rejected"]'],
     'certificates': ['[data-request-view="services"]', '[data-request-filter="rejected"]'],
     'staff': ['[data-staff-kind="certificate"]', '[data-staff-kind="all"]', '[data-staff-filter="overdue"]'],

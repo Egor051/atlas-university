@@ -14,7 +14,7 @@ def test_search_grade_and_deadline_ids_belong_to_the_returned_destination(accoun
     with client() as api:
         sign_in(api, *account)
         for listing, category, target, field in [('grades', 'Дисциплина', 'grades', 'subject'),
-                                                  ('deadlines', 'Задание', 'plan', 'title')]:
+                                                  ('learning/assignments', 'Задание', 'assignments', 'title')]:
             response = api.get('/api/' + listing).json()
             records = response['items'] if isinstance(response, dict) else response
             assert records
@@ -24,6 +24,21 @@ def test_search_grade_and_deadline_ids_belong_to_the_returned_destination(accoun
             assert any(row['id'] == selected['id'] for row in matches)
             own_ids = {row['id'] for row in records}
             assert all(row['target'] == target and row['id'] in own_ids for row in matches)
+            if target == 'assignments':
+                assert api.get(f"/api/learning/assignments/{selected['id']}").json()['title'] == selected[field]
+
+
+def test_assignment_search_never_returns_a_foreign_assignment():
+    with client() as a, client() as b, client() as staff:
+        sign_in(a, *ACCOUNTS[0])
+        sign_in(b, *ACCOUNTS[1])
+        sign_in(staff, 'dean.demo', 'AtlasStaff!2026-D')
+        work = a.get('/api/learning/assignments').json()['items'][0]
+        query = {'q': work['title'], 'student_id': a.get('/api/me').json()['id']}
+        results = b.get('/api/campus/search', params=query).json()['items']
+        assert all(row['id'] != work['id'] for row in results if row['target'] == 'assignments')
+        assert b.get(f"/api/learning/assignments/{work['id']}").status_code == 404
+        assert staff.get('/api/campus/search', params=query).status_code == 403
 
 
 def test_notification_detail_requires_authentication_and_owner():

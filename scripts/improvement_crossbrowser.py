@@ -12,8 +12,8 @@ import traceback
 from playwright.sync_api import sync_playwright,expect
 from improvement_runtime import ROOT,DEFAULT_REPORTS,isolated_server,browser_ready,browser_login,browser_visit,geometry,report_start,save_report
 
-STUDENT=['home','schedule','grades','plan','requests','certificates','notifications','profile','announcements','courses','assignments','exams',
-         'calendar','tasks','learning/notes','materials','consultations','messages','events','finance','contacts','knowledge','portfolio','settings']
+STUDENT=['home','schedule','grades','requests','certificates','notifications','profile','announcements','courses','assignments','exams',
+         'materials','consultations','messages','events','finance','contacts','knowledge','settings']
 STAFF=['staff','staffdesk','staffmessages','announcement-admin','profile','settings']
 
 

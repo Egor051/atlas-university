@@ -90,7 +90,7 @@ def test_all_extension_routes_require_sessions_and_all_mutations_check_source():
                 assert staff.post(path, json={}).status_code == 403, path
 
 
-def test_portfolio_owner_export_search_and_overposting():
+def test_portfolio_owner_export_and_overposting():
     marker = 'PrivatePortfolio' + uuid.uuid4().hex
     body = {'title': marker + ' <script>alert(1)</script>', 'kind': 'project',
             'description': 'Private description <img src=x onerror=alert(2)>',
@@ -113,7 +113,7 @@ def test_portfolio_owner_export_search_and_overposting():
             absent = b.post(f'/api/campus/portfolio/2147483647{suffix}', json=payload, headers=HEADERS)
             assert foreign.status_code == absent.status_code == 404
             assert foreign.json() == absent.json()
-        assert a.get('/api/campus/search', params={'q': marker}).json()['items']
+        assert a.get('/api/campus/search', params={'q': marker}).json()['items'] == []
         assert b.get('/api/campus/search', params={'q': marker, 'student_id': a.get('/api/me').json()['id']}).json()['items'] == []
         exported = a.get('/api/campus/portfolio/export')
         assert exported.status_code == 200

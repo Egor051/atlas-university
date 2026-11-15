@@ -43,30 +43,22 @@ def visit(page, base, section):
     expect(page.locator('.error-state')).to_have_count(0)
 
 
-def calendar_day(page, base, day):
-    visit(page, base, 'calendar')
-    page.locator('.calendar-options summary').click()
-    page.locator('#calendar-date').fill(day)
-    page.locator('#calendar-date').dispatch_event('change')
-    expect(page.locator(f'[data-calendar-day="{day}"]')).to_have_attribute('aria-pressed', 'true')
-
-
 def moscow_day(value):
     return datetime.fromisoformat(value.replace('Z', '+00:00')).astimezone(timezone(timedelta(hours=3))).date().isoformat()
 
 
 @pytest.mark.parametrize('width', [360, 390])
-def test_calendar_opens_exact_work_and_personal_mark_does_not_submit(campus_page, width):
+def test_legacy_plan_opens_exact_work_and_personal_mark_does_not_submit(campus_page, width):
     page, base, _ = campus_page
     page.set_viewport_size({'width': width, 'height': 800})
     work = page.request.get(base + '/api/learning/assignments').json()['items'][0]
     grades_before = page.request.get(base + '/api/grades').json()
-    calendar_day(page, base, work['due_date'])
-    page.locator(f'.campus-agenda-entry[data-route="assignments"][data-record-id="{work["id"]}"]').click()
+    visit(page, base, f'planning/plan?id={work["id"]}')
+    expect(page).to_have_url(base + f'/app/assignments?id={work["id"]}')
     form = page.locator(f'form[data-c-form="assignment"][data-id="{work["id"]}"]')
     expect(form).to_be_visible()
     expect(page.get_by_role('dialog')).to_contain_text(work['title'])
-    marker = form.locator(f'[data-deadline="{work["id"]}"]')
+    marker = page.get_by_role('dialog').locator(f'[data-deadline="{work["id"]}"]')
     marker.set_checked(not work['is_done'])
     expect(marker).to_be_enabled()
     saved = page.request.get(base + f'/api/learning/assignments/{work["id"]}').json()
@@ -76,7 +68,23 @@ def test_calendar_opens_exact_work_and_personal_mark_does_not_submit(campus_page
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
 
 
-def test_calendar_opens_booked_slot_and_registered_event_not_generic_catalog(campus_page):
+def test_old_deadline_notification_opens_the_assignment(campus_page):
+    page, base, db = campus_page
+    work = page.request.get(base + '/api/learning/assignments').json()['items'][0]
+    user = page.request.get(base + '/api/me').json()
+    title = 'Напоминание со старой ссылкой'
+    created_at = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
+    with closing(sqlite3.connect(db)) as connection, connection:
+        connection.execute('INSERT INTO notifications(student_id,title,body,category,created_at,is_read,target) VALUES (?,?,?,?,?,?,?)',
+                           (user['id'], title, work['title'], 'deadline', created_at, False, f'/app/plan?id={work["id"]}'))
+    visit(page, base, 'notifications')
+    notice = page.locator('.notification-full').filter(has_text=title)
+    notice.get_by_role('button', name='Открыть', exact=True).click()
+    expect(page).to_have_url(base + f'/app/assignments?id={work["id"]}')
+    expect(page.get_by_role('dialog', name='Сдать работу')).to_contain_text(work['title'])
+
+
+def test_consultation_deep_link_and_event_history_open_exact_records(campus_page):
     page, base, _ = campus_page
     headers = {'X-Requested-With': 'ATLAS'}
     slot = page.request.get(base + '/api/services/consultations?scope=upcoming&limit=300').json()['items'][0]
@@ -86,8 +94,12 @@ def test_calendar_opens_booked_slot_and_registered_event_not_generic_catalog(cam
     registered = page.request.post(base + f'/api/services/events/{event["id"]}/register', headers=headers, data={})
     assert registered.status in (200, 201), registered.text()
     for item, target in [(slot, 'consultations'), (event, 'events')]:
-        calendar_day(page, base, moscow_day(item['start_at']))
-        page.locator(f'.campus-agenda-entry[data-route="{target}"][data-record-id="{item["id"]}"]').click()
+        if target == 'events':
+            visit(page, base, target)
+            history = page.locator('.campus-log article').filter(has_text=item['title'])
+            history.get_by_role('button', name='Открыть запись').click()
+        else:
+            visit(page, base, f'{target}?id={item["id"]}&date={moscow_day(item["start_at"])}')
         selected = page.locator(f'.campus-context-target[data-campus-record-id="{item["id"]}"]')
         expect(selected).to_be_visible()
         expect(selected).to_be_focused()
@@ -129,7 +141,10 @@ def test_subject_context_with_no_future_slot_offers_materials_and_prefilled_offi
         connection.execute("UPDATE consultation_slots SET start_at='2020-01-01 09:00:00',end_at='2020-01-01 10:00:00' WHERE subject=?", (exam['subject'],))
         connection.execute("UPDATE grades SET assessment='Не допущен' WHERE id=?", (exam['id'],))
     visit(page, base, 'exams')
+    expect(page.locator('#grade-calculation,[name="target"],[name="remaining"]')).to_have_count(0)
     row = page.locator(f'[data-campus-record-id="{exam["id"]}"]')
+    expect(row).to_contain_text('Накопленные баллы')
+    expect(row).to_contain_text('Не допущен')
     row.locator('[data-route="consultations"]').click()
     expect(page.locator('.campus-context')).to_contain_text(exam['subject'])
     expect(page.get_by_role('heading', name='Как продолжить подготовку')).to_be_visible()
@@ -171,7 +186,7 @@ def test_campus_context_pages_automated_accessibility_and_text_size_stress(campu
     axe=Path(__file__).resolve().parents[1]/'node_modules/axe-core/axe.min.js'
     assert axe.is_file(), 'Install dev-only axe-core before running accessibility tests'
     page.add_init_script(path=str(axe))
-    for section in ['courses','assignments','exams','consultations','events','learning/notes']:
+    for section in ['courses','assignments','exams','consultations','events','materials']:
         visit(page,base,section)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (section,width,'normal reflow')
         violations=page.evaluate("""async () => {

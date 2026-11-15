@@ -18,7 +18,7 @@ THEMES = (('light', 'dark'), ('dark', 'light'), ('system', 'light'), ('system', 
 STUDENT = {
     'home': 'home', 'submissions': 'assignments?subject=' + quote('Алгоритмы и структуры данных'),
     'finance': 'finance', 'grades': 'grades', 'exams': 'exams',
-    'notes': 'notes', 'materials': 'materials', 'news': 'announcements',
+    'courses': 'courses', 'materials': 'materials', 'news': 'announcements',
 }
 SECOND_STUDENT = {'mark-submissions': 'assignments?subject=' + quote('Инженерия ПО')}
 
@@ -83,17 +83,22 @@ def exercise_home(page, base, *, require_overflow):
         region.press('End')
         wait_for_scroll(region)
         region.evaluate('node => { node.scrollTop = 0; }')
-    card = timeline.locator('.announcement-event').first
-    news = card.locator('details.announcement-expansion')
-    news.locator('summary').press('Enter')
-    expect(news).to_have_attribute('open', '')
-    expect(news.locator('.announcement-excerpt')).to_be_visible()
+    news = timeline.locator('.announcement-preview-toggle').first
+    card = news.locator('xpath=ancestor::article')
+    expect(news.locator('.announcement-teaser')).to_contain_text('…')
+    news.press('Enter')
+    expect(news).to_have_attribute('aria-expanded', 'true')
+    expect(news.locator('.announcement-summary')).to_be_visible()
+    expect(page).to_have_url(base + '/app/home')
+    news.press('Space')
+    expect(news).to_have_attribute('aria-expanded', 'false')
     link = card.locator('.announcement-title-link')
     expect(link).to_be_visible()
     target = link.get_attribute('href')
     link.press('Enter')
     expect(page).to_have_url(base + target)
     browser_ready(page)
+    expect(page.locator('.announcement-detail .announcement-body')).to_be_visible()
 
 
 def wait_for_scroll(region):
@@ -247,10 +252,12 @@ def main():
                                   for tab in ('grades', 'attendance', 'works', 'report')}
                     if account == 0:
                         for legacy, canonical in (
-                            ('notes', 'learning/notes'), ('planning/notes', 'learning/notes'),
+                            ('notes', 'courses'), ('learning/notes', 'courses'), ('planning/notes', 'courses'),
+                            ('plan', 'assignments'), ('tasks', 'assignments'), ('planning', 'assignments'),
+                            ('calendar', 'schedule'), ('portfolio', 'profile'),
                             ('attendance', 'grades'), ('records/attendance', 'grades'),
                             ('library', 'materials'), ('flashcards', 'materials'),
-                            ('quizzes', 'materials'), ('focus', 'tasks'),
+                            ('quizzes', 'materials'), ('focus', 'assignments'),
                         ):
                             visit(page, base, legacy)
                             expect(page).to_have_url(f'{base}/app/{canonical}')

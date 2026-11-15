@@ -396,7 +396,7 @@ def seed_demo(session=None):
                 db.add(row); db.flush()
                 db.add(RequestEvent(request_id=row.id,status=status,message='Заявка сохранена.',actor_role='system',actor_name='Система',created_at=row.updated_at))
             news=[('Изменение в расписании','Проверьте аудиторию: для одной из пар внесён перенос.','schedule',0),('Скоро дедлайн','До ближайшего задания осталось несколько дней.','deadline',1),('Началась запись на консультации','График консультаций по дисциплинам опубликован в учебном офисе.','announcement',3),('Окно заявок открыто','Теперь справки можно заказать прямо в кабинете.','request',5)]
-            for title,body,cat,daysago in news: db.add(Notification(student_id=stu.id,title=title,body=body,category=cat,created_at=now-timedelta(days=daysago),is_read=daysago>=3,target={'schedule':'/app/schedule','deadline':'/app/plan','request':'/app/requests'}.get(cat)))
+            for title,body,cat,daysago in news: db.add(Notification(student_id=stu.id,title=title,body=body,category=cat,created_at=now-timedelta(days=daysago),is_read=daysago>=3,target={'schedule':'/app/schedule','deadline':'/app/assignments','request':'/app/requests'}.get(cat)))
         from .academic_points import import_opening_balances
         db.flush()
         import_opening_balances(db)

@@ -4,7 +4,6 @@ import sqlite3
 import uuid
 from contextlib import closing
 from datetime import datetime,timezone,timedelta
-from pathlib import Path
 
 import pytest
 from playwright.sync_api import expect
@@ -22,9 +21,9 @@ def visit(page,base,section):
     page.goto(base+'/app/'+section,wait_until='networkidle')
     expect(page.locator('#page-content')).not_to_have_attribute('aria-busy','true')
 
-def new_note(page):
-    page.locator('[data-c-action="note-new"]').first.click()
-    form=page.locator('[data-c-form="note"]');expect(form).to_be_visible();return form
+def new_ticket(page):
+    page.locator('[data-c-action="ticket-new"]').first.click()
+    form=page.locator('[data-c-form="ticket"]');expect(form).to_be_visible();return form
 
 def request_form(page):
     page.locator('[data-action="new-request"]').first.click()
@@ -76,9 +75,9 @@ def test_followup_server_field_error_focuses_after_controls_are_unlocked(fronten
     form=page.locator('#request-followup');form.evaluate('node=>node.noValidate=true');message=form.locator('[name=message]');message.fill('Коротко')
     form.locator('[type=submit]').click();expect(message).to_have_attribute('aria-invalid','true');expect(message).to_be_enabled();expect(message).to_be_focused();expect(message).to_have_value('Коротко')
 
-def test_note_lost_response_reload_reuses_durable_key(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'notes');form=new_note(page)
-    title='DurableNote '+uuid.uuid4().hex;form.locator('[name=title]').fill(title);form.locator('[name=body]').fill('Вымышленный ответ для проверки потерянного результата.')
+def test_ticket_lost_response_reload_reuses_durable_key(frontend_page):
+    page,base=frontend_page;enter(page,base);visit(page,base,'messages');form=new_ticket(page)
+    title='DurableTicket '+uuid.uuid4().hex;form.locator('[name=title]').fill(title);form.locator('[name=message]').fill('Вымышленный ответ для проверки потерянного результата.')
     keys=[]
     def drop_first(route):
         if route.request.method!='POST':route.continue_();return
@@ -86,55 +85,55 @@ def test_note_lost_response_reload_reuses_durable_key(frontend_page):
         if len(keys)==1:
             actual=route.fetch();assert actual.status==201;route.abort('failed')
         else:route.continue_()
-    page.route('**/api/learning/notes',drop_first);form.locator('[type=submit]').click()
-    expect(form.locator('[data-c-error]')).to_be_visible();page.reload(wait_until='networkidle');form=new_note(page)
+    page.route('**/api/services/tickets',drop_first);form.locator('[type=submit]').click()
+    expect(form.locator('[data-c-error]')).to_be_visible();page.reload(wait_until='networkidle');form=new_ticket(page)
     expect(form.locator('[name=title]')).to_have_value(title);form.locator('[type=submit]').click()
     expect(form).to_have_count(0);assert len(keys)==2 and keys[0]==keys[1]
-    rows=page.request.get(base+'/api/learning/notes').json()['items'];assert sum(x['title']==title for x in rows)==1
+    rows=page.request.get(base+'/api/services/tickets').json()['items'];assert sum(x['title']==title for x in rows)==1
 
 def test_failed_initial_read_then_edited_retry_preserves_committed_submission_key(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'notes');form=new_note(page)
+    page,base=frontend_page;enter(page,base);visit(page,base,'messages');form=new_ticket(page)
     title='ReadRetry '+uuid.uuid4().hex;text='Тот же вымышленный текст после потери ответа и перезагрузки.'
-    form.locator('[name=title]').fill(title);form.locator('[name=body]').fill(text);keys=[]
+    form.locator('[name=title]').fill(title);form.locator('[name=message]').fill(text);keys=[]
     def drop_first(route):
         if route.request.method!='POST':route.continue_();return
         keys.append(route.request.all_headers().get('idempotency-key'))
         if len(keys)==1:
             actual=route.fetch();assert actual.status==201;route.abort('failed')
         else:route.continue_()
-    page.route('**/api/learning/notes',drop_first);form.locator('[type=submit]').click();expect(form.locator('[data-c-error]')).to_be_visible()
+    page.route('**/api/services/tickets',drop_first);form.locator('[type=submit]').click();expect(form.locator('[data-c-error]')).to_be_visible()
     page.reload(wait_until='networkidle')
     def fail_reads(route):
         if route.request.method=='GET':route.abort('failed')
         else:route.continue_()
-    page.route('**/api/drafts/note',fail_reads);form=new_note(page)
-    form.locator('[name=title]').fill(title);form.locator('[name=body]').fill(text);form.locator('[type=submit]').click()
+    page.route('**/api/drafts/ticket',fail_reads);form=new_ticket(page)
+    form.locator('[name=title]').fill(title);form.locator('[name=message]').fill(text);form.locator('[type=submit]').click()
     expect(form.locator('[data-c-error]')).to_be_visible();expect(form.locator('[type=submit]')).to_be_enabled();assert len(keys)==1
     # Existing server metadata must be loaded independently of restoring fields:
     # these fields have already been edited after a failed initial read.
-    page.unroute('**/api/drafts/note');form.locator('[type=submit]').click();expect(form).to_have_count(0)
+    page.unroute('**/api/drafts/ticket');form.locator('[type=submit]').click();expect(form).to_have_count(0)
     assert len(keys)==2 and keys[0]==keys[1]
-    rows=page.request.get(base+'/api/learning/notes').json()['items'];assert sum(x['title']==title for x in rows)==1
+    rows=page.request.get(base+'/api/services/tickets').json()['items'];assert sum(x['title']==title for x in rows)==1
 
-def test_valid_twelve_thousand_character_note_draft_survives_reload(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'notes');form=new_note(page)
-    text='Вымышленный конспект '+'я'*11000;form.locator('[name=title]').fill('Длинный конспект '+uuid.uuid4().hex);form.locator('[name=body]').fill(text)
+def test_valid_long_ticket_draft_survives_reload(frontend_page):
+    page,base=frontend_page;enter(page,base);visit(page,base,'messages');form=new_ticket(page)
+    text='Вымышленный вопрос '+'я'*3950;form.locator('[name=title]').fill('Длинный вопрос '+uuid.uuid4().hex);form.locator('[name=message]').fill(text)
     expect(form.locator('[data-personal-draft]')).to_contain_text('Черновик сохранён',timeout=15000)
-    page.reload(wait_until='networkidle');form=new_note(page);expect(form.locator('[name=body]')).to_have_value(text)
+    page.reload(wait_until='networkidle');form=new_ticket(page);expect(form.locator('[name=message]')).to_have_value(text)
     form.locator('[type=submit]').click();expect(form).to_have_count(0)
 
 def test_cross_tab_cookie_change_cannot_save_old_account_form(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'notes');form=new_note(page)
-    marker='OldOwner '+uuid.uuid4().hex;form.locator('[name=title]').fill(marker);form.locator('[name=body]').fill('Черновик первого аккаунта не должен попасть ко второму.')
+    page,base=frontend_page;enter(page,base);visit(page,base,'messages');form=new_ticket(page)
+    marker='OldOwner '+uuid.uuid4().hex;form.locator('[name=title]').fill(marker);form.locator('[name=message]').fill('Черновик первого аккаунта не должен попасть ко второму.')
     expect(form.locator('[data-personal-draft]')).to_contain_text('Черновик сохранён',timeout=15000)
     other=page.context.new_page();other.goto(base)
     # API login changes the actual shared cookie without a client broadcast.
     response=other.request.post(base+'/api/login',headers=HEAD,data={'login':'mark.demo','password':'AtlasDemo!2026-M'})
     assert response.status==200
-    page.evaluate("document.querySelector('[data-c-form=note]').requestSubmit()")
+    page.evaluate("document.querySelector('[data-c-form=ticket]').requestSubmit()")
     expect(page.locator('#login-form')).to_be_visible()
-    rows=other.request.get(base+'/api/learning/notes').json()['items'];assert not any(x['title']==marker for x in rows)
-    assert other.request.get(base+'/api/drafts/note').json()['values']=={}
+    rows=other.request.get(base+'/api/services/tickets').json()['items'];assert not any(x['title']==marker for x in rows)
+    assert other.request.get(base+'/api/drafts/ticket').json()['values']=={}
     other.close()
 
 def test_history_paging_preserves_unsent_clarification(campus_page):
@@ -152,15 +151,20 @@ def test_history_paging_preserves_unsent_clarification(campus_page):
     history.get_by_role('button',name='Позже',exact=True).click();expect(history).to_contain_text('History audit event 119')
 
 def test_deadline_refresh_keeps_write_locked_until_response_settles(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'plan')
-    page.locator('[data-plan-filter="all"]').click()
-    mark=page.locator('[data-deadline]').first;rid=mark.get_attribute('data-deadline');before=mark.is_checked();held=[];posts=[]
+    page,base=frontend_page;enter(page,base);visit(page,base,'assignments')
+    button=page.locator('[data-c-action="assignment"]').first
+    rid=button.get_attribute('data-id')
+    button.click()
+    mark=page.locator(f'[data-deadline="{rid}"]')
+    before=mark.is_checked();held=[];posts=[]
     def hold(route):
         posts.append(route.request.post_data_json)
         actual=route.fetch();assert actual.status==200;held.append((route,actual))
     page.route(f'**/api/deadlines/{rid}/toggle',hold)
     mark.set_checked(not before);wait_for_held_response(page,held)
+    page.locator('.modal .close-btn').click()
     page.locator('#refresh-current').click()
+    page.locator(f'[data-c-action="assignment"][data-id="{rid}"]').click()
     replacement=page.locator(f'[data-deadline="{rid}"]');expect(replacement).to_be_disabled();expect(replacement).to_be_checked(checked=not before)
     # Even a programmatic change cannot create a second overlapping write.
     replacement.evaluate('(node)=>{node.checked=!node.checked;node.dispatchEvent(new Event("change",{bubbles:true}));}')
@@ -209,22 +213,19 @@ def test_staff_summary_counts_needs_info_and_all_consultation_pages(campus_page)
 def test_settings_hides_export_but_existing_drafts_restore(frontend_page):
     page,base=frontend_page;enter(page,base);visit(page,base,'settings')
     expect(page.get_by_role('link',name='Скачать черновики',exact=True)).to_have_count(0)
-    draft={'title':'Сохранённый черновик','body':'Текст ранее сохранённого конспекта'}
-    assert page.request.put(base+'/api/drafts/note',headers=HEAD,data={'values':draft}).ok
+    draft={'title':'Сохранённый черновик','message':'Текст ранее сохранённого вопроса'}
+    assert page.request.put(base+'/api/drafts/ticket',headers=HEAD,data={'values':draft}).ok
     assert any(row['values']==draft for row in page.request.get(base+'/api/drafts/export').json()['items'])
-    visit(page,base,'notes')
-    form=new_note(page)
-    expect(form.locator('[name=body]')).to_have_value(draft['body'])
+    visit(page,base,'messages')
+    form=new_ticket(page)
+    expect(form.locator('[name=message]')).to_have_value(draft['message'])
 
 @pytest.mark.parametrize('width',[360,390,1440])
 def test_revised_forms_and_history_have_no_horizontal_overflow(frontend_page,width):
     page,base=frontend_page;page.set_viewport_size({'width':width,'height':900});enter(page,base)
-    for section in ['requests','certificates','calendar','tasks','notes','events','finance']:
+    for section in ['requests','certificates','schedule','assignments','materials','events','finance']:
         visit(page,base,section);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(section,width)
-    form=new_note(page) if page.url.endswith('/notes') else None
-    visit(page,base,'notes');form=new_note(page)
+    visit(page,base,'messages');form=new_ticket(page)
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-    form.locator('[name=title]').fill('Проверка формы');form.locator('[name=body]').fill('Вымышленное содержимое.')
-    shots=Path(__file__).resolve().parents[1]/'screenshots'/'audit-fixes-2026-11-10';shots.mkdir(parents=True,exist_ok=True)
-    page.screenshot(path=str(shots/f'chromium-note-{width}.png'),animations='disabled')
+    form.locator('[name=title]').fill('Проверка формы');form.locator('[name=message]').fill('Вымышленное содержимое.')
     page.keyboard.press('Escape');expect(page.locator('.unsaved-warning')).to_be_visible()

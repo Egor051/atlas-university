@@ -20,9 +20,9 @@ pytestmark = pytest.mark.skipif(os.environ.get('ATLAS_RUN_BROWSER_TESTS') != '1'
 HEADERS = {'X-Requested-With': 'ATLAS'}
 
 
-def create_note(page, address, title, body='Fictional note for isolated search regression.'):
-    response = page.request.post(address + '/api/learning/notes', headers=HEADERS,
-                                 data={'title': title, 'subject': 'Security exercise', 'body': body})
+def create_request(page, address, comment):
+    response = page.request.post(address + '/api/requests', headers=HEADERS,
+                                 data={'type': 'study', 'comment': comment})
     assert response.status == 201, response.text()
     return response.json()
 
@@ -33,7 +33,7 @@ def open_search(page):
     expect(page.locator('#search-input')).to_be_focused()
 
 
-def hold_note_search(page, marker, note_id):
+def hold_request_search(page, marker, request_id):
     held = []
 
     def delay_actual_search(route):
@@ -42,7 +42,7 @@ def hold_note_search(page, marker, note_id):
             return
         actual = route.fetch()
         assert actual.status == 200
-        assert any(row['id'] == note_id and row['category'] == 'Конспект'
+        assert any(row['id'] == request_id and row['target'] == 'certificates'
                    for row in actual.json()['items'])
         held.append((route, actual))
 
@@ -55,9 +55,9 @@ def test_delayed_personal_search_never_enters_another_students_dialog(frontend_p
     page.goto(address)
     enter_demo(page, 0, 'Алина')
     marker = 'PrivateSearch' + uuid.uuid4().hex
-    title = marker + ' — fictional Alina note'
-    note = create_note(page, address, title)
-    held = hold_note_search(page, marker, note['id'])
+    comment = marker + ' — вымышленный комментарий Алины'
+    request = create_request(page, address, comment)
+    held = hold_request_search(page, marker, request['id'])
     open_search(page)
     page.locator('#search-input').fill(marker)
     wait_for_held_response(page, held)
@@ -73,7 +73,7 @@ def test_delayed_personal_search_never_enters_another_students_dialog(frontend_p
     route.fulfill(response=actual)
     finish_browser_tasks(page)
     expect(page.locator('#search-personal .search-result')).to_have_count(0)
-    expect(page.locator('#search-personal')).not_to_contain_text(title)
+    expect(page.locator('#search-personal')).not_to_contain_text(comment)
     expect(page.locator('#page-title')).to_contain_text('Марк')
     assert page.request.get(address + '/api/me').json()['full_name'] == 'Марк Северин'
 
@@ -85,9 +85,9 @@ def test_abandoned_search_cannot_replace_current_query_results(frontend_page, re
     enter_demo(page, 0, 'Алина')
     abandoned = 'AbandonedSearch' + uuid.uuid4().hex
     current = 'CurrentSearch' + uuid.uuid4().hex
-    old_note = create_note(page, address, abandoned)
-    create_note(page, address, current)
-    held = hold_note_search(page, abandoned, old_note['id'])
+    old_request = create_request(page, address, abandoned)
+    create_request(page, address, current)
+    held = hold_request_search(page, abandoned, old_request['id'])
     open_search(page)
     page.locator('#search-input').fill(abandoned)
     wait_for_held_response(page, held)
@@ -95,38 +95,32 @@ def test_abandoned_search_cannot_replace_current_query_results(frontend_page, re
         page.locator('.modal .close-btn').click()
         open_search(page)
     page.locator('#search-input').fill(current)
-    expect(page.locator('#search-personal .search-result b')).to_have_text(current)
+    expect(page.locator('#search-personal .search-result small')).to_contain_text(current)
     route, actual = held[0]
     route.fulfill(response=actual)
     finish_browser_tasks(page)
     expect(page.locator('#search-input')).to_have_value(current)
-    expect(page.locator('#search-personal .search-result b')).to_have_text(current)
+    expect(page.locator('#search-personal .search-result small')).to_contain_text(current)
     expect(page.locator('#search-personal')).not_to_contain_text(abandoned)
 
 
-def test_note_markup_in_personal_search_remains_literal_text(frontend_page):
+def test_request_markup_in_personal_search_remains_literal_text(frontend_page):
     page, address = frontend_page
     page.goto(address)
     enter_demo(page, 0, 'Алина')
     marker = 'MarkupSearch' + uuid.uuid4().hex
-    title = marker + ' <svg id="search-injected-title" onload="window.__searchExecuted=1">text</svg>'
-    body = '</small><img id="search-injected-body" src=x onerror="window.__searchExecuted=2"> & "quoted"'
-    create_note(page, address, title, body)
+    comment = marker + ' <img id="search-injected-body" src=x onerror="window.__searchExecuted=1"> & "quoted"'
+    request = create_request(page, address, comment)
     open_search(page)
     page.locator('#search-input').fill(marker)
-    result = page.locator('#search-personal .search-result')
-    expect(result).to_have_count(1)
-    expect(result.locator('b')).to_have_text(title)
-    expect(result.locator('small')).to_have_text('Конспект · ' + body)
-    expect(page.locator('#search-injected-title,#search-injected-body')).to_have_count(0)
-    assert page.evaluate('() => window.__searchExecuted === undefined') is True
-    # A precise result opens this note, preserving markup as text in fields.
+    result = page.locator(f'[data-search-target="certificates"][data-search-id="{request["id"]}"]')
+    expect(result.locator('small')).to_have_text('Справка · ' + comment)
+    expect(page.locator('#search-injected-body')).to_have_count(0)
     result.click()
-    editor = page.locator('.modal form[data-c-form="note"]')
-    expect(editor).to_be_visible()
-    expect(editor.locator('[name="title"]')).to_have_value(title)
-    expect(editor.locator('[name="body"]')).to_have_value(body)
-    expect(page.locator('#search-injected-title,#search-injected-body')).to_have_count(0)
+    detail = page.get_by_role('dialog')
+    expect(detail.locator('.detail-block .user-text', has_text=marker)).to_have_text(comment)
+    expect(page.locator('#search-injected-body')).to_have_count(0)
+    assert page.evaluate('() => window.__searchExecuted === undefined') is True
 
 
 def hold_first_list(page, pattern):
@@ -144,20 +138,19 @@ def hold_first_list(page, pattern):
     return held
 
 
-def test_selected_note_result_cannot_replace_new_dialog_after_list_load(frontend_page):
+def test_selected_assignment_result_cannot_replace_new_dialog_after_list_load(frontend_page):
     page, address = frontend_page
     page.goto(address)
     enter_demo(page, 0, 'Алина')
-    marker = 'PreciseDelayedNote' + uuid.uuid4().hex
-    note = create_note(page, address, marker)
-    held = hold_first_list(page, '**/api/learning/notes')
+    work = page.request.get(address + '/api/learning/assignments').json()['items'][0]
+    held = hold_first_list(page, '**/api/learning/assignments?*')
     open_search(page)
-    page.locator('#search-input').fill(marker)
-    result = page.locator(f'#search-personal [data-search-target="notes"][data-search-id="{note["id"]}"]')
+    page.locator('#search-input').fill(work['title'])
+    result = page.locator(f'#search-personal [data-search-target="assignments"][data-search-id="{work["id"]}"]')
     expect(result).to_be_visible()
     result.click()
     wait_for_held_response(page, held)
-    # Selecting the result has closed the first search and begun loading notes.
+    # Selecting the result has closed the first search and begun loading assignments.
     # A new search started by the user must keep ownership of the modal.
     open_search(page)
     route, actual = held[0]
@@ -165,7 +158,7 @@ def test_selected_note_result_cannot_replace_new_dialog_after_list_load(frontend
     page.wait_for_load_state('networkidle')
     finish_browser_tasks(page)
     expect(page.locator('#search-input')).to_be_visible()
-    expect(page.locator('.modal form[data-c-form="note"]')).to_have_count(0)
+    expect(page.get_by_role('dialog', name='Сдать работу')).to_have_count(0)
 
 
 def test_request_notification_cannot_replace_new_dialog_after_list_load(frontend_page):

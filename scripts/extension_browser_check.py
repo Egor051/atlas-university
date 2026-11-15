@@ -21,10 +21,9 @@ from browser_check import ROOT, start_server, stop_server
 
 SCREENSHOTS = ROOT / 'screenshots'
 REPORT = ROOT / 'docs' / 'verification' / 'extension-browser-report.json'
-STUDENT_PAGES = ['home', 'schedule', 'grades', 'plan', 'requests', 'certificates', 'notifications', 'profile',
-                 'announcements', 'courses', 'assignments', 'exams', 'calendar', 'tasks',
-                 'learning/notes', 'consultations', 'messages',
-                 'events', 'finance', 'contacts', 'knowledge', 'portfolio', 'settings']
+STUDENT_PAGES = ['home', 'schedule', 'grades', 'requests', 'certificates', 'notifications', 'profile',
+                 'announcements', 'courses', 'assignments', 'exams', 'materials', 'consultations', 'messages',
+                 'events', 'finance', 'contacts', 'knowledge', 'settings']
 STAFF_PAGES = ['staff', 'staffdesk', 'staffmessages', 'announcement-admin', 'settings', 'profile']
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
 TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
@@ -87,7 +86,7 @@ class Acceptance:
 
     def login(self, page, base, account):
         page.goto(base, wait_until='networkidle')
-        page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
+        page.get_by_role('button',name='Или выбрать демо-аккаунт',exact=True).click()
         page.locator(f'[data-demo="{account}"]').click()
         self.ready(page)
 
@@ -210,69 +209,6 @@ class Acceptance:
             assert saved['submission']['status'] == 'withdrawn'
             assert saved['submission']['text'] == self.token + ': исправленная версия решения.'
         self.case('Assignment UI submit, revision, withdrawal and persisted text', page, assignments)
-
-        def tasks():
-            self.visit(page, base, 'tasks')
-            page.locator('[data-c-action="task-new"]').click()
-            task = self.submit(page, 'task', 'learning/tasks', {'title': self.token + ' задача', 'subject': 'Браузерная приёмка', 'priority': 'high'})
-            route = 'learning/tasks/' + str(task['id'])
-            checkbox = page.locator(f'[data-c-task="{task["id"]}"]')
-            # A second client edits the server while this page keeps its old
-            # fields. Completing the checkbox must preserve that newer edit.
-            concurrent_title = self.token + ' изменено в другом окне'
-            concurrent = page.context.request.post(base + '/api/' + route,
-                headers={'X-Requested-With': 'ATLAS', 'X-ATLAS-Record': task['record_token']},
-                data={'title': concurrent_title, 'subject': 'Новое значение дисциплины',
-                      'due_date': task['due_date'], 'priority': 'low', 'is_done': False})
-            assert concurrent.status == 200, concurrent.text()
-            with page.expect_response(lambda r: r.url.endswith('/api/' + route + '/toggle') and r.request.method == 'POST') as response:
-                checkbox.check()
-            assert response.value.status == 200 and response.value.json()['is_done'] is True
-            assert response.value.request.post_data_json == {'is_done': True}
-            assert response.value.json()['title'] == concurrent_title
-            assert response.value.json()['subject'] == 'Новое значение дисциплины'
-            assert response.value.json()['priority'] == 'low'
-            self.ready(page)
-            page.locator('[data-c-filter="tasks"][data-value="done"]').click()
-            page.locator(f'[data-c-action="task-edit"][data-id="{task["id"]}"]').click()
-            changed = self.submit(page, 'task', route, {'title': self.token + ' задача изменена'})
-            assert changed['is_done'] is True
-            page.reload(wait_until='networkidle'); self.ready(page)
-            page.locator('[data-c-filter="tasks"][data-value="done"]').click()
-            expect(page.locator(f'[data-c-task="{task["id"]}"]')).to_be_checked()
-            self.confirm(page, 'task-delete', task['id'], route + '/delete')
-            expect(page.locator(f'[data-c-task="{task["id"]}"]')).to_have_count(0)
-        self.case('Personal task UI create, complete, edit, reload and delete', page, tasks)
-
-        def notes():
-            self.visit(page, base, 'learning/notes')
-            page.locator('[data-c-action="note-new"]').click()
-            note = self.submit(page, 'note', 'learning/notes', {'title': self.token + ' конспект', 'subject': 'Учебная тема', 'body': 'Первый тезис и пример. <img src=x onerror=alert(1)> — простой текст.'})
-            page.locator('[data-c-query="notes"]').fill(self.token)
-            expect(page.locator('[data-c-list] article')).to_have_count(1)
-            expect(page.locator('[data-c-list] img')).to_have_count(0)
-            page.locator(f'[data-c-action="note-edit"][data-id="{note["id"]}"]').click()
-            changed = self.submit(page, 'note', f'learning/notes/{note["id"]}', {'body': 'Изменённый конспект сохранён через настоящий интерфейс.'})
-            assert changed['body'].startswith('Изменённый конспект')
-            page.reload(wait_until='networkidle'); self.ready(page)
-            page.locator(f'[data-c-action="note-edit"][data-id="{note["id"]}"]').click()
-            expect(page.locator('form[data-c-form="note"] [name="body"]')).to_have_value(changed['body'])
-            self.geometry(page, 'note-editor-modal-390'); self.axe(page, 'note-editor-modal-390')
-            self.capture(page, 'extension-390-note-editor-modal')
-            page.locator('.close-btn').click()
-        self.case('Note UI create, live search, safe text, edit and persisted content', page, notes)
-
-        def portfolio():
-            self.visit(page, base, 'portfolio')
-            page.locator('[data-c-action="portfolio-new"]').click()
-            row = self.submit(page, 'portfolio', 'campus/portfolio', {'title': self.token + ' проект', 'kind': 'project', 'description': 'Собран учебный проект для проверки полного пути.', 'url': 'https://example.com/project'})
-            expect(page.locator(f'[data-c-action="portfolio-edit"][data-id="{row["id"]}"]')).to_be_visible()
-            with page.expect_download() as download:
-                page.locator('a[href="/api/campus/portfolio/export"]').click()
-            text = Path(download.value.path()).read_text(encoding='utf-8')
-            assert self.token in text and 'Портфолио составлено пользователем' in text
-            assert 'Алина Ветрова' in text and 'Марк Северин' not in text
-        self.case('Portfolio UI create and genuine own HTML export', page, portfolio)
 
     def run(self):
         SCREENSHOTS.mkdir(exist_ok=True)

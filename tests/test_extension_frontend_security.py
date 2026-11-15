@@ -1,71 +1,81 @@
-"""Real-browser regression for rendering private notes and portfolios as text."""
+"""Browser coverage for retired student routes and retained teaching materials."""
 import os
+from datetime import date, timedelta
+from uuid import uuid4
 
 import pytest
 from playwright.sync_api import expect
 
-from test_frontend_contracts import (frontend_server, frontend_browser, frontend_page,
-                                     enter_demo)
+from test_frontend_contracts import enter_demo, frontend_browser, frontend_page, frontend_server
 
 pytestmark = pytest.mark.skipif(os.environ.get('ATLAS_RUN_BROWSER_TESTS') != '1',
                                 reason='Opt-in real browser test')
+HEADERS = {'X-Requested-With': 'ATLAS'}
 
 
-def test_personal_text_and_link_markup_remain_text_in_cards_and_editors(frontend_page):
-    page, address = frontend_page
-    page.goto(address)
+def test_saved_records_survive_retired_routes_and_stay_out_of_search(frontend_page):
+    page, base = frontend_page
+    page.goto(base)
     enter_demo(page, 0, 'Алина')
-    title = '<b id="injected-title">Fictional note</b>'
-    body = '</textarea><img id="injected-body" src=x onerror="alert(1)">'
-    note = page.request.post(address + '/api/learning/notes', headers={'X-Requested-With': 'ATLAS'},
-                             data={'title': title, 'subject': 'Security exercise', 'body': body})
-    assert note.status == 201, note.text()
-    note_id = note.json()['id']
-    page.goto(address + '/app/notes')
-    expect(page).to_have_url(address + '/app/learning/notes')
-    card = page.locator('.compact-row').filter(has=page.locator(f'[data-c-action="note-edit"][data-id="{note_id}"]'))
-    expect(card.locator('h2')).to_have_text(title)
-    expect(card.locator('.note-preview')).to_have_text(body)
-    expect(page.locator('#injected-title,#injected-body')).to_have_count(0)
-    card.locator('[data-c-action="note-edit"]').click()
-    expect(page.locator('[name="title"]')).to_have_value(title)
-    expect(page.locator('[name="body"]')).to_have_value(body)
-    expect(page.locator('#injected-title,#injected-body')).to_have_count(0)
-    page.locator('.modal .close-btn').click()
-    project_title = '<svg id="injected-project" onload="alert(2)">Project</svg>'
-    project = page.request.post(address + '/api/campus/portfolio', headers={'X-Requested-With': 'ATLAS'},
-                                data={'title': project_title, 'kind': 'project', 'description': body,
-                                      'url': 'https://example.invalid/?q="quoted"', 'day': '2026-11-07'})
-    assert project.status == 201, project.text()
-    page.goto(address + '/app/portfolio')
-    tile = page.locator('.campus-tile').filter(has=page.locator(f'[data-c-action="portfolio-edit"][data-id="{project.json()["id"]}"]'))
-    expect(tile.locator('h2')).to_have_text(project_title)
-    expect(tile.locator('.user-text')).to_have_text(body)
-    expect(page.locator('#injected-project,#injected-body')).to_have_count(0)
-    external = tile.locator('a[target="_blank"]')
-    expect(external).to_have_count(1)
-    assert external.get_attribute('href').startswith('https://example.invalid/')
-    assert set(external.get_attribute('rel').split()) >= {'noopener', 'noreferrer'}
+    marker = 'RetiredRecord' + uuid4().hex
+    for endpoint, route, destination, values in [
+        ('learning/tasks', 'tasks', 'assignments', {'due_date': (date.today() + timedelta(days=7)).isoformat()}),
+        ('learning/notes', 'learning/notes', 'courses', {'body': 'Вымышленная заметка до изменения навигации.'}),
+        ('campus/portfolio', 'portfolio', 'profile', {'kind': 'project', 'day': '2026-11-07'}),
+    ]:
+        url = f'{base}/api/{endpoint}'
+        created = page.request.post(url, headers=HEADERS, data={'title': marker, **values})
+        assert created.status == 201, created.text()
+        record = created.json()
+        page.goto(f'{base}/app/{route}?id={record["id"]}')
+        expect(page).to_have_url(f'{base}/app/{destination}')
+        expect(page.get_by_role('dialog')).to_have_count(0)
+        assert record in page.request.get(url).json()['items']
+    page.keyboard.press('Control+k')
+    page.locator('#search-input').fill(marker)
+    expect(page.locator('#search-personal')).to_contain_text('В ваших данных совпадений нет.')
 
 
-def test_retired_sections_and_notes_routes(frontend_page):
-    page, address = frontend_page
-    page.goto(address)
-    enter_demo(page, 0, 'Алина')
-    destinations = {'library': 'materials', 'learning/quizzes': 'materials',
-                    'flashcards': 'materials', 'planning/focus': 'tasks',
-                    'planning/notes': 'learning/notes'}
+def test_legacy_routes_and_materials_belong_to_current_navigation(frontend_page):
+    page, base = frontend_page
+    page.goto(base + '/app/planning/tasks')
+    page.get_by_role('button', name='Или выбрать демо-аккаунт', exact=True).click()
+    page.locator('[data-demo="0"]').click()
+    expect(page).to_have_url(base + '/app/assignments')
+    expect(page.locator('#page-title')).to_have_text('Сдача работ')
+    destinations = {
+        'planning': 'assignments', 'plan': 'assignments', 'planning/focus': 'assignments',
+        'calendar': 'schedule', 'planning/calendar': 'schedule',
+        'notes': 'courses', 'planning/notes': 'courses', 'account/portfolio': 'profile',
+        'library': 'materials', 'learning/quizzes': 'materials',
+        'flashcards': 'materials', 'learning/materials': 'materials',
+    }
     for before, after in destinations.items():
-        page.goto(f'{address}/app/{before}')
-        expect(page).to_have_url(f'{address}/app/{after}')
+        page.goto(f'{base}/app/{before}')
+        expect(page).to_have_url(f'{base}/app/{after}')
+        expect(page.locator('.error-state')).to_have_count(0)
+    breadcrumbs = page.get_by_role('navigation', name='Путь к разделу')
+    breadcrumbs.get_by_role('link', name='Мои дисциплины').click()
+    expect(page.locator('#page-title')).to_have_text('Мои дисциплины')
     learning = page.get_by_role('navigation', name='Учебные материалы и задания — разделы')
-    expect(learning.get_by_text('Конспекты', exact=True)).to_have_attribute('aria-current', 'page')
-    expect(page.locator('[data-route=quizzes],[data-route=flashcards],[data-route=focus],[data-route=library]')).to_have_count(0)
+    expect(learning.get_by_text('Мои дисциплины', exact=True)).to_have_attribute('aria-current', 'page')
+    expect(learning.get_by_role('link')).to_have_text(['Сдача работ'])
+    page.get_by_role('link', name='Учебные материалы', exact=True).click()
+    expect(page.locator('#page-title')).to_have_text('Учебные материалы')
+    material = page.locator('.school-tile h2 a').first
+    title = material.inner_text()
+    material.click()
+    expect(page.locator('#page-title')).to_have_text(title)
+    expect(breadcrumbs.get_by_role('link', name='Учебные материалы')).to_be_visible()
+    expect(breadcrumbs.get_by_role('link', name='Мои дисциплины')).to_be_visible()
+    expect(page.get_by_role('link', name='Скачать HTML')).to_be_visible()
+    nav = page.locator('#side-nav')
+    expect(nav.locator('[data-route="courses"]')).to_have_attribute('aria-current', 'location')
+    expect(nav.locator('[data-route=materials],[data-route=notes],[data-route=portfolio],[data-nav-group=planning]')).to_have_count(0)
     expect(page.locator('.concept-bar')).to_have_text('Конкурсный концепт · все данные вымышлены · неофициальный сервис')
     expect(page.locator('.concept-bar')).to_have_count(1)
     page.keyboard.press('Control+k')
     search = page.get_by_role('textbox', name='Поиск по кабинету', exact=True)
-    search.fill('конспекты')
-    expect(page.locator('#search-results [data-route=notes]')).to_be_visible()
-    search.fill('самопроверка')
-    expect(page.locator('#search-results [data-route=quizzes]')).to_have_count(0)
+    search.fill('учебные материалы')
+    expect(page.locator('#search-results [data-route=courses]')).to_be_visible()
+    expect(page.locator('#search-results [data-route=materials]')).to_have_count(0)

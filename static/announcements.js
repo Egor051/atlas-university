@@ -9,6 +9,9 @@
   const actionLabels = {created: 'Создан черновик', edited: 'Изменено', published: 'Опубликовано',
     archived: 'Перенесено в архив', withdrawn: 'Снято с публикации'};
   const sorts = {featured: 'Закреплённые вверху', newest: 'Сначала новые', oldest: 'Сначала ранние'};
+  const previewLimit = 160;
+  const graphemes = new Intl.Segmenter('ru', {granularity: 'grapheme'});
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const pages = [
     {id: 'announcements', label: 'Объявления', icon: 'megaphone', hint: 'Публикации учебного офиса',
       roles: ['student', 'staff', 'teacher', 'scheduler', 'admin', 'union', 'vuc']},
@@ -66,6 +69,41 @@
   const priority = row => `<span class="announcement-priority" data-priority="${esc(row.priority)}">${esc(priorityLabels[row.priority])}</span>`;
   const metadata = (row, full = false) => `<p class="announcement-meta">${priority(row)}<span>${esc(categories[row.category])}</span>${date(row.published_at || row.created_at, full)}${row.pinned ? '<span>Закреплено</span>' : ''}</p>`;
 
+  function shortenPreview(text) {
+    const segments = [...graphemes.segment(text)];
+    if (segments.length <= previewLimit) return text;
+    const next = segments[previewLimit - 1];
+    const prefix = text.slice(0, next.index);
+    const atWordBoundary = /\s/u.test(next.segment) || /\s$/u.test(prefix);
+    const completeWords = atWordBoundary ? prefix : prefix.replace(/\s+\S*$/u, '');
+    return (completeWords || prefix).trimEnd().replace(/[.…]+$/u, '') + '…';
+  }
+
+  function timelinePreview(row) {
+    const summary = row.summary?.trim() || '';
+    const preview = shortenPreview(summary || row.excerpt?.trim() || '');
+    if (!preview) return '';
+    if (!summary || preview === summary) return `<p class="announcement-excerpt">${esc(preview)}</p>`;
+    const id = `announcement-summary-${Number(row.id)}`;
+    return `<button type="button" class="announcement-preview-toggle" aria-expanded="false" aria-controls="${id}">
+      <span class="announcement-teaser">${esc(preview)}</span>
+      <span class="announcement-summary" id="${id}" hidden>${esc(summary)}</span>
+      ${c.icon('right')}</button>`;
+  }
+
+  function togglePreview(button) {
+    const before = button.getBoundingClientRect().height;
+    for (const animation of button.getAnimations()) animation.cancel();
+    const expanded = button.getAttribute('aria-expanded') === 'false';
+    button.setAttribute('aria-expanded', String(expanded));
+    c.$('.announcement-teaser', button).hidden = expanded;
+    c.$('.announcement-summary', button).hidden = !expanded;
+    const after = button.getBoundingClientRect().height;
+    if (!reducedMotion.matches && before !== after) {
+      button.animate([{height: `${before}px`}, {height: `${after}px`}], {duration: 200, easing: 'ease-out'});
+    }
+  }
+
   function timelineItems(data) {
     if (data.error) return '<p class="compact-empty" role="status">Объявления не загрузились. <button type="button" class="mini-link" data-announcement-action="retry">Повторить</button></p>';
     const rows = data.items.filter(row => !timelinePriority || row.priority === timelinePriority);
@@ -76,14 +114,7 @@
         <article class="announcement-event">
           ${metadata(row)}
           <h3>${link(pageUrl('announcements', {id: row.id}), row.title, 'announcement-title-link')}</h3>
-          <details class="announcement-expansion">
-            <summary>
-              <span class="announcement-expand-label">Прочитать анонс</span>
-              <span class="announcement-collapse-label">Свернуть анонс</span>
-              <span class="sr-only"> — ${esc(row.title)}</span>
-            </summary>
-            <p class="announcement-excerpt">${esc(row.excerpt)}</p>
-          </details>
+          ${timelinePreview(row)}
         </article>
       </li>`).join('')}</ol>`;
   }
@@ -294,11 +325,8 @@
       if (editor) c.$('[data-announcement-preview]', editor).hidden = true;
     });
     document.addEventListener('click', event => {
-      const card = event.target.closest('.announcement-event');
-      if (card && !event.target.closest('a, summary, .announcement-expansion') && !getSelection()?.toString()) {
-        const expansion = card.querySelector('details');
-        expansion.open = !expansion.open;
-      }
+      const previewButton = event.target.closest('.announcement-preview-toggle');
+      if (previewButton) togglePreview(previewButton);
       const button = event.target.closest('[data-announcement-action]');
       if (button) {
         const action = button.dataset.announcementAction;

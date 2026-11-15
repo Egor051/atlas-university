@@ -99,15 +99,12 @@ def create_router():
         if len(term) < 2:
             return {'items': []}
         from .assignment_workflow import visible_deadline
-        from .learning_db import StudyNote
         results = []
         specifications = [
             (DocumentRequest, DocumentRequest.type, 'requests', 'Заявка', DocumentRequest.comment),
-            (Deadline, Deadline.title, 'plan', 'Задание', Deadline.subject),
+            (Deadline, Deadline.title, 'assignments', 'Задание', Deadline.subject),
             (Notification, Notification.title, 'notifications', 'Уведомление', Notification.body),
             (Grade, Grade.subject, 'grades', 'Дисциплина', Grade.teacher),
-            (PortfolioItem, PortfolioItem.title, 'portfolio', 'Портфолио', PortfolioItem.description),
-            (StudyNote, StudyNote.title, 'notes', 'Конспект', StudyNote.body),
         ]
         for model, title, target, category, content in specifications:
             condition = text_search(title, term) | text_search(content, term)
