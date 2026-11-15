@@ -1,7 +1,7 @@
 """Directory, teaching materials and participant-owned direct conversations."""
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, LargeBinary, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base, User
@@ -83,10 +83,31 @@ class TeachingMaterial(Base):
     title: Mapped[str] = mapped_column(String(180))
     description: Mapped[str] = mapped_column(String(600))
     body: Mapped[str] = mapped_column(Text)
+    access: Mapped[str] = mapped_column(String(12), server_default='campus')
+    external_url: Mapped[str] = mapped_column(String(1000), server_default='')
+    file_name: Mapped[str | None] = mapped_column(String(180))
+    file_size: Mapped[int | None]
+    file_digest: Mapped[str | None] = mapped_column(String(64))
+    file_content: Mapped[bytes | None] = mapped_column(LargeBinary, deferred=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     version: Mapped[int] = mapped_column(default=1)
     assignment: Mapped[TeachingAssignment] = relationship()
+
+
+class MaterialDelegation(Base):
+    """An explicit grant for either a course coordinator or a department member."""
+
+    __tablename__ = 'material_delegations'
+    __table_args__ = (
+        CheckConstraint('(discipline_id IS NULL) <> (department_id IS NULL)', name='ck_material_delegation_scope'),
+        UniqueConstraint('user_id', 'discipline_id'),
+        UniqueConstraint('user_id', 'department_id'),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
+    discipline_id: Mapped[int | None] = mapped_column(ForeignKey('university_disciplines.id'))
+    department_id: Mapped[int | None] = mapped_column(ForeignKey('university_departments.id'))
 
 
 class DirectContact(Base):
@@ -119,3 +140,12 @@ class DirectMessage(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     notification_id: Mapped[int | None] = mapped_column(ForeignKey('notifications.id', ondelete='SET NULL'), unique=True)
+    file: Mapped['DirectAttachment | None'] = relationship()
+
+
+class DirectAttachment(Base):
+    __tablename__ = 'direct_attachments'
+    message_id: Mapped[int] = mapped_column(ForeignKey('direct_messages.id'), primary_key=True)
+    name: Mapped[str] = mapped_column(String(180))
+    size: Mapped[int]
+    content: Mapped[bytes] = mapped_column(LargeBinary, deferred=True)

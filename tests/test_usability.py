@@ -125,14 +125,15 @@ def test_course_disclosure_keyboard_and_live_module_status(frontend_page):
     page, base = frontend_page
     enter(page, base)
     visit(page, base, 'courses')
-    page.locator('[data-c-action="course"]').first.click()
+    page.locator('.discipline-catalog a').first.click()
+    page.get_by_role('navigation', name='Разделы дисциплины').get_by_role('link', name='О дисциплине').click()
     summaries = page.locator('.campus-modules details summary')
     expect(page.locator('.campus-modules details[open]')).to_have_count(0)
-    summaries.last.focus()
+    summaries.first.focus()
     page.keyboard.press('Tab')
-    expect(page.locator('.close-btn')).to_be_focused()
+    expect(summaries.nth(1)).to_be_focused()
     summaries.first.click()
-    checkbox = page.locator('[data-c-module]').first
+    checkbox = page.locator('[data-discipline-module]').first
     desired = not checkbox.is_checked()
     with page.expect_response(lambda r: '/modules/' in r.url and r.request.method == 'POST') as response:
         checkbox.set_checked(desired)

@@ -11,11 +11,14 @@ https://localhost {
 		path_regexp ^/api/learning/assignments/[0-9]+/submit/?$
 	}
 	@regular_request not {
-		method POST
-		path_regexp ^/api/learning/assignments/[0-9]+/submit/?$
+		path_regexp ^/api/(?:learning/assignments/[0-9]+/submit|materials(?:/[0-9]+)?|direct/dialogs(?:/[0-9]+/messages)?)/?$
 	}
+	@material_upload path_regexp ^/api/(?:materials(?:/[0-9]+)?|direct/dialogs(?:/[0-9]+/messages)?)/?$
 	request_body @submission_upload {
 		max_size 2097152
+	}
+	request_body @material_upload {
+		max_size 7340032
 	}
 	request_body @regular_request {
 		max_size 64KB

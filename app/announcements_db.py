@@ -15,6 +15,7 @@ class Announcement(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     author_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     group_id: Mapped[int | None] = mapped_column(ForeignKey('academic_groups.id'))
+    discipline_id: Mapped[int | None] = mapped_column(ForeignKey('university_disciplines.id'))
     title: Mapped[str] = mapped_column(String(180))
     summary: Mapped[str] = mapped_column(Text, server_default='')
     body: Mapped[str] = mapped_column(Text)

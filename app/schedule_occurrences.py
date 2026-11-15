@@ -49,7 +49,7 @@ def class_data(row):
         subgroup_id=row.subgroup_id, subgroup=row.subgroup.code if row.subgroup else None,
         student_id=row.student_id, teacher_id=row.teacher_id, teacher=row.teacher.user.full_name,
         room_id=row.room_id, room=row.room.code, delivery='online' if row.room.kind == 'online' else 'room',
-        day=day, start=start, end=end, discipline=row.load.discipline.title, title=row.title,
+        day=day, start=start, end=end, discipline_id=row.load.discipline_id, discipline=row.load.discipline.title, title=row.title,
         kind=kind, kind_label=KIND[kind], equipment=row.equipment, note=row.note, status=row.status,
         version=row.version, series=row.series, calendar_exception=row.calendar_exception,
     )

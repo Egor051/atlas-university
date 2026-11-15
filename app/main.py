@@ -34,6 +34,7 @@ from .db import (SessionLocal, User, LoginSession, Grade,
                  password_hasher, initialize_database, CAMPUS_TZ, campus_today,
                  utc_now, request_due_date, request_kind, engine)
 from .config import DEMO_LOGINS, settings
+from .material_upload import MATERIAL_REQUEST_BYTES
 from .version import VERSION, build_id
 from .session_security import as_utc, validate_expected_actor, PasswordAdmission
 
@@ -72,7 +73,10 @@ class BodyLimitMiddleware:
             return await self.app(scope, receive, send)
         assignment_upload = scope['method'] == 'POST' and re.fullmatch(
             r'/api/learning/assignments/[0-9]+/submit/?', scope['path'])
-        max_body_size = 2 * 1024 * 1024 if assignment_upload else 32768
+        material_upload = (scope['method'] == 'POST' and re.fullmatch(
+            r'/api/(?:materials|direct/dialogs(?:/[0-9]+/messages)?)/?', scope['path'])
+                           or scope['method'] == 'PATCH' and re.fullmatch(r'/api/materials/[0-9]+/?', scope['path']))
+        max_body_size = MATERIAL_REQUEST_BYTES if material_upload else 2 * 1024 * 1024 if assignment_upload else 32768
         body = bytearray()
         while True:
             message = await receive()
@@ -806,6 +810,7 @@ def browser_icon():
 @app.get('/static/{filename:path}')
 def static_files(filename:str, v: str = ''):
     allowed={'app.js':'text/javascript','campus.js':'text/javascript','improvements.js':'text/javascript',
+             'disciplines.js':'text/javascript','disciplines.css':'text/css',
              'university.js':'text/javascript','campus.css':'text/css','style.css':'text/css','usability.css':'text/css',
              'university.css':'text/css','operations.css':'text/css','operations.js':'text/javascript',
              'academics.css':'text/css','academics.js':'text/javascript',
@@ -829,6 +834,8 @@ app.include_router(campus_router())
 from .improvements import create_router as improvements_router, install_quota
 app.include_router(improvements_router())
 from .university import create_router as university_router
+from .materials import router as materials_router
+from .disciplines import router as disciplines_router
 from .direct import create_router as direct_router
 from .workspace import create_router as workspace_router
 from .teaching import router as teaching_router
@@ -839,6 +846,8 @@ from .table_imports import router as tables_router
 from .units import router as units_router
 from .announcements import router as announcements_router
 app.include_router(university_router())
+app.include_router(materials_router)
+app.include_router(disciplines_router)
 app.include_router(direct_router())
 app.include_router(workspace_router())
 app.include_router(teaching_router)

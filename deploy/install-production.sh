@@ -57,6 +57,8 @@ if systemctl is-active --quiet atlas-campus.service; then
 else
     systemctl start atlas-campus.service
 fi
+# Compose can keep a running proxy when the contents of its bind-mounted configuration change.
+docker compose exec -T caddy caddy reload --config /dev/stdin --adapter caddyfile < deploy/Caddyfile
 systemctl start atlas-backup.service
 systemctl start atlas-backup.timer atlas-monitor.timer
 docker compose ps

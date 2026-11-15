@@ -1,5 +1,6 @@
 """Actual browser workflows on the disposable local HTTP application."""
 import os
+from pathlib import Path
 import re
 from urllib.parse import parse_qs, urlsplit
 from uuid import uuid4
@@ -99,16 +100,17 @@ def test_material_filter_uses_one_control_baseline_in_compact_view(frontend_page
     page.get_by_role('button', name='Сохранить настройки').click()
     expect(page.locator('.compact-campus')).to_have_count(1)
     page.goto(base + '/app/materials?q=Анализ')
+    expect(page).to_have_url(re.compile('/app/courses\\?q='))
     panel = page.get_by_role('search', name='Поиск и фильтры')
     expect(panel).to_be_visible()
     controls = panel.locator('input:visible, select, button, a')
     bottoms = controls.evaluate_all('(nodes) => nodes.map(node => node.getBoundingClientRect().bottom)')
-    assert len(bottoms) == 5 and max(bottoms) - min(bottoms) <= 1, bottoms
+    assert len(bottoms) == 6 and max(bottoms) - min(bottoms) <= 1, bottoms
 
     page.set_viewport_size({'width': 360, 'height': 800})
     boxes = controls.evaluate_all('nodes => nodes.map(node => node.getBoundingClientRect().toJSON())')
     assert abs(boxes[1]['bottom'] - boxes[2]['bottom']) <= 1
-    assert boxes[0]['bottom'] <= boxes[1]['top'] and boxes[2]['bottom'] <= boxes[3]['top']
+    assert boxes[0]['bottom'] <= boxes[1]['top'] and boxes[2]['bottom'] <= boxes[4]['top']
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
 
 
@@ -141,6 +143,9 @@ def test_department_teacher_file_and_private_reply(frontend_page, tmp_path):
     expect(student).to_have_url(base + PROFILE)
     student.get_by_role('link', name='Написать преподавателю').click()
     student.get_by_label('Сообщение', exact=True).fill('Как выбрать <b>очередь</b> для графа?')
+    student.get_by_text('Приложить документ', exact=True).click()
+    student.get_by_label('Файл сообщения').set_input_files({
+        'name': 'Описание.txt', 'mimeType': 'text/plain', 'buffer': b'Fictional question attachment.'})
     student.get_by_role('button', name='Отправить').click()
     expect(student).to_have_url(re.compile('/app/direct/[0-9]+$'))
     url = student.url
@@ -158,6 +163,9 @@ def test_department_teacher_file_and_private_reply(frontend_page, tmp_path):
         expect(teacher).to_have_url(url)
         expect(teacher.get_by_role('navigation', name='Диалоги')).to_be_visible()
         expect(teacher.locator('.school-conversation')).to_contain_text('для графа')
+        with teacher.expect_download() as attachment:
+            teacher.get_by_role('link', name='Описание.txt', exact=True).click()
+        assert Path(attachment.value.path()).read_bytes() == b'Fictional question attachment.'
         teacher.get_by_label('Сообщение', exact=True).fill('Для BFS подходит очередь FIFO.')
         teacher.get_by_role('button', name='Отправить').click()
         expect(teacher.locator('.school-conversation')).to_contain_text('очередь FIFO')
@@ -212,29 +220,123 @@ def test_department_teacher_file_and_private_reply(frontend_page, tmp_path):
         other_context.close()
 
 
-def test_publish_edit_delete_from_teacher_cabinet(frontend_page):
+def test_teacher_material_file_lifecycle_in_browser(frontend_page, tmp_path):
     teacher, base = frontend_page
+    errors = []
+    teacher.on('pageerror', lambda error: errors.append(str(error)))
     teacher.set_viewport_size({'width': 390, 'height': 850})
-    enter(teacher, base, 3)
+    enter(teacher, base, 10)
+    evidence = os.environ.get('ATLAS_MATERIAL_SCREENSHOTS')
+
+    def capture(page, name):
+        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        if evidence and name:
+            expect(page.locator('#toast .toast-message')).to_have_count(0, timeout=6500)
+            page.screenshot(path=Path(evidence) / name, animations='disabled')
+
+    expect(teacher.get_by_role('heading', name='Работы на проверке')).to_be_visible()
+    teacher.set_viewport_size({'width': 1440, 'height': 980})
+    capture(teacher, 'after-teacher-1440.png')
+    teacher.set_viewport_size({'width': 390, 'height': 850})
     teacher.get_by_role('link', name='Публикации', exact=True).filter(visible=True).last.click()
     expect(teacher.locator('#page-title')).to_have_text('Публикации')
-    teacher.get_by_role('button', name='Опубликовать материал').click()
-    form = teacher.locator('form[data-school-form=material]')
-    form.get_by_label('Название').fill('Практикум для проверки редактора')
-    form.get_by_label('Описание').fill('Фиктивный практикум для демонстрации публикации.')
-    form.get_by_label('Текст материала').fill('## Пример\nПроверьте доступ к своему учебному материалу.')
-    form.get_by_role('button', name='Опубликовать', exact=True).click()
-    item = teacher.locator('.compact-row').filter(has_text='Практикум для проверки редактора')
+    teacher.get_by_role('button', name='Добавить материал').click()
+    form = teacher.get_by_role('dialog', name='Добавить материал')
+    form.get_by_label('Тип материала').select_option('lab')
+    form.get_by_label('Содержание').select_option('file')
+    title = 'Практикум по подготовке набора данных'
+    description = 'Проверьте пропущенные значения и сохраните очищенную таблицу.'
+    form.get_by_label('Название').fill(title)
+    form.get_by_label('Описание').fill(description)
+    first_file = {'name': 'Практикум.txt', 'mimeType': 'text/plain', 'buffer': b'Read these lab instructions.\n' * 4000}
+    form.get_by_label('Выбрать файл').set_input_files(first_file)
+    capture(teacher, 'after-material-editor-390.png')
+    with teacher.expect_response(lambda response: response.url.endswith('/api/materials') and response.request.method == 'POST') as created:
+        form.get_by_role('button', name='Добавить материал', exact=True).click()
+    assert created.value.status == 201, created.value.text()
+    row = created.value.json()
+    key, href, course_id = row['id'], row['href'], row['discipline']['id']
+    item = teacher.locator('.material-row').filter(has_text=title)
     expect(item).to_be_visible()
-    item.get_by_role('button', name=re.compile('Изменить')).click()
-    form.get_by_label('Название').fill('Практикум после правки')
-    form.get_by_role('button', name='Сохранить изменения').click()
-    updated = teacher.locator('.compact-row').filter(has_text='Практикум после правки')
-    expect(updated).to_be_visible()
-    updated.get_by_role('button', name=re.compile('Удалить')).click()
-    teacher.get_by_role('dialog').get_by_role('button', name='Удалить', exact=True).click()
-    expect(updated).to_have_count(0)
-    assert teacher.evaluate('document.documentElement.scrollWidth <= innerWidth')
+
+    def verify_download(page, expected):
+        with page.expect_download() as download:
+            page.get_by_role('link', name='Скачать файл', exact=True).click()
+        assert download.value.suggested_filename == expected['name']
+        target = tmp_path / expected['name']
+        download.value.save_as(target)
+        assert target.read_bytes() == expected['buffer']
+
+    browser = teacher.context.browser
+    with browser.new_context(viewport={'width': 360, 'height': 850}, is_mobile=True, has_touch=True) as student_context, browser.new_context() as colleague_context:
+        student, colleague = student_context.new_page(), colleague_context.new_page()
+        for page in (student, colleague):
+            page.on('pageerror', lambda error: errors.append(str(error)))
+        enter(student, base, 1, '/app/courses')
+        course = row['discipline']['title']
+        student.locator('.discipline-catalog').get_by_role('link', name=course, exact=True).click()
+        expect(student).to_have_url(base + f'/app/courses/{course_id}')
+        tabs = student.get_by_role('navigation', name='Разделы дисциплины')
+        for tab, heading in (
+            ('О дисциплине', 'Преподаватели'), ('Расписание', 'Ближайшие занятия'),
+            ('Задания и работы', 'Задания по дисциплине'),
+            ('Консультации', 'Предстоящие консультации'), ('Объявления', 'Объявления по дисциплине'),
+        ):
+            tabs.get_by_role('link', name=tab).click()
+            expect(student.get_by_role('heading', name=heading, exact=True)).to_be_visible()
+            capture(student, None)
+        tabs.get_by_role('link', name='Материалы', exact=True).click()
+        expect(student.get_by_role('link', name=title, exact=True)).to_be_visible()
+        capture(student, 'after-materials-360.png')
+        student.set_viewport_size({'width': 1440, 'height': 980})
+        capture(student, 'after-materials-1440.png')
+        student.set_viewport_size({'width': 360, 'height': 850})
+        search = student.get_by_role('search', name='Поиск и фильтры')
+        search.get_by_label('Поиск по материалам').fill('подготовке')
+        search.get_by_label('Тип', exact=True).select_option('lab')
+        search.get_by_label('Сортировка').select_option('updated')
+        search.get_by_role('button', name='Найти').click()
+        expect(student.locator('.material-row')).to_have_count(1)
+        student.get_by_role('link', name=title, exact=True).click()
+        expect(student).to_have_url(base + href)
+        verify_download(student, first_file)
+        student.goto(base + '/app/materials/' + str(key))
+        expect(student).to_have_url(base + href)
+
+        enter(colleague, base, 8, href)
+        expect(colleague.locator('#page-title')).to_have_text('Материал недоступен')
+        edit_payload = {'title': title, 'description': description, 'version': 1, 'assignment_id': row['assignment_id'],
+                        'kind': 'lab', 'source': 'file'}
+        forbidden = colleague.request.patch(base + f'/api/materials/{key}', data=edit_payload,
+                                             headers={'X-Requested-With': 'ATLAS', 'Origin': base})
+        assert forbidden.status == 403
+
+        item.get_by_role('button', name=re.compile('Изменить')).click()
+        edit = teacher.get_by_role('dialog', name='Изменить материал')
+        changed = 'Добавлена проверка дубликатов и типов столбцов.'
+        edit.get_by_label('Описание').fill(changed)
+        second_file = {'name': 'Практикум-2.txt', 'mimeType': 'text/plain', 'buffer': b'Updated lab instructions.\n'}
+        edit.get_by_label('Заменить файл').set_input_files(second_file)
+        edit.get_by_role('button', name='Сохранить изменения').click()
+        expect(item).to_contain_text(changed)
+        student.reload()
+        expect(student.locator('#page-title')).to_have_text(title)
+        expect(student.locator('#page-content')).to_contain_text(changed)
+        verify_download(student, second_file)
+
+        item.get_by_role('button', name=re.compile('Архивировать')).click()
+        teacher.get_by_role('dialog', name='Архивировать материал').get_by_role('button', name='Архивировать', exact=True).click()
+        expect(item).to_contain_text('В архиве')
+        expect(item.get_by_role('button', name=re.compile('Архивировать'))).to_have_count(0)
+        student.reload()
+        expect(student.locator('#page-title')).to_have_text('Материал недоступен')
+        assert student.request.get(base + row['file_url']).status == 404
+        student.goto(base + f'/app/courses/{course_id}')
+        expect(student.get_by_role('link', name=title, exact=True)).to_have_count(0)
+        item.get_by_role('link', name=title, exact=True).click()
+        teacher.get_by_role('link', name='История изменений').click()
+        expect(teacher.get_by_text('Архивирован', exact=True)).to_be_visible()
+        assert errors == []
 
 
 @pytest.mark.parametrize('keyboard_mode', ['visual', 'layout'])

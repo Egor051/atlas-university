@@ -172,7 +172,8 @@
       (work.state==='scheduled'?p('Публикация '+deadlineLabel(work.publish_at)):'')+
       (work.description?p(work.description):'')+`<p class="user-text">${esc(work.instructions)}</p>`+
       (work.criteria?`<details><summary>Критерии оценивания</summary><p class="user-text">${esc(work.criteria)}</p></details>`:'')+
-      work.materials.map(value=>`<div>${safeReference(value,'Открыть материал')}</div>`).join('');
+      work.materials.map(value=>`<div>${safeReference(value,'Открыть материал')}</div>`).join('')+
+      (work.course_materials||[]).map(row=>`<div>${link(window.ATLASDisciplines.materialPath(row.id),row.title,'school-card-link')}</div>`).join('');
     const viewers=Object.fromEntries(work.submissions.map(item=>[item.student_id,item]));
     const team=work.team_lead_id&&work.recipients.find(x=>x.id===work.team_lead_id);
     const recipientRows=list(work.recipients,person=>row(esc(person.name),
@@ -509,7 +510,37 @@
     if(custom)custom.closest('.field').hidden=form.elements.kind.value!=='other';
     if(publish)publish.closest('.field').hidden=form.elements.state.value!=='scheduled';
   }
-  function workForm(base,data){
+  function materialOptions(items,selected){
+    const options=new Map([...selected,...items.map(row=>[row.id,row.title])]);
+    return choiceGroup('material_ids','Выберите до пяти материалов',Array.from(options),Array.from(selected.keys()));
+  }
+
+  async function searchWorkMaterials(control){
+    const form=control.form, box=c.$('[data-work-material-options]',form), status=c.$('[data-work-material-status]',form);
+    const search=c.$('[data-work-material-search]',form), load=control.dataset.load;
+    control.disabled=true;
+    status.textContent='Ищем материалы…';
+    try{
+      const result=await c.api(url('teaching/'+load+'/material-options',{q:search.value.trim()}));
+      if(!box.isConnected)return;
+      const selected=new Map([...box.querySelectorAll('input:checked')].map(input=>[Number(input.value),input.parentElement.textContent.trim()]));
+      box.innerHTML=materialOptions(result.items,selected);
+      status.textContent=result.more?'Уточните название для остальных материалов.':result.items.length?'':'Материалы не найдены.';
+    }catch(error){if(!error.stale&&box.isConnected)status.textContent=error.message;}
+    finally{control.disabled=false;}
+  }
+
+  async function openWorkForm(base,data){
+    const {loadingId,modalId,sessionEpoch}=c.state;
+    try{
+      const options=await c.api(base+'/material-options');
+      if(loadingId!==c.state.loadingId||modalId!==c.state.modalId||sessionEpoch!==c.state.sessionEpoch)return;
+      workForm(base,data,options);
+      toggleWorkFields(c.$('.modal [data-op-form]'));
+    }catch(error){if(!error.stale&&loadingId===c.state.loadingId)c.toast(error.message);}
+  }
+
+  function workForm(base,data,options){
     const work=data.work, detail=data.detail||data, locked=work?.state==='published';
     const roster=detail.students.map(student=>[student.id,student.name]);
     const currentMethods=work?.methods||['text','url'];
@@ -532,17 +563,27 @@
       <div class="op-form-grid">${yesNo('allow_resubmission','Разрешить новую отправку после отзыва',work?.allow_resubmission??true)}
       ${yesNo('allow_late','Принимать после дедлайна',work?.allow_late??true)}
       ${input('max_attempts','Лимит попыток',work?.max_attempts??'','number','min="1" max="50" step="1"')}</div></details>`;
+    const selected=new Map((work?.material_ids||[]).map(id=>[id,work.course_materials.find(row=>row.id===id)?.title||'Недоступный материал № '+id]));
+    const linked=`<details class="assignment-attempt"><summary>Учебные материалы дисциплины</summary>
+      <div class="field"><label for="assignment-material-search">Поиск по названию</label>
+        <input id="assignment-material-search" type="search" maxlength="100" data-work-material-search></div>
+      <button type="button" class="outline-button" data-work-material-find data-load="${Number(detail.id)}">Найти материалы</button>
+      <p role="status" data-work-material-status>${options.more?'Уточните название для остальных материалов.':''}</p>
+      <div data-work-material-options>${materialOptions(options.items,selected)}</div></details>`;
     return modal(work?'Изменить задание':'Создать задание',detail.discipline+' · '+detail.group,titleFields+
       `<div class="op-form-grid">${input('due_at','Срок сдачи (МСК)',currentDue,'datetime-local','required')}${points}</div>`+
       area('description','Описание',work?.description,1500)+area('instructions','Условия задания',work?.instructions,4000)+
-      area('criteria','Критерии оценивания',work?.criteria,2000)+area('materials','Дополнительные материалы (по одной HTTPS-ссылке в строке)',(work?.materials||[]).join('\n'),2550)+audience+settings,
+      area('criteria','Критерии оценивания',work?.criteria,2000)+linked+
+      area('materials','Дополнительные материалы (по одной HTTPS-ссылке в строке)',(work?.materials||[]).join('\n'),2550)+audience+settings,
       (values,formData)=>{
         const body={...values,due_at:msk(values.due_at),materials:values.materials.split(/\s+/).filter(Boolean),
+          material_ids:formData.getAll('material_ids').map(Number),
           methods:formData.getAll('methods'),formats:formData.getAll('formats'),max_attempts:values.max_attempts?Number(values.max_attempts):null,
           allow_resubmission:values.allow_resubmission==='true',allow_late:values.allow_late==='true'};
         if(!locked)Object.assign(body,{publish_at:values.state==='scheduled'&&values.publish_at?msk(values.publish_at):null,
           max_points:Number(values.max_points),recipient_ids:formData.getAll('recipient_ids').map(Number),
           team_lead_id:values.team_lead_id?Number(values.team_lead_id):null,class_id:values.class_id?Number(values.class_id):null});
+        if(body.material_ids.length>5)throw new Error('К заданию можно приложить до пяти учебных материалов.');
         return work?request(base+'/works/'+work.id,'PATCH',{...body,version:work.version}):request(base+'/works','POST',body);
       });
   }
@@ -561,11 +602,7 @@
         area('note','Комментарий',student.attendance.note),v=>request(base+'/attendance','PUT',{
           ...v,student_id:id,day:data.day,version:student.attendance.version,class_id:data.class_id}));
     }
-    if(action==='new-work'||action==='edit-work'){
-      workForm(base,data);
-      toggleWorkFields(c.$('.modal [data-op-form]'));
-      return;
-    }
+    if(action==='new-work'||action==='edit-work')return openWorkForm(base,data);
     const work=data.work;
     if(action==='archive-work')return modal('Архивировать задание',work.title,p('История работ сохранится. Сдача и проверка закроются.'),
       ()=>request(base+'/works/'+work.id,'PATCH',{state:'archived',version:work.version}));
@@ -762,6 +799,8 @@
   function init(context){
     c=context;
     document.addEventListener('click',event=>{
+      const find=event.target.closest('[data-work-material-find]');
+      if(find){searchWorkMaterials(find);return;}
       const el=event.target.closest('[data-op-action]');
       if(!el)return;
       const action=el.dataset.opAction;
@@ -781,6 +820,13 @@
         return;
       }
       click(action,Number(el.dataset.id));
+    });
+    document.addEventListener('keydown',event=>{
+      if(event.key==='Enter'&&!event.isComposing&&event.target.matches('[data-work-material-search]')){
+        event.preventDefault();
+        const control=c.$('[data-work-material-find]',event.target.form);
+        if(!control.disabled)searchWorkMaterials(control);
+      }
     });
     document.addEventListener('submit',event=>{
       const form=event.target;

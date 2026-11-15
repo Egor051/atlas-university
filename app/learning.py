@@ -45,7 +45,7 @@ def create_router():
     def course_payload(course, db, modules=None):
         rows = modules if modules is not None else db.scalars(select(CourseModule).where(CourseModule.course_id == course.id).order_by(CourseModule.position, CourseModule.id)).all()
         completed = sum(module.is_done for module in rows)
-        return dict(id=course.id, subject=course.subject, teacher=course.teacher,
+        return dict(id=course.id, discipline_id=course.discipline_id, subject=course.subject, teacher=course.teacher,
                     credits=course.credits, description=course.description, color=course.color,
                     modules=[dict(id=module.id, title=module.title, content=module.content, is_done=module.is_done) for module in rows],
                     progress=round(100 * completed / len(rows)) if rows else 0,

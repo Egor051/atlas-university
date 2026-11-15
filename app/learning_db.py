@@ -23,6 +23,7 @@ class Course(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     student_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
     grade_id: Mapped[int] = mapped_column(ForeignKey('grades.id'))
+    discipline_id: Mapped[int | None] = mapped_column(ForeignKey('university_disciplines.id'))
     subject: Mapped[str] = mapped_column(String(130))
     teacher: Mapped[str] = mapped_column(String(120))
     credits: Mapped[int] = mapped_column(Integer)
@@ -230,6 +231,8 @@ QUIZ_CONTENT = {
 
 def seed_learning(db):
     """One-time additive demo expansion; edits/deletions survive later restarts."""
+    from .material_migration import discipline_matches
+
     students = db.scalars(select(User).where(User.role == 'student', User.login.in_(['alina.demo', 'mark.demo']))).all()
     for student in students:
         if db.get(LearningSeed, student.id):
@@ -242,6 +245,7 @@ def seed_learning(db):
             course = db.scalar(select(Course).where(Course.student_id == student.id, Course.grade_id == grade.id))
             if course is None:
                 course = Course(student_id=student.id, grade_id=grade.id, subject=grade.subject,
+                                discipline_id=db.scalar(discipline_matches(grade.subject)),
                                 teacher=grade.teacher, credits=6 if grade.kind == 'exam' else 3,
                                 description=f'Учебная траектория: {grade.subject.lower()}. Четыре коротких модуля, самостоятельная практика и подготовка к аттестации.', color=grade.color)
                 db.add(course)

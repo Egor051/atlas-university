@@ -2,7 +2,6 @@
 (() => {
   'use strict';
   const pages = [
-    {id:'courses',label:'Мои дисциплины',icon:'book',group:'study',hint:'Предметы, учебные материалы и прогресс по модулям'},
     {id:'assignments',label:'Сдача работ',icon:'send',group:'study',hint:'Задания, ответ, ссылка на проект и повторная сдача'},
     {id:'exams',label:'Сессия и зачёты',icon:'graduation',group:'study',hint:'Экзамены, зачёты, допуски и результаты'},
     {id:'consultations',label:'Консультации',icon:'user',group:'services',hint:'Записаться к преподавателю и отменить запись'},
@@ -75,10 +74,6 @@
   }
   async function openContext(page,context={}){
     const id=Number(context.id);const data=c.state.data[page];
-    if(page==='courses'){
-      const found=items(data).find(x=>id?x.id===id:x.subject===context.subject);
-      if(found)return openCourse(found.id);
-    }
     if(page==='assignments'&&id)return assignmentModal(id);
     if(['messages','staffmessages'].includes(page)&&id)return ticketModal(id);
     if(id&&!focusRecord(id))c.toast('Запись не найдена или больше недоступна. Можно выбрать другое действие в разделе.');
@@ -107,7 +102,7 @@
   async function load(page) {
     if(page==='assignments')return c.api('learning/assignments?offset='+Number(local.offset.assignments||0));
     const api=c.api;
-    if(['courses','exams'].includes(page))return api('learning/'+page);
+    if(page==='exams')return api('learning/'+page);
     if(page==='settings'){const [sessions,preferences]=await Promise.all([api('account/sessions'),api('services/preferences')]);return {sessions,preferences};}
     if(page==='consultations'){const [slots,bookings]=await Promise.all([pageApi('consultations','services/consultations',{q:serviceQuery(page),scope:local.scope[page]||'upcoming',...recordFilter(page)}),pageApi('bookings','services/bookings')]);return {slots,bookings};}
     if(page==='events'){const [events,registrations]=await Promise.all([pageApi('events','services/events',{q:serviceQuery(page),filter:local.filter[page]||'all',scope:local.scope[page]||'upcoming',...recordFilter(page)}),pageApi('registrations','services/registrations')]);return {events,registrations};}
@@ -119,11 +114,6 @@
   }
 
 
-  function courses(d){
-    const rows=filtered(d,'courses');const all=items(d);const modules=all.flatMap(x=>x.modules||[]);
-    return title('courses','Материалы семестра и ваш прогресс по учебным модулям.',
-      '<a class="outline-button" href="/app/materials" data-app-link>Учебные материалы</a>'+link('assignments','К сдаче работ'))+stats([[all.length,'дисциплин'],[all.reduce((n,x)=>n+Number(x.credits||0),0),'зачётных единиц'],[`${modules.filter(x=>x.is_done).length} / ${modules.length}`,'модулей изучено']])+contextNotice('courses')+toolbar('courses')+`<div class="compact-list" data-c-list>${rows.map(x=>`<article class="card compact-row" data-campus-record-id="${Number(x.id)}"><div class="row-copy"><h2>${esc(x.subject)}</h2><p>${esc(x.teacher)} · ${Number(x.credits)} з. е.</p><div class="row-progress"><progress max="100" value="${Number(x.progress)||0}" aria-label="Изучение курса ${esc(x.subject)}"></progress><span>${Number(x.progress)||0}% изучено</span></div></div>${action('course','Открыть',x.id,`aria-label="Открыть курс: ${esc(x.subject)}"`)}</article>`).join('')||c.empty('search','Дисциплина не найдена','Попробуйте другое название или преподавателя.')}</div><p class="list-footnote">Отметки модулей — личный прогресс, они не изменяют оценки.</p>`;
-  }
   const workStatuses={not_started:'Не начато',in_progress:'В работе',submitted:'Отправлено',in_review:'На проверке',
     revision_required:'Требуется доработка',resubmitted:'Повторно отправлено',accepted:'Принято',completed:'Завершено',withdrawn:'Отозвано'};
   const workKinds={homework:'Домашняя работа',lab:'Лабораторная работа',practice:'Практическая работа',test:'Контрольная работа',
@@ -220,14 +210,8 @@
     const o=d.overview;const requestStats=o.requests||{};const openTickets=typeof o.tickets==='number'?o.tickets:o.tickets?.open??o.open_tickets??0;
     return title('staffdesk','Сопровождение учебной жизни: сводка, запись на консультации, события и объявления.')+stats([[Number(requestStats.submitted||0)+Number(requestStats.review||0)+Number(requestStats.processing||0)+Number(requestStats.needs_info||0),'заявок в работе'],[openTickets,'открытых диалогов'],[d.slots.total??items(d.slots).length,'слотов консультаций']])+`<div class="campus-button-row campus-spaced">${link('staff','Очередь заявлений')}${link('staffmessages','Ответить на вопросы')}${link('schedule-changes','Согласование расписания')}${link('work-notices','Рабочие уведомления')}${link('materials-admin','Публикации')}${link('university','Университет')}${primary('staff-slot','Создать консультацию')}${primary('staff-event','Новое мероприятие')}${link('announcement-admin','Управление объявлениями')}</div>`+section('Опубликованные консультации',items(d.slots).length?`<div class="campus-log">${items(d.slots).map(x=>`<article><span class="campus-hub-icon">${icon('calendar')}</span><div><b>${esc(x.subject)}</b><p>${esc(x.teacher)} · ${c.stamp(x.start_at)} МСК · ${esc(x.room)}</p></div>${pill(`${x.booked_count??0} / ${x.capacity} мест`)}</article>`).join('')}</div>`:c.empty('calendar','Слотов пока нет','Создайте первую консультацию.'))+pager(d.slots,'staffslots','Опубликованные консультации')+info('Пульт не открывает личные оценки, расписание или финансы студентов. Сотрудник видит только данные, необходимые для обращений и услуг.');
   }
-  const renders={courses,assignments,exams,consultations,messages:d=>messages(d),staffmessages:d=>messages(d,true),events,finance,contacts,knowledge,settings,staffdesk};
+  const renders={assignments,exams,consultations,messages:d=>messages(d),staffmessages:d=>messages(d,true),events,finance,contacts,knowledge,settings,staffdesk};
 
-  async function openCourse(id){
-    await detailLoading('Учебный курс',async()=>{
-      const course=await c.api('learning/courses/'+id);
-      return c.modalHead(course.subject,'Материалы и личный прогресс')+`<p class="campus-muted">${esc(course.teacher)} · ${Number(course.credits)} зачётных единиц</p>${paragraph(course.description)}<div class="campus-button-row"><a class="mini-link" href="/app/materials?q=${encodeURIComponent(course.subject)}" data-app-link>Материалы дисциплины</a>${contextLink('assignments','Работы по дисциплине',{subject:course.subject})}${contextLink('consultations','Консультации по дисциплине',{subject:course.subject})}</div><div class="campus-modules">${(course.modules||[]).map(x=>`<details class="card"><summary><b>${esc(x.title)}</b>${pill(x.is_done?'Изучено':'К изучению',x.is_done?'success':'')}</summary><div>${paragraph(x.content)}<label class="campus-module-check"><input type="checkbox" data-c-module="${Number(x.id)}" data-course="${Number(course.id)}" ${x.is_done?'checked':''} /> Отметить модуль изученным</label></div></details>`).join('')}</div>${info('Отметки изучения видны только вам и не влияют на оценки.')}`;
-    });
-  }
   async function detailLoading(heading,loader){
     c.modal(c.modalHead(heading,'Загружаем…')+'<p role="status">Загружаем данные…</p>',{wide:true,label:heading});const modalId=c.state.modalId;
     try{const html=await loader(modalId);if(modalId===c.state.modalId)c.modal(html,{wide:true,label:heading});}catch(error){if(!error.stale&&modalId===c.state.modalId)c.modal(c.modalHead(heading,'Не удалось открыть')+`<p role="alert">${esc(error.message)}</p>`,{label:heading});}
@@ -263,6 +247,8 @@
         ${x.overdue?pill(x.allow_late?'Просрочено · поздняя сдача открыта':'Срок сдачи истёк','warning'):expiring>=0&&expiring<86400000?pill('Срок истекает сегодня','warning'):''}</p>
         ${x.description?paragraph(x.description):''}${paragraph(x.instructions)}
         ${x.criteria?fold('Критерии оценивания',paragraph(x.criteria)):''}
+        ${x.course_materials?.length?fold('Материалы дисциплины',x.course_materials.map(row=>
+          `<p><a class="school-card-link" data-app-link href="${esc(row.href)}">${esc(row.title)}</a></p>`).join('')):''}
         ${x.materials.length?fold('Дополнительные материалы',x.materials.map((href,i)=>external(href,'Материал '+(i+1))).join('')):''}
         ${x.is_team?paragraph(x.team_lead?'Ответственный за общую отправку: '+x.team_lead:'Ответственный за отправку недоступен'):''}
         ${x.status==='revision_required'&&revise?info('Нужно исправить: '+revise.comment):''}
@@ -314,7 +300,6 @@
     if(name==='service-page'){const key=el.dataset.pageKey;local.offset[key]=Math.max(0,Number(el.dataset.offset)||0);await refreshService();c.$('.page-heading h1,#page-title')?.focus({preventScroll:true});return;}
     if(name==='ticket-messages-page'){local.ticketOffsets[id]=Math.max(0,Number(el.dataset.offset)||0);return ticketModal(id);}
     if(name==='clear-context'){resetRouteContext(el.dataset.contextPage);c.replaceRouteContext();return c.updatePage();}
-    if(name==='course')return openCourse(id);
     if(name==='assignment')return assignmentModal(id);
     if(name==='assignment-start'){
       const result=await mutate(`learning/assignments/${id}/start`,{version:0},'Работа отмечена как начатая.',el);
@@ -386,9 +371,6 @@
     });
     document.addEventListener('input',e=>{
       if(e.target.dataset.cQuery){const page=e.target.dataset.cQuery;resetRouteContext(page);c.replaceRouteContext();local.query[page]=e.target.value;if(servicePages.has(page)){local.offset[page]=0;c.state.loadingId++;clearTimeout(serviceSearchTimer);const position=e.target.selectionStart;const epoch=c.state.sessionEpoch;serviceSearchTimer=setTimeout(()=>{if(page===c.state.page&&epoch===c.state.sessionEpoch)refreshService(position).catch(error=>{if(!error.stale)c.toast(error.message);});},c.searchDelay);}else refreshPreservingInput();}
-    });
-    document.addEventListener('change',async e=>{
-      const module=e.target.closest('[data-c-module]');if(module){if(c.state.pending){module.checked=!module.checked;return;}module.disabled=true;c.state.pending++;try{await c.api(`learning/courses/${Number(module.dataset.course)}/modules/${Number(module.dataset.cModule)}`,{method:'POST',body:JSON.stringify({is_done:module.checked})});c.state.pending--;c.toast('Прогресс модуля сохранён.');const row=items(c.state.data.courses).find(x=>x.id===Number(module.dataset.course));if(row){const mod=row.modules.find(x=>x.id===Number(module.dataset.cModule));if(mod)mod.is_done=module.checked;row.progress=Math.round(row.modules.filter(x=>x.is_done).length/row.modules.length*100);}const badge=module.closest('details')?.querySelector('summary .campus-pill');if(badge){badge.textContent=module.checked?'Изучено':'К изучению';badge.classList.toggle('success',module.checked);}c.drawPage();module.disabled=false;}catch(error){if(!error.stale){c.state.pending=Math.max(0,c.state.pending-1);module.checked=!module.checked;module.disabled=false;c.toast(error.message);}}return;}
     });
   }
   function reset(){clearTimeout(serviceSearchTimer);local.query={};local.filter={assignments:'pending'};local.offset={};local.scope={};local.context={};local.ticketOffsets={};local.pendingKeys={};local.catalog='documents';document.body.classList.remove('compact-campus');}

@@ -22,7 +22,7 @@ from browser_check import ROOT, start_server, stop_server
 SCREENSHOTS = ROOT / 'screenshots'
 REPORT = ROOT / 'docs' / 'verification' / 'extension-browser-report.json'
 STUDENT_PAGES = ['home', 'schedule', 'grades', 'requests', 'certificates', 'notifications', 'profile',
-                 'announcements', 'courses', 'assignments', 'exams', 'materials', 'consultations', 'messages',
+                 'announcements', 'courses', 'assignments', 'exams', 'course-materials', 'consultations', 'messages',
                  'events', 'finance', 'contacts', 'knowledge', 'settings']
 STAFF_PAGES = ['staff', 'staffdesk', 'staffmessages', 'announcement-admin', 'settings', 'profile']
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
@@ -80,6 +80,10 @@ class Acceptance:
         expect(page.locator('.concept-bar')).to_contain_text('все данные вымышлены')
 
     def visit(self, page, base, section):
+        if section == 'course-materials':
+            courses = page.request.get(base + '/api/disciplines').json()['items']
+            course = next(row for row in courses if row['mine'] and row['material_count'])
+            section = f'courses/{course["id"]}'
         page.goto(base + '/app/' + section, wait_until='networkidle')
         self.ready(page)
         assert page.url.rstrip('/').endswith('/app/' + section), f'Unexpected route: {page.url}'
@@ -161,26 +165,23 @@ class Acceptance:
     def learning_flows(self, page, base):
         def courses():
             self.visit(page, base, 'courses')
-            button = page.locator('[data-c-action="course"]').first
-            course_id = int(button.get_attribute('data-id'))
-            button.click()
+            page.locator('.discipline-catalog a').first.click()
+            page.get_by_role('navigation', name='Разделы дисциплины').get_by_role('link', name='О дисциплине').click()
             page.locator('.campus-modules details summary').first.click()
-            checkbox = page.locator('[data-c-module]').first
+            checkbox = page.locator('[data-discipline-module]').first
             expect(checkbox).to_be_visible()
-            module_id = int(checkbox.get_attribute('data-c-module'))
+            course_id = int(checkbox.get_attribute('data-course'))
+            module_id = int(checkbox.get_attribute('data-discipline-module'))
             expected = not checkbox.is_checked()
             with page.expect_response(lambda r: r.url.endswith(f'/api/learning/courses/{course_id}/modules/{module_id}') and r.request.method == 'POST') as response:
                 checkbox.set_checked(expected)
             assert response.value.status == 200, response.value.text()
             expect(checkbox).to_be_enabled()
-            page.locator('.close-btn').click()
             page.reload(wait_until='networkidle'); self.ready(page)
-            page.locator(f'[data-c-action="course"][data-id="{course_id}"]').click()
             page.locator('.campus-modules details summary').first.click()
-            expect(page.locator(f'[data-c-module="{module_id}"]')).to_be_checked(checked=expected)
-            self.geometry(page, 'course-modules-modal-390'); self.axe(page, 'course-modules-modal-390')
-            self.capture(page, 'extension-390-course-modules-modal')
-            page.locator('.close-btn').click()
+            expect(page.locator(f'[data-discipline-module="{module_id}"]')).to_be_checked(checked=expected)
+            self.geometry(page, 'course-modules-390'); self.axe(page, 'course-modules-390')
+            self.capture(page, 'extension-390-course-modules')
         self.case('Course module toggles through UI and persists after reload', page, courses)
 
         def assignments():

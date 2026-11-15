@@ -338,6 +338,10 @@ def migrate_database():
             from .schedule_migration import upgrade_calendar
             upgrade_calendar(connection)
             connection.execute(SchemaMigration.__table__.insert().values(version='0018_academic_calendar', applied_at=utc_now()))
+        if '0019_discipline_materials' not in versions:
+            from .material_migration import upgrade_materials
+            upgrade_materials(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0019_discipline_materials', applied_at=utc_now()))
 
 
 def seed_demo(session=None):
@@ -431,9 +435,9 @@ def initialize_database():
                 from .certificates import seed_certificate_enrollment
                 from .announcements_db import seed_announcements
                 from .schedule_migration import seed_published_demo_window
+                seed_university(db)
                 seed_learning(db)
                 seed_services(db)
-                seed_university(db)
                 seed_workspace(db)
                 seed_published_demo_window(db)
                 seed_units(db)

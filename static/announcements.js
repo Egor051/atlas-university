@@ -14,7 +14,7 @@
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const pages = [
     {id: 'announcements', label: 'Объявления', icon: 'megaphone', hint: 'Публикации учебного офиса',
-      roles: ['student', 'staff', 'teacher', 'scheduler', 'admin', 'union', 'vuc']},
+      roles: ['student', 'staff', 'teacher', 'scheduler', 'admin', 'coordinator', 'department', 'union', 'vuc']},
     {id: 'announcement-admin', label: 'Управление объявлениями', icon: 'megaphone', hint: 'Черновики и публикации учебного офиса', roles: ['staff']},
   ];
   let c;
@@ -204,6 +204,7 @@
     if (epoch !== c.state.sessionEpoch || loading !== c.state.loadingId || !trigger.isConnected) return;
     const heading = row.id ? 'Редактировать объявление' : 'Создать объявление';
     const groupChoices = {'': 'Выберите группу', ...Object.fromEntries(groups.items.map(item => [item.id, item.name]))};
+    const disciplineChoices = {'': 'Общее объявление', ...Object.fromEntries(groups.disciplines.map(item => [item.id, item.name]))};
     const audienceDisabled = row.published_at ? ' disabled' : '';
     c.modal(c.modalHead(heading, '') + `<form class="announcement-editor" data-announcement-editor data-c-form="announcement" data-id="${row.id || ''}" data-version="${row.version || ''}">
       <div class="field"><label for="announcement-title">Заголовок</label><input id="announcement-title" name="title" required minlength="5" maxlength="180" value="${esc(row.title || '')}" autofocus></div>
@@ -214,6 +215,7 @@
         ${filter('priority', 'Приоритет', priorityLabels, row.priority || 'normal')}
         <label class="announcement-field"><span>Аудитория</span><select name="audience"${audienceDisabled}>${options(audiences, row.audience || 'students')}</select></label>
         <label class="announcement-field"${row.audience === 'group' ? '' : ' hidden'}><span>Учебная группа</span><select name="group_id"${audienceDisabled}>${options(groupChoices, row.group_id)}</select></label>
+        ${filter('discipline_id', 'Дисциплина', disciplineChoices, row.discipline_id || '')}
         ${row.id ? filter('status', 'Статус', {...statuses, draft: row.published_at ? 'Снять с публикации' : 'Черновик'}, row.status) : ''}
       </div>
       ${row.published_at ? '<p class="announcement-meta">Аудитория сохраняется после первой публикации.</p>' : ''}
@@ -246,6 +248,7 @@
       body: controls.body.value.trim(), category: controls.category.value,
       priority: controls.priority.value, audience: controls.audience.value, pinned: controls.pinned.checked,
       group_id: controls.audience.value === 'group' ? Number(controls.group_id.value) || null : null,
+      discipline_id: Number(controls.discipline_id.value) || null,
       status: controls.status?.value || submitter?.value || 'draft'};
     if (form.dataset.id) values.version = Number(form.dataset.version);
     return values;

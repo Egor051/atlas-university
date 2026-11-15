@@ -1,6 +1,6 @@
 """Validation for the existing student and teacher assignment endpoints."""
 from datetime import date, datetime
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import Field, StrictBool, StrictInt, field_validator, model_validator
 
@@ -26,6 +26,7 @@ class WorkBody(StrictBody):
     max_attempts: int | None = Field(default=None, strict=True, ge=1, le=50)
     allow_late: StrictBool = True
     materials: list[str] = Field(default_factory=list, max_length=5)
+    material_ids: list[Annotated[int, Field(strict=True, ge=1, le=2147483647)]] = Field(default_factory=list, max_length=5)
     recipient_ids: list[StrictInt] = Field(default_factory=list, max_length=200)
     team_lead_id: int | None = Field(default=None, strict=True, ge=1)
     award_mode: Literal['all', 'lead'] = 'all'

@@ -69,7 +69,8 @@ def student_item(data, subgroup=None):
     return dict(
         id=data['id'] if legacy else 1_000_000_000 + data['id'], uid=occurrence_key(data),
         date=data['day'], end_date=data['day'], start=data['start'], end=data['end'],
-        title=data.get('title') or data['discipline'], subject=data['discipline'], kind=KIND[code], type=code,
+        title=data.get('title') or data['discipline'], subject=data['discipline'], discipline_id=data.get('discipline_id'),
+        kind=KIND[code], type=code,
         is_lesson=code in LESSON_KINDS, room=data['room'], teacher=data['teacher'], group=data['group'],
         subgroup=data.get('subgroup') or (subgroup if legacy else None), individual=data.get('student_id') is not None and not legacy,
         format=data.get('delivery') or ('online' if data['room'].casefold() == 'онлайн' else 'room'),

@@ -2,15 +2,13 @@
 (() => {
   'use strict';
   const everyone=['student','staff','teacher'];
-  const publishers=['staff','teacher'];
+  const disciplines=window.ATLASDisciplines;
   const pages=[
-    {id:'university',label:'Университет',icon:'pin',hint:'Институты, кафедры и преподаватели',roles:everyone},
-    {id:'materials',label:'Учебные материалы',icon:'book',hint:'Лекции, презентации, задания и скачивание',roles:everyone},
-    {id:'materials-admin',label:'Публикации',icon:'file',hint:'Добавить, изменить или удалить материал',roles:publishers},
+    {id:'university',label:'Университет',icon:'pin',hint:'Институты, кафедры и преподаватели',
+      roles:[...everyone,'coordinator','department','admin','scheduler']},
     {id:'direct',label:'Личные сообщения',icon:'send',hint:'Переписка с преподавателями и учебным офисом',roles:everyone},
     {id:'teacher',label:'Кабинет преподавателя',icon:'home',hint:'Занятия, консультации, публикации и диалоги',roles:['teacher']},
   ];
-  const kinds=['lecture','guide','slides','practice','lab','extra'];
   const directoryKinds=[['faculty','Институты и факультеты'],['department','Кафедры'],['teacher','Преподаватели']];
   const weekdays=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
   const roleLabels={student:'Студент',teacher:'Преподаватель',staff:'Учебный офис'};
@@ -37,7 +35,7 @@
   function validParts(page,parts){
     if(!parts.length)return false;
     if(page==='university')return parts.length<=3&&parts.every(part=>/^[a-z0-9-]{1,60}$/.test(part));
-    return ['materials','direct'].includes(page)&&parts.length===1&&id(parts[0]);
+    return (page==='direct')&&parts.length===1&&id(parts[0]);
   }
 
   function cleanQuery(page,query,parts){
@@ -47,13 +45,6 @@
         ...(q?{q}:{}),
         ...(/^[a-z0-9-]{1,60}$/.test(query.faculty||'')?{faculty:query.faculty}:{}),
         ...(directoryKinds.some(([value])=>value===query.kind)?{kind:query.kind}:{}),
-      };
-    }
-    if((page==='materials'&&!parts.length)||page==='materials-admin'){
-      return {
-        ...(q?{q}:{}),
-        ...(kinds.includes(query.kind)?{kind:query.kind}:{}),
-        ...Object.fromEntries(['discipline','teacher','offset'].filter(key=>id(query[key])).map(key=>[key,Number(query[key])])),
       };
     }
     if(page==='direct'){
@@ -70,11 +61,10 @@
 
   async function load(page,parts,query){
     if(page==='university')return c.api(path(['university',...parts].join('/'),query));
-    if(page==='teacher')return c.api('university/me');
-    if(page==='materials')return c.api(path(['materials',...parts].join('/'),query));
-    if(page==='materials-admin'){
-      const [catalog,assignments]=await Promise.all([c.api(path('materials',{...query,mine:true})),c.api('materials/assignments')]);
-      return {...catalog,assignments:assignments.items};
+    if(page==='teacher'){
+      const [profile,work,calendar,consultations,direct]=await Promise.all([c.api('university/me'),c.api('teaching/workbench'),
+        c.api('teaching/schedule'),c.api('teaching/consultations'),c.api('direct/unread')]);
+      return {...profile,...work,calendar:calendar.items,consultations:consultations.items,direct};
     }
     const [inbox,contacts,thread]=await Promise.all([
       c.api(path('direct/dialogs',{q:query.q,offset:query.offset})),
@@ -124,7 +114,7 @@
 
   function disciplineList(rows){
     if(!rows.length)return '<p class="compact-empty">Дисциплины пока не добавлены.</p>';
-    return `<ul class="school-list">${rows.map(row=>`<li><strong>${esc(row.title)}</strong><p>${esc(row.description)}</p>${appLink(path('/app/materials',{discipline:row.id}),'Материалы дисциплины')}</li>`).join('')}</ul>`;
+    return `<ul class="school-list">${rows.map(row=>`<li><strong>${esc(row.title)}</strong><p>${esc(row.description)}</p>${appLink(disciplines.coursePath(row.id),'Материалы дисциплины')}</li>`).join('')}</ul>`;
   }
 
   function teachingSchedule(rows,kind){
@@ -133,18 +123,58 @@
     return `<ul class="school-list school-schedule">${matching.map(row=>`<li><strong>${weekdays[row.weekday]} · ${esc(row.starts)}–${esc(row.ends)}</strong><p>${esc(row.discipline)} · ${esc(row.room)}</p></li>`).join('')}</ul>`;
   }
 
-  function profile(data,own=false){
-    const actions=own?appLink('/app/teaching','Группы и дисциплины','primary-button')+appLink('/app/materials-admin','Публикации','outline-button')+appLink('/app/direct','Личные сообщения','outline-button')+appLink('/app/notifications','Уведомления','outline-button')+appLink('/app/university','Каталог университета','outline-button')
-      :data.can_message?appLink(path('/app/direct',{recipient:data.recipient_id}),'Написать преподавателю','primary-button')+
+  function recentMaterials(data){
+    if(!data.materials.length)return '<p class="compact-empty">У преподавателя пока нет публикаций.</p>';
+    return `<ul class="school-list school-material-preview">${data.materials.map(row=>`<li><h3>${appLink(disciplines.materialPath(row.id),row.title,'school-card-link')}</h3>
+      <p class="school-meta">${esc(row.kind_label)} · ${esc(row.discipline.title)} · ${c.dateFmt(row.updated_at,{day:'numeric',month:'short',year:'numeric'})}</p><p>${esc(row.description)}</p></li>`).join('')}</ul>
+      <div class="school-section-footer">${appLink(path('/app/courses',{teacher:data.id}),'Все материалы преподавателя')}</div>`;
+  }
+
+  function profile(data){
+    const actions=data.can_message?appLink(path('/app/direct',{recipient:data.recipient_id}),'Написать преподавателю','primary-button')+
         appLink(path('/app/consultations',{subject:data.disciplines[0]?.title}),'Запись на консультацию','outline-button'):'';
-    const materials=data.materials.length?`<ul class="school-list school-material-preview">${data.materials.map(row=>`<li><h3>${appLink('/app/materials/'+row.id,row.title,'school-card-link')}</h3><p class="school-meta">${esc(row.kind_label)} · ${esc(row.discipline.title)} · ${c.dateFmt(row.created_at,{day:'numeric',month:'short',year:'numeric'})}</p><p>${esc(row.description)}</p></li>`).join('')}</ul>
-      <div class="school-section-footer">${appLink(path('/app/materials',{teacher:data.id}),'Все материалы преподавателя')}</div>`
-      :'<p class="compact-empty">У преподавателя пока нет публикаций.</p>';
-    return title(own?'Кабинет преподавателя':data.title,[own?data.title:'',data.position,data.department].filter(Boolean).join(' · '),actions)+
+    return title(data.title,[data.position,data.department].filter(Boolean).join(' · '),actions)+
       `<div class="school-detail-grid">
         ${section('Академическая информация',`<p>${esc(data.description)}</p>`)}${section('Дисциплины',disciplineList(data.disciplines))}
-        ${section('Учебные материалы',materials)}
+        ${section('Учебные материалы',recentMaterials(data))}
         <div class="school-stack">${section('Занятия · МСК',teachingSchedule(data.schedule,'lesson'))}${section('Консультации · МСК',teachingSchedule(data.schedule,'consultation'))}</div>
+      </div>`;
+  }
+
+  function teacherWorkbench(data){
+    const groups=data.groups.map(row=>{
+      const base='/app/teaching/'+Number(row.id);
+      return `<li><strong>${appLink(base,row.discipline+' · '+row.group,'school-card-link')}</strong>
+        <div class="school-actions">${appLink(base,'Студенты')}${appLink(base+'?tab=works','Задания')}
+          ${appLink(base+'?tab=grades','Ведомость')}${appLink(base+'?tab=attendance','Посещаемость')}
+          ${appLink(disciplines.coursePath(row.discipline_id),'Материалы дисциплины')}</div></li>`;
+    });
+    const pending=data.pending.map(row=>`<li><strong>${appLink('/app/teaching/'+row.load_id+'/works/'+row.work_id,row.title,'school-card-link')}</strong>
+      <p>${esc(row.discipline)} · ${esc(row.group)} · ${Number(row.count)} на проверке</p></li>`);
+    const lessons=data.calendar.filter(row=>row.day>=c.today()).slice(0,5).map(row=>`<li><strong>${esc(row.title||row.discipline)}</strong>
+      <p>${esc(c.dateFmt(row.day)+' · '+row.start+'–'+row.end+' МСК · '+row.room+' · '+row.group)}</p></li>`);
+    const consultations=data.consultations.filter(row=>!row.completed&&Date.parse(row.starts)>Date.now())
+      .sort((a,b)=>Date.parse(a.starts)-Date.parse(b.starts)).slice(0,5)
+      .map(row=>`<li><strong>${esc(row.subject)}</strong><p>${esc(c.stamp(row.starts)+' МСК · '+row.room)}</p></li>`);
+    const rows=(items,message)=>items.length?`<ul class="school-list">${items.join('')}</ul>`:`<p class="compact-empty">${message}</p>`;
+    const actions=appLink('/app/materials-admin','Публикации','primary-button')+
+      appLink('/app/teaching','Группы и дисциплины','outline-button')+appLink(data.href,'Профиль преподавателя','outline-button');
+    return title('Кабинет преподавателя',[data.title,data.position,data.department].filter(Boolean).join(' · '),actions)+
+      `<div class="school-detail-grid teacher-workbench">
+        <div class="school-stack">
+          ${section('Работы на проверке',rows(pending,'Ожидающих проверки работ нет.'))}
+          ${section('Учебные группы',rows(groups,'Учебные группы пока не назначены.'))}
+          ${section('Последние публикации',recentMaterials(data))}
+        </div>
+        <div class="school-stack">
+          ${section('Обращения и документы',`<p>Непрочитанных сообщений: ${Number(data.direct.unread_count)}.</p>
+            ${appLink('/app/direct','Открыть личные сообщения')}`)}
+          ${section('Занятия на этой неделе',rows(lessons,'На этой неделе занятий больше нет.')+
+            appLink('/app/teach-schedule','Расписание преподавателя'))}
+          ${section('Предстоящие консультации',rows(consultations,'Предстоящих консультаций пока нет.')+
+            appLink('/app/teach-consultations','Управлять консультациями'))}
+          ${section('Дисциплины',disciplineList(data.disciplines))}
+        </div>
       </div>`;
   }
 
@@ -163,56 +193,13 @@
         select('kind','Показывать',[['','Всё'],...directoryKinds],q.kind),Object.keys(q).length>0)+directoryCards(data.items);
   }
 
-  function fileLink(row){
-    return `<a class="outline-button" href="${esc(row.file_url)}" download>${icon('download')} Скачать HTML</a>`;
-  }
-
-  function materialCards(items){
-    return `<div class="campus-grid">${items.map(row=>`<article class="card campus-tile school-tile"><p class="school-meta">${esc(row.kind_label)} · ${c.dateFmt(row.created_at,{day:'numeric',month:'short',year:'numeric'})}</p><h2>${appLink('/app/materials/'+row.id,row.title,'school-card-link')}</h2><p>${esc(row.discipline.title)} · ${esc(row.author.title)}</p><p>${esc(row.description)}</p></article>`).join('')}</div>`;
-  }
-
-  function materialFilters(page,data){
-    const query=c.state.routeContext;
-    return searchForm(page,input('q','Название, дисциплина или автор',query.q,{type:'search',query:true})+
-      select('kind','Тип материала',[['','Все типы'],...Object.entries(data.kinds)],query.kind)+
-      select('discipline','Дисциплина',[['','Все дисциплины'],...data.disciplines.map(row=>[row.id,row.title])],query.discipline)+
-      (query.teacher?`<input type="hidden" name="teacher" value="${Number(query.teacher)}">`:''),Object.keys(query).length>0);
-  }
-
-  function library(data){
-    if(!data.sections){
-      return title('Учебные материалы','Лекции, презентации и задания по дисциплинам.',
-        isStudent()?'':appLink('/app/materials-admin','Публикации','outline-button'))+
-        materialFilters('materials',data)+(data.items.length?materialCards(data.items):empty('Материалы не найдены','Измените поиск или фильтры.'))+pager('materials',data);
-    }
-    const slides=data.kind==='slides';
-    const meta=`<ul class="school-material-meta" aria-label="Сведения о материале">
-      <li>${esc(data.kind_label)}</li><li>${esc(data.discipline.title)}</li>
-      <li><time datetime="${esc(data.created_at)}">${c.dateFmt(data.created_at,{day:'numeric',month:'long',year:'numeric'})}</time></li>
-      <li>${appLink(data.author.href,data.author.title,'school-card-link')}</li></ul>`;
-    return title(data.title,data.description,fileLink(data)+(data.can_edit?editButton(data,'edit','Изменить'):''),meta)+
-      `${slides?`<nav class="school-slide-nav" aria-label="Слайды">${data.sections.map((row,i)=>`<button type="button" class="mini-link" data-school-slide="${i}">${esc(row.heading)}</button>`).join('')}</nav>`:''}
-      <article class="card card-pad school-reader ${slides?'school-slides':''}">${data.sections.map((row,i)=>`<section id="material-part-${i}" tabindex="-1">${row.heading?`<h2>${esc(row.heading)}</h2>`:''}${row.paragraphs.map(text=>`<p>${esc(text)}</p>`).join('')}</section>`).join('')}</article>`;
-  }
-
-  function editButton(row,action,label){
-    return `<button type="button" class="outline-button" data-school-material="${action}" data-id="${Number(row.id)}" aria-label="${esc(label+': '+row.title)}">${esc(label)}</button>`;
-  }
-
-  function manage(data){
-    return title('Публикации',c.state.user.role==='teacher'?'Материалы ваших дисциплин.':'Учебные материалы по всем дисциплинам.',
-      data.assignments.length?`<button type="button" class="primary-button" data-school-material="new">${icon('plus')} Опубликовать материал</button>`:'')+
-      materialFilters('materials-admin',data)+
-      (data.items.length?`<div class="compact-list">${data.items.map(row=>`<article class="card compact-row"><div class="row-copy"><h2>${appLink('/app/materials/'+row.id,row.title,'school-card-link')}</h2><p>${esc(row.discipline.title)} · ${esc(row.kind_label)}</p></div><div class="school-actions">${editButton(row,'edit','Изменить')}${editButton(row,'delete','Удалить')}</div></article>`).join('')}</div>`
-        :empty('Материалов по фильтру нет',data.assignments.length?'Измените фильтр или опубликуйте материал.':'Для публикации нужна назначенная дисциплина.'))+pager('materials-admin',data);
-  }
-
-  function compose(target,type){
+  function compose(target,type,canAttach){
     const key=type+':'+target;
     return `<form class="school-compose" data-school-form="message" data-target="${target}" data-mode="${type}">
-      <div class="field"><label class="sr-only" for="direct-message">Сообщение</label><textarea id="direct-message" name="message" placeholder="Напишите сообщение" maxlength="3000" rows="2" required>${esc(drafts.get(key)||'')}</textarea></div>
+      <div class="field"><label class="sr-only" for="direct-message">Сообщение</label><textarea id="direct-message" name="message" placeholder="Напишите сообщение" maxlength="3000" rows="2" ${canAttach?'':'required'}>${esc(drafts.get(key)||'')}</textarea></div>
       <div class="inline-error" role="alert" data-school-error hidden></div>
-      <button type="submit" class="primary-button">${icon('send')} Отправить</button></form>`;
+      <button type="submit" class="primary-button">${icon('send')} Отправить</button>
+      ${canAttach?`<details class="direct-attachment"><summary>Приложить документ</summary>${disciplines.fileInput('file','Файл сообщения')}</details>`:''}</form>`;
   }
 
   const inboxQuery=()=>{
@@ -316,7 +303,9 @@
       const heading=day!==previous?`<li class="messenger-day"><time datetime="${esc(row.created_at)}">${day}</time></li>`:'';
       previous=day;
       return `${heading}<li class="messenger-bubble ${row.mine?'mine':'received'}" data-message-id="${Number(row.id)}"><span class="sr-only">${esc(row.mine?'Вы':data.person.name)}</span>
-        <p>${esc(row.body)}</p><footer><time datetime="${esc(row.created_at)}">${timeFormat.format(when)} МСК</time>${row.mine?`<span>${row.is_read?'Прочитано':'Отправлено'}</span>`:''}</footer></li>`;
+        ${row.body?`<p>${esc(row.body)}</p>`:''}
+        ${row.file?`<a download class="school-card-link" href="${esc(row.file.url)}">${esc(row.file.name)}</a>`:''}
+        <footer><time datetime="${esc(row.created_at)}">${timeFormat.format(when)} МСК</time>${row.mine?`<span>${row.is_read?'Прочитано':'Отправлено'}</span>`:''}</footer></li>`;
     });
     return `<ol class="messenger-messages school-conversation" aria-label="Сообщения">${rows.join('')}</ol>`;
   }
@@ -333,114 +322,69 @@
       const history=data.mode==='dialog'?`<div class="messenger-history" tabindex="0" aria-label="История переписки" data-messenger-history>
         ${data.older_before?'<button type="button" class="mini-link messenger-older" data-messenger-older>Более ранние сообщения</button>':''}
         <div data-messenger-messages>${messages(data)}</div></div>`:'<div class="messenger-placeholder compact-empty">Здесь начнётся переписка.</div>';
-      const footer=data.mode==='compose'?compose(other.id,'recipient'):c.state.routeContext.before?appLink(path('/app/direct/'+data.id,query),'К последним сообщениям','outline-button','data-messenger-link')+compose(data.id,'dialog'):compose(data.id,'dialog');
+      const canAttach=other.role==='teacher'||c.state.user.role==='teacher';
+      const footer=data.mode==='compose'?compose(other.id,'recipient',canAttach):c.state.routeContext.before?
+        appLink(path('/app/direct/'+data.id,query),'К последним сообщениям','outline-button','data-messenger-link')+compose(data.id,'dialog',canAttach):
+        compose(data.id,'dialog',canAttach);
       panel=`<section class="messenger-thread" aria-labelledby="messenger-name"><header class="messenger-header">${back}<span class="messenger-avatar" aria-hidden="true">${esc(other.initials)}</span>
         <div><h2 id="messenger-name">${esc(other.name)}</h2><p>${esc(other.label||roleLabels[other.role]||'')}</p></div></header>${history}${footer}</section>`;
     }
     return title('Личные сообщения')+`<div class="card messenger ${data.mode==='list'?'messenger-list-view':'messenger-thread-view'}">${sidebar}${panel}</div><p class="sr-only" role="status" data-messenger-update></p>`;
   }
 
-  const renderers={university:directory,teacher:data=>profile(data,true),materials:library,'materials-admin':manage,direct};
-
-  async function materialModal(button){
-    const action=button.dataset.schoolMaterial, materialId=Number(button.dataset.id);
-    const epoch=c.state.sessionEpoch, loadId=c.state.loadingId, modalId=c.state.modalId;
-    button.disabled=true;
-    try{
-      const [row,options]=await Promise.all([
-        materialId?c.api('materials/'+materialId):Promise.resolve(null),
-        action!=='delete'?c.api('materials/assignments'):Promise.resolve(null),
-      ]);
-      if(epoch!==c.state.sessionEpoch||loadId!==c.state.loadingId||modalId!==c.state.modalId||!button.isConnected)return;
-      if(action==='delete'){
-        c.modal(c.modalHead('Удалить материал',row.title)+
-          `<form data-school-form="delete" data-id="${row.id}" data-version="${row.version}">
-          <p>Материал исчезнет из каталога, профиля преподавателя и по прямой ссылке.</p>
-          <div class="inline-error" data-school-error role="alert" hidden></div><div class="modal-actions">
-          <button type="button" class="outline-button" data-action="close-modal">Отмена</button><button type="submit" class="danger-button">Удалить</button></div></form>`,{label:'Удалить материал'});
-        return;
-      }
-      const name=row?'Изменить материал':'Опубликовать материал';
-      const assignments=options.items.map(item=>[item.id,item.discipline+' · '+item.author]);
-      c.modal(c.modalHead(name,'Файл для просмотра и скачивания будет создан из текста.')+
-        `<form data-school-form="material" data-id="${row?.id||''}" data-version="${row?.version||''}">
-        ${select('assignment_id','Дисциплина и автор',assignments,row?.assignment_id??assignments[0]?.[0],true)}
-        ${select('kind','Тип материала',Object.entries(options.kinds),row?.kind??'lecture',true)}
-        ${input('title','Название',row?.title,{max:180,required:true})}
-        <div class="field"><label for="school-description">Описание</label><textarea id="school-description" name="description" rows="2" minlength="10" maxlength="600" required>${esc(row?.description||'')}</textarea></div>
-        <div class="field"><label for="school-file">Загрузить текст из файла</label><input id="school-file" type="file" accept=".txt,.md" aria-describedby="school-file-hint"><p class="hint" id="school-file-hint">TXT или MD в UTF-8. Текст появится в редакторе.</p></div>
-        <div class="field"><label for="school-body">Текст материала</label><textarea id="school-body" name="body" rows="8" minlength="20" maxlength="6000" required aria-describedby="school-body-hint">${esc(row?.body||'')}</textarea><p class="hint" id="school-body-hint">Начните заголовок с «## » и разделяйте абзацы пустой строкой. Для презентации добавьте минимум два слайда с заголовками и текстом.</p></div>
-        <div class="inline-error" data-school-error role="alert" hidden></div><div class="modal-actions">
-        <button type="button" class="outline-button" data-action="close-modal">Отмена</button><button class="primary-button" type="submit">${row?'Сохранить изменения':'Опубликовать'}</button></div></form>`,{label:name});
-    }catch(error){if(!error.stale)c.toast(error.message);}
-    finally{button.disabled=false;}
-  }
-
-  function mutation(form){
-    const type=form.dataset.schoolForm, values=Object.fromEntries(new FormData(form));
-    if(type==='delete')return {endpoint:`materials/${Number(form.dataset.id)}?version=${Number(form.dataset.version)}`,method:'DELETE'};
-    if(type==='material'){
-      values.assignment_id=Number(values.assignment_id);
-      if(form.dataset.id)return {endpoint:'materials/'+Number(form.dataset.id),method:'PATCH',
-        body:JSON.stringify({...values,version:Number(form.dataset.version)})};
-      return {endpoint:'materials',method:'POST',body:JSON.stringify(values)};
-    }
-    const target=Number(form.dataset.target), message=values.message.trim();
-    return form.dataset.mode==='recipient'?{endpoint:'direct/dialogs',method:'POST',body:JSON.stringify({recipient_id:target,message})}
-      :{endpoint:`direct/dialogs/${target}/messages`,method:'POST',body:JSON.stringify({message})};
-  }
+  const renderers={university:directory,teacher:teacherWorkbench,direct};
 
   async function submit(form){
     if(c.state.pending)return;
-    const epoch=c.state.sessionEpoch, type=form.dataset.schoolForm, errorBox=c.$('[data-school-error]',form);
-    const {endpoint,method,body}=mutation(form);
-    let headers;
-    if(method==='POST'){
-      const saved=receipts.get(endpoint);
-      const key=saved?.body===body?saved.key:crypto.randomUUID();
-      receipts.set(endpoint,{body,key});
-      headers={'Idempotency-Key':key};
-    }
-    c.state.pending++;errorBox.hidden=true;
-    const controls=Array.from(form.elements).filter(control=>type!=='message'||control.type==='submit');
-    const messageInput=type==='message'?form.elements.message:null;
-    const inCurrentThread=messageInput&&form.dataset.mode==='dialog'&&c.state.routeParts[0]===form.dataset.target&&!c.state.routeContext.before;
-    const submittedText=messageInput?.value;
+    const epoch=c.state.sessionEpoch, errorBox=c.$('[data-school-error]',form);
+    const target=Number(form.dataset.target), starting=form.dataset.mode==='recipient';
+    const endpoint=starting?'direct/dialogs':`direct/dialogs/${target}/messages`;
+    const messageInput=form.elements.message, fileInput=form.elements.file;
+    const submittedText=messageInput.value, file=fileInput?.files[0];
+    const inCurrentThread=!starting&&c.state.routeParts[0]===form.dataset.target&&!c.state.routeContext.before;
+    const controls=[c.$('button[type=submit]',form),fileInput].filter(Boolean);
+    c.state.pending++;
+    errorBox.hidden=true;
     if(inCurrentThread)messageInput.focus({preventScroll:true});
-    else if(messageInput)messageInput.readOnly=true;
+    else messageInput.readOnly=true;
     controls.forEach(control=>{control.disabled=true;});
     let result;
-    try{result=await c.api(endpoint,{method,body,headers});}
-    catch(error){
+    try{
+      const attachment=await disciplines.readUpload(file);
+      const message=submittedText.trim();
+      if(!message&&!attachment)throw new Error('Напишите сообщение или приложите документ.');
+      if(epoch!==c.state.sessionEpoch||!form.isConnected)return;
+      const body=JSON.stringify({message,file:attachment,...(starting?{recipient_id:target}:{})});
+      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(body));
+      const hash=Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('');
+      if(epoch!==c.state.sessionEpoch||!form.isConnected)return;
+      const saved=receipts.get(endpoint), key=saved?.hash===hash?saved.key:crypto.randomUUID();
+      receipts.set(endpoint,{hash,key});
+      result=await c.api(endpoint,{method:'POST',body,headers:{'Idempotency-Key':key}});
+    }catch(error){
       if(!error.stale&&form.isConnected){errorBox.hidden=false;errorBox.textContent=error.message;}
-      if(!error.stale&&epoch===c.state.sessionEpoch){controls.forEach(control=>{control.disabled=false;});c.showFieldErrors(error,form);}
     }finally{
       if(epoch===c.state.sessionEpoch){
         c.state.pending=Math.max(0,c.state.pending-1);
         controls.forEach(control=>{control.disabled=false;});
-        if(messageInput&&!inCurrentThread)messageInput.readOnly=false;
+        if(!inCurrentThread)messageInput.readOnly=false;
       }
     }
     if(!result||epoch!==c.state.sessionEpoch)return;
     receipts.delete(endpoint);
-    if(type==='message'){
-      const draftKey=form.dataset.mode+':'+form.dataset.target;
-      if(!inCurrentThread||drafts.get(draftKey)===submittedText)drafts.delete(draftKey);
-      c.toast('Сообщение отправлено.');
-      if(!form.isConnected||c.state.page!=='direct')return;
-      if(inCurrentThread){
-        if(messageInput.value===submittedText)messageInput.value='';
-        await pollConversation({afterSend:true});
-        return;
-      }
-      const dialogId=String(result.dialog_id), before=c.state.routeContext.before;
-      await c.route('direct',{parts:[dialogId],context:inboxQuery(),replace:form.dataset.mode==='recipient'||Boolean(before)});
-      if(epoch===c.state.sessionEpoch&&c.state.page==='direct'&&c.state.routeParts[0]===dialogId)c.$('#direct-message')?.focus({preventScroll:true});
+    const draftKey=form.dataset.mode+':'+form.dataset.target;
+    if(!inCurrentThread||drafts.get(draftKey)===submittedText)drafts.delete(draftKey);
+    c.toast('Сообщение отправлено.');
+    if(!form.isConnected||c.state.page!=='direct')return;
+    if(inCurrentThread){
+      if(messageInput.value===submittedText)messageInput.value='';
+      if(fileInput){fileInput.value='';fileInput.closest('details').open=false;}
+      await pollConversation({afterSend:true});
       return;
     }
-    c.closeModal({force:true});
-    c.toast(type==='delete'?'Материал удалён.':method==='POST'?'Материал опубликован.':'Изменения сохранены.');
-    await c.updatePage({quiet:true});
+    const dialogId=String(result.dialog_id), before=c.state.routeContext.before;
+    await c.route('direct',{parts:[dialogId],context:inboxQuery(),replace:starting||Boolean(before)});
+    if(epoch===c.state.sessionEpoch&&c.state.page==='direct'&&c.state.routeParts[0]===dialogId)c.$('#direct-message')?.focus({preventScroll:true});
   }
 
   function unreadBadge(dot=false){
@@ -555,13 +499,6 @@
     document.addEventListener('click',event=>{
       const older=event.target.closest('[data-messenger-older]');
       if(older){olderMessages(older);return;}
-      const material=event.target.closest('[data-school-material]');
-      if(material){if(!c.state.pending)materialModal(material);return;}
-      const slide=event.target.closest('[data-school-slide]');
-      if(slide){
-        const section=c.$('#material-part-'+Number(slide.dataset.schoolSlide));
-        section?.focus();
-      }
     });
     document.addEventListener('submit',event=>{
       const form=event.target;
@@ -589,25 +526,7 @@
         return;
       }
       if(!form?.dataset.schoolForm)return;
-      if(form.dataset.schoolForm==='message')drafts.set(form.dataset.mode+':'+form.dataset.target,input.value);
-      if(form.dataset.schoolForm==='material')form.dataset.dirty='true';
-    });
-    document.addEventListener('change',async event=>{
-      const form=event.target.closest('form[data-school-form="material"]');
-      if(form)form.dataset.dirty='true';
-      if(!form||event.target.id!=='school-file'||!event.target.files[0])return;
-      const file=event.target.files[0], epoch=c.state.sessionEpoch;
-      const error=c.$('[data-school-error]',form);
-      try{
-        if(file.size>24000||!/\.(?:txt|md)$/i.test(file.name))throw new Error('Выберите файл TXT или MD до 24 КБ.');
-        const body=new TextDecoder('utf-8',{fatal:true}).decode(await file.arrayBuffer()).trim();
-        if(body.length>6000||body.length<20)throw new Error('В файле должно быть от 20 до 6000 символов.');
-        if(epoch===c.state.sessionEpoch&&form.isConnected){
-          const field=c.$('#school-body',form);field.value=body;field.focus();error.hidden=true;
-        }
-      }catch(e){
-        if(form.isConnected){error.hidden=false;error.textContent=e instanceof TypeError?'Сохраните файл в UTF-8.':e.message;}
-      }
+      if(form.dataset.schoolForm==='message'&&input.name==='message')drafts.set(form.dataset.mode+':'+form.dataset.target,input.value);
     });
   }
 

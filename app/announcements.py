@@ -11,6 +11,7 @@ from .announcements_db import Announcement
 from .db import User, utc_now
 from .main import StrictBody, date_iso, get_db, require_same_origin, require_staff, require_user, text_search
 from .services import begin_idempotent, commit_idempotent
+from .university_db import Discipline
 from .workspace import event_payload, notify, recorded
 from .workspace_db import AcademicGroup, GroupMember, OperationEvent
 
@@ -31,6 +32,7 @@ class AnnouncementBody(StrictBody):
     priority: Priority = 'normal'
     audience: Audience = 'students'
     group_id: int | None = Field(default=None, strict=True, ge=1, le=2147483647)
+    discipline_id: int | None = Field(default=None, strict=True, ge=1, le=2147483647)
     pinned: StrictBool = False
     status: Status = 'published'
 
@@ -62,6 +64,7 @@ def audience_scope(user):
 def payload(row, *, excerpt=False):
     result = dict(id=row.id, title=row.title, category=row.category, priority=row.priority,
                   audience=row.audience, group_id=row.group_id, group=row.group.code if row.group else None,
+                  discipline_id=row.discipline_id,
                   status=row.status, pinned=row.pinned, author=row.author.full_name, unit='Учебный офис',
                   created_at=date_iso(row.created_at), updated_at=date_iso(row.updated_at),
                   published_at=date_iso(row.published_at), version=row.version, summary=row.summary)
@@ -100,9 +103,11 @@ def listing(db, conditions, *, category, priority, q, sort, offset, limit, staff
                 offset=offset, limit=limit, more=len(rows) > limit)
 
 
-def validate_group(db, group_id):
-    if group_id is not None and db.get(AcademicGroup, group_id) is None:
+def validate_targets(db, body):
+    if body.group_id is not None and db.get(AcademicGroup, body.group_id) is None:
         raise HTTPException(422, 'Учебная группа не найдена')
+    if body.discipline_id is not None and db.get(Discipline, body.discipline_id) is None:
+        raise HTTPException(422, 'Дисциплина не найдена')
 
 
 def deliver(db, announcement, *, legacy=False):
@@ -127,8 +132,11 @@ def deliver(db, announcement, *, legacy=False):
 def announcements(user: User = Depends(require_user), db: Session = Depends(get_db),
                   status: Literal['published', 'archived'] = 'published', category: Category | None = None,
                   priority: Priority | None = None, q: str = Query('', max_length=100), sort: Sort = 'featured',
+                  discipline: int | None = Query(None, ge=1, le=2147483647),
                   offset: int = Query(0, ge=0, le=2147483647), limit: int = Query(24, ge=1, le=50)):
     conditions = [Announcement.status == status, Announcement.published_at.is_not(None), audience_scope(user)]
+    if discipline is not None:
+        conditions.append(Announcement.discipline_id == discipline)
     return listing(db, conditions, category=category, priority=priority, q=q, sort=sort, offset=offset, limit=limit)
 
 
@@ -151,7 +159,8 @@ def editor_list(_user: User = Depends(require_staff), db: Session = Depends(get_
 @router.get('/staff/announcements/groups')
 def audience_groups(_user: User = Depends(require_staff), db: Session = Depends(get_db)):
     return dict(items=[dict(id=group.id, name=group.code) for group in
-                       db.scalars(select(AcademicGroup).order_by(AcademicGroup.code))])
+                       db.scalars(select(AcademicGroup).order_by(AcademicGroup.code))],
+                disciplines=[dict(id=row.id, name=row.title) for row in db.scalars(select(Discipline).order_by(Discipline.title))])
 
 
 @router.get('/staff/announcements/{record_id}')
@@ -169,6 +178,8 @@ def editor_detail(record_id: int = Path(ge=1, le=2147483647), history_offset: in
 def create_announcement(body: AnnouncementBody, request: Request, response: Response,
                         user: User = Depends(require_staff), db: Session = Depends(get_db)):
     values = body.model_dump()
+    if 'discipline_id' not in body.model_fields_set:
+        values.pop('discipline_id')
     legacy_fields = {'title', 'body', 'category'}
     legacy = body.model_fields_set <= legacy_fields
     receipt_body = {key: values[key] for key in legacy_fields} if legacy else values
@@ -177,7 +188,7 @@ def create_announcement(body: AnnouncementBody, request: Request, response: Resp
         return replay
     if body.status == 'archived':
         raise HTTPException(422, 'Создайте черновик или опубликуйте объявление')
-    validate_group(db, body.group_id)
+    validate_targets(db, body)
     now = utc_now()
     published = body.status == 'published'
     row = Announcement(**values, author_id=user.id, created_at=now, updated_at=now,
@@ -197,6 +208,8 @@ def edit_announcement(body: AnnouncementEdit, request: Request, response: Respon
     values = body.model_dump()
     if 'summary' not in body.model_fields_set:
         values.pop('summary')
+    if 'discipline_id' not in body.model_fields_set:
+        values.pop('discipline_id')
     receipt, replay = begin_idempotent(db, request, response, user, f'announcement-edit-{record_id}', values)
     if replay is not None:
         return replay
@@ -207,7 +220,7 @@ def edit_announcement(body: AnnouncementEdit, request: Request, response: Respon
         raise HTTPException(409, 'Архивное объявление доступно только для чтения')
     if row.published_at and (row.audience, row.group_id) != (body.audience, body.group_id):
         raise HTTPException(409, 'Для другой аудитории создайте новое объявление')
-    validate_group(db, body.group_id)
+    validate_targets(db, body)
     before = payload(row)
     now = utc_now()
     first_publish = body.status == 'published' and row.published_at is None

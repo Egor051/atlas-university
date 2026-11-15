@@ -55,7 +55,8 @@
   const improvements=window.ATLASImprovements;
   const university=window.ATLASUniversity;
   const operations=window.ATLASOperations;
-  const extensions=[university,operations,window.ATLASUnits,window.ATLASAnnouncements].filter(Boolean);
+  const disciplines=window.ATLASDisciplines;
+  const extensions=[university,disciplines,operations,window.ATLASUnits,window.ATLASAnnouncements].filter(Boolean);
   const extensionFor=page=>extensions.find(ext=>ext.has(page));
   const extensionPages=role=>extensions.flatMap(ext=>ext.pages.filter(p=>p.roles.includes(role)));
   const profile=pages.find(p=>p.id==='profile');
@@ -66,6 +67,7 @@
   const section = (id,label,icon,hint,children) => ({id,label,icon,hint,children});
   const account = section('account','Мой кабинет','user','Профиль и настройки',['profile','settings']);
   const planningOffice = section('schedule-work','Организация занятий','calendar','Расписание, согласование и справочники',['timetable-admin','schedule-changes','academic-calendar','registry','tables']);
+  const teachingMaterials = section('learning','Дисциплины и публикации','book','Дисциплины и управление публикациями',['courses','materials-admin']);
   const sections = {
     student:[
       section('records','Занятия и оценки','graduation','Расписание, оценки, посещаемость и экзамены',['schedule','grades','exams']),
@@ -79,16 +81,18 @@
     staff:[
       section('office','Работа со студентами','file','Заявки, справки, объявления и ответы студентам',['staff','staffdesk','staffmessages','announcement-admin']),
       planningOffice,
-      section('learning','Материалы','book','Учебные материалы и публикации',['materials','materials-admin']),
+      teachingMaterials,
       account,
     ],
     teacher:[
       section('academic-work','Учебная работа','graduation','Группы, ведомости, расписание и консультации',['teaching','teach-schedule','teach-consultations','tables']),
-      section('learning','Материалы','book','Учебные материалы и публикации',['materials','materials-admin']),
+      teachingMaterials,
       account,
     ],
     scheduler:[planningOffice,account],
-    admin:[planningOffice,account],
+    admin:[planningOffice,section('catalog','Учебный каталог','book','Дисциплины и полномочия',['courses','material-delegations']),account],
+    coordinator:[teachingMaterials,account],
+    department:[teachingMaterials,account],
     union:[section('union-work','Работа профсоюза','file','Заявления, членство, публикации и отчёты',['union-office']),account],
     vuc:[section('vuc-work','Работа ВУЦ','file','Отбор, учебные группы и публикации',['vuc-office']),account],
   };
@@ -101,7 +105,8 @@
     const menu=menuFor(state.user.role);
     return group.children.map(id=>menu.find(p=>p.id===id)).filter(Boolean);
   };
-  const startPage = role => ({student:'home',staff:'staff',teacher:'teacher',scheduler:'timetable-admin',admin:'registry',union:'union-office',vuc:'vuc-office'})[role];
+  const startPage = role => ({student:'home',staff:'staff',teacher:'teacher',scheduler:'timetable-admin',admin:'registry',
+    coordinator:'courses',department:'courses',union:'union-office',vuc:'vuc-office'})[role];
   const transitions = {submitted:['review','needs_info','rejected'],review:['processing','needs_info','ready','rejected'],processing:['ready','needs_info','rejected'],needs_info:['review','rejected'],ready:[],rejected:[]};
   const pageTitle = page => menuFor(state.user.role).find(p=>p.id===page)?.label;
   const state = {user:null,sessionEpoch:0,page:'home',routeHref:'/',routeParts:[],routeContext:{},historyEntry:0,data:{},scheduleMode:'week',unread:0,requestFilter:'all',requestView:'mine',serviceQuery:'',noticeFilter:'all',staffFilter:'active',staffQuery:'',config:{demo_mode:false},loadingId:0,modalId:0,pending:0,requestOffset:0,noticeOffset:0,staffOffset:0};
@@ -189,13 +194,13 @@
     if(page==='staff')return api(`staff/requests?paginated=true&limit=30&offset=${state.staffOffset}&filter=${state.staffFilter}&kind=${state.staffKind||'request'}&q=${encodeURIComponent(state.staffQuery)}`);
     return state.user;
   }
-  const contextPages=new Set(['schedule','courses','assignments','grades','exams','events','consultations','messages','staffmessages']);
+  const contextPages=new Set(['schedule','assignments','grades','exams','events','consultations','messages','staffmessages']);
   const pagePath=page=>'/app/'+page;
   const formerStudentChildren={learning:['materials','notes','library','flashcards','quizzes'],
     planning:['calendar','plan','tasks','notes','focus'],records:['attendance'],account:['portfolio']};
   const formerStudentPages={planning:'assignments',plan:'assignments',tasks:'assignments',focus:'assignments',
     calendar:'schedule',notes:'courses',portfolio:'profile',attendance:'grades',
-    library:'materials',quizzes:'materials',flashcards:'materials'};
+    library:'courses',quizzes:'courses',flashcards:'courses'};
   function cleanContext(page, context){
     if(!contextPages.has(page))return {};
     const result={};
@@ -216,9 +221,10 @@
     const role=state.user.role;
     const group=sections[role].find(item=>item.id===initial||(initial==='university'&&item.id==='university-life'&&item.children.includes(rest[0])));
     const formerChild=role==='student'&&Object.hasOwn(formerStudentChildren,initial)&&formerStudentChildren[initial].includes(rest[0]);
-    const nested=group?.children.includes(rest[0])||formerChild;
+    const nested=group?.children.includes(rest[0])||formerChild||(initial==='learning'&&rest[0]==='materials');
     const page=nested?rest[0]:initial;
     const parts=nested?rest.slice(1):rest;
+    if(page==='materials')return disciplines.legacyRoute(parts,context);
     if(role==='student'&&!parts.length&&Object.hasOwn(formerStudentPages,page)){
       const kept=page==='plan'?context:page==='calendar'?{date:context.date}:{};
       return {page:formerStudentPages[page],parts,context:kept};
@@ -243,7 +249,8 @@
     const target=valid?page:startPage(role);
     const extension=extensionFor(target);
     const detail=valid&&extension?.validParts(target,parts)?parts:[];
-    const next=valid?(extension?extension.cleanQuery(target,context,detail):cleanContext(target,context)):{};
+    const cleaned=valid?(extension?extension.cleanQuery(target,context,detail):cleanContext(target,context)):{};
+    const next=Object.fromEntries(Object.entries(cleaned).filter(([,value])=>value!==undefined));
     const query=new URLSearchParams(next).toString();
     const href=pagePath(target)+(detail.length?'/'+detail.join('/'):'')+(query?'?'+query:'');
     const previous=state.routeContext, previousPage=state.page;
@@ -286,9 +293,8 @@
   const logo = () => `<div class="logo"><img class="logo-mark" src="${esc($('link[rel="icon"]').getAttribute('href'))}" alt="" width="40" height="40" /><span class="logo-copy"><span class="logo-word">АТЛАС<span class="logo-period">.</span></span><span class="logo-sub">ЦИФРОВОЙ КАМПУС</span></span></div>`;
   const avatar = (u,extra='') => `<span aria-hidden="true" class="avatar ${['purple','orange','blue'].includes(u.accent)?u.accent:'purple'} ${extra}">${esc(u.initials)}</span>`;
   const badge = r => `<span class="request-status ${Object.hasOwn(statusNames,r.status)?r.status:'submitted'}"><span class="status-dot"></span>${esc(statusNames[r.status]||r.status)}</span>`;
-  const navigationPage=()=>state.user.role==='student'&&state.page==='materials'?'courses':state.page;
   function currentSection(){
-    const page=navigationPage();
+    const page=state.page;
     return sections[state.user.role].find(group=>group.id===page||group.children.includes(page));
   }
   function routeLink(page,label,cls=''){
@@ -299,7 +305,6 @@
     const crumbs=[['Кабинет','/app/'+root]];
     if(state.page!==root){
       if(group)crumbs.push([group.label]);
-      if(role==='student'&&state.page==='materials')crumbs.push([pageTitle('courses'),pagePath('courses')]);
       crumbs.push([pageTitle(state.page),pagePath(state.page)]);
     }
     if(state.routeParts.length){
@@ -315,8 +320,8 @@
     return `<nav class="section-nav" aria-label="${esc(group.label)} — разделы">${children.map(p=>p.id===state.page?`<span aria-current="page">${esc(p.label)}</span>`:routeLink(p.id,p.label)).join('')}</nav>`;
   }
   function navItem(p,{mobile=false}={}){
-    const active=navigationPage()===p.id;
-    const attributes=`class="nav-item ${active?'active':''}" data-route="${p.id}" title="${esc(p.label)}" ${active?`aria-current="${state.page===p.id?'page':'location'}"`:''}`;
+    const active=state.page===p.id;
+    const attributes=`class="nav-item ${active?'active':''}" data-route="${p.id}" title="${esc(p.label)}" ${active?`aria-current="${state.routeParts.length?'location':'page'}"`:''}`;
     const label=`${icon(p.icon)}<span class="nav-text">${esc(p.label)}</span>${p.id==='notifications'?`<span class="nav-badge" ${state.unread?'':'hidden'}>${state.unread}</span>`:''}${p.id==='direct'?university.unreadBadge():''}`;
     return mobile?`<button type="button" ${attributes}>${label}</button>`:`<a href="${pagePath(p.id)}" ${attributes}>${label}</a>`;
   }

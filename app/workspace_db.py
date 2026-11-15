@@ -189,6 +189,12 @@ class GroupWork(Base):
     policy_json: Mapped[str] = mapped_column(Text, default='{}', server_default='{}')
 
 
+class WorkMaterial(Base):
+    __tablename__ = 'academic_work_materials'
+    work_id: Mapped[int] = mapped_column(ForeignKey('academic_group_work.id'), primary_key=True)
+    material_id: Mapped[int] = mapped_column(ForeignKey('teaching_materials.id'), primary_key=True, index=True)
+
+
 class WorkDelivery(Base):
     __tablename__ = 'academic_work_deliveries'
     deadline_id: Mapped[int] = mapped_column(ForeignKey('deadlines.id'), primary_key=True)

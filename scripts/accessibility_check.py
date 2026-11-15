@@ -52,6 +52,7 @@ def run():
                     visit(page,base,'schedule')
                     page.locator('[data-view="day"]').click()
                     page.locator('.day-pick').last.click()
+                    expect(page.locator('#page-title')).to_be_visible()
                     scan(f'schedule-empty-{width}')
                     visit(page,base,'assignments')
                     page.locator('[data-c-action="assignment"]').first.click()

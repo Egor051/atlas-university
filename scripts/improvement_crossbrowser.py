@@ -13,7 +13,7 @@ from playwright.sync_api import sync_playwright,expect
 from improvement_runtime import ROOT,DEFAULT_REPORTS,isolated_server,browser_ready,browser_login,browser_visit,geometry,report_start,save_report
 
 STUDENT=['home','schedule','grades','requests','certificates','notifications','profile','announcements','courses','assignments','exams',
-         'materials','consultations','messages','events','finance','contacts','knowledge','settings']
+         'consultations','messages','events','finance','contacts','knowledge','settings']
 STAFF=['staff','staffdesk','staffmessages','announcement-admin','profile','settings']
 
 
@@ -36,8 +36,11 @@ def main():
                     for page in pages:page.on('pageerror',lambda error:report['browser_errors'].append(str(error)))
                     a,b,staff=pages
                     for index,page in enumerate(pages):browser_login(page,server['base'],index)
+                    catalog=a.request.get(server['base']+'/api/disciplines').json()['items']
+                    course_id=next(row['id'] for row in catalog if row['mine'] and row['material_count'])
+                    student_routes=[*STUDENT, f'courses/{course_id}']
                     for width,height in [(360,800),(390,844),(1440,1000)]:
-                        for page,routes,role in [(a,STUDENT,'student'),(staff,STAFF,'staff')]:
+                        for page,routes,role in [(a,student_routes,'student'),(staff,STAFF,'staff')]:
                             page.set_viewport_size({'width':width,'height':height})
                             for route in routes:
                                 browser_visit(page,server['base'],route)

@@ -47,26 +47,29 @@ def test_legacy_routes_and_materials_belong_to_current_navigation(frontend_page)
         'planning': 'assignments', 'plan': 'assignments', 'planning/focus': 'assignments',
         'calendar': 'schedule', 'planning/calendar': 'schedule',
         'notes': 'courses', 'planning/notes': 'courses', 'account/portfolio': 'profile',
-        'library': 'materials', 'learning/quizzes': 'materials',
-        'flashcards': 'materials', 'learning/materials': 'materials',
+        'library': 'courses', 'learning/quizzes': 'courses',
+        'flashcards': 'courses', 'learning/materials': 'courses',
     }
     for before, after in destinations.items():
         page.goto(f'{base}/app/{before}')
         expect(page).to_have_url(f'{base}/app/{after}')
         expect(page.locator('.error-state')).to_have_count(0)
     breadcrumbs = page.get_by_role('navigation', name='Путь к разделу')
-    breadcrumbs.get_by_role('link', name='Мои дисциплины').click()
     expect(page.locator('#page-title')).to_have_text('Мои дисциплины')
     learning = page.get_by_role('navigation', name='Учебные материалы и задания — разделы')
     expect(learning.get_by_text('Мои дисциплины', exact=True)).to_have_attribute('aria-current', 'page')
     expect(learning.get_by_role('link')).to_have_text(['Сдача работ'])
-    page.get_by_role('link', name='Учебные материалы', exact=True).click()
-    expect(page.locator('#page-title')).to_have_text('Учебные материалы')
-    material = page.locator('.school-tile h2 a').first
+    page.locator('.discipline-catalog').get_by_role('link', name='Алгоритмы и структуры данных', exact=True).click()
+    expect(page.locator('#page-title')).to_have_text('Алгоритмы и структуры данных')
+    material = page.locator('.material-row h2 a').first
     title = material.inner_text()
+    address = material.get_attribute('href')
     material.click()
     expect(page.locator('#page-title')).to_have_text(title)
-    expect(breadcrumbs.get_by_role('link', name='Учебные материалы')).to_be_visible()
+    expect(page).to_have_url(base + address)
+    page.goto(base + '/app/materials/' + address.rsplit('/', 1)[1])
+    expect(page).to_have_url(base + address)
+    expect(breadcrumbs.get_by_role('link', name='Алгоритмы и структуры данных')).to_be_visible()
     expect(breadcrumbs.get_by_role('link', name='Мои дисциплины')).to_be_visible()
     expect(page.get_by_role('link', name='Скачать HTML')).to_be_visible()
     nav = page.locator('#side-nav')

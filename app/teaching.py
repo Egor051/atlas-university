@@ -5,7 +5,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import Field, ValidationError, field_validator
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from .academic_points import PointAward, award_data, award_points, grade_record as student_grade
@@ -20,11 +20,12 @@ from .main import StrictBody, date_iso, get_db, require_roles, require_same_orig
 from .services import begin_idempotent, commit_idempotent
 from .services_db import ConsultationBooking, ConsultationSlot
 from .session_security import as_utc
-from .university_db import Teacher, TeachingAssignment
+from .university_db import Discipline, Teacher, TeachingAssignment, TeachingMaterial
+from .work_materials import eligible_materials, set_work_materials
 from .workspace import (check_member, event_payload, load_payload, load_query, lock_workspace, notify,
                         owned_load, recorded, roster)
 from .workspace_db import (Classroom, GroupMember, GroupWork, OperationEvent, ScheduledClass, TeacherConsultation,
-                           TeachingLoad, WorkDelivery, WorkFeedback)
+                           AcademicGroup, TeachingLoad, WorkDelivery, WorkFeedback, WorkMaterial)
 
 teacher_only = require_roles('teacher')
 router = APIRouter(prefix='/api/teaching')
@@ -174,6 +175,26 @@ def save_attendance(db, user, load, body, *, apply=True):
 def loads(user=Depends(teacher_only), db: Session = Depends(get_db)):
     query = load_query().join(TeachingAssignment).join(Teacher).where(Teacher.user_id == user.id).order_by(TeachingLoad.id)
     return {'items': [load_payload(row) for row in db.scalars(query)]}
+
+
+@router.get('/workbench')
+def workbench(user=Depends(teacher_only), db: Session = Depends(get_db)):
+    groups = loads(user=user, db=db)['items']
+    pending = db.execute(select(GroupWork.id, GroupWork.title, TeachingLoad.id, Discipline.title, AcademicGroup.code,
+                               func.count(AssignmentSubmission.id).label('pending'))
+                         .select_from(GroupWork).join(TeachingLoad).join(Discipline).join(AcademicGroup)
+                         .join(WorkDelivery, WorkDelivery.work_id == GroupWork.id)
+                         .join(AssignmentSubmission, AssignmentSubmission.deadline_id == WorkDelivery.deadline_id)
+                         .join(GroupMember, and_(GroupMember.student_id == AssignmentSubmission.student_id,
+                                                 GroupMember.group_id == TeachingLoad.group_id))
+                         .where(TeachingLoad.id.in_([group['id'] for group in groups]), WorkDelivery.active.is_(True),
+                                AssignmentSubmission.status.in_(('submitted', 'resubmitted', 'in_review')),
+                                or_(GroupWork.state == 'published', and_(GroupWork.state == 'scheduled',
+                                                                         GroupWork.publish_at <= utc_now())))
+                         .group_by(GroupWork.id, GroupWork.title, TeachingLoad.id, Discipline.title, AcademicGroup.code)
+                         .order_by(func.max(AssignmentSubmission.updated_at).desc(), GroupWork.id.desc()).limit(20))
+    return dict(groups=groups, pending=[dict(work_id=key, title=title, load_id=load_id, discipline=subject, group=group, count=count)
+                                         for key, title, load_id, subject, group, count in pending])
 
 
 @router.get('/{load_id:int}')
@@ -359,10 +380,11 @@ def new_work(load_id: int, body: WorkBody, request: Request, response: Response,
     save_work_fields(row, body)
     db.add(row)
     db.flush()
+    set_work_materials(db, load, row.id, body.material_ids)
     if row.state != 'draft':
         for student_id in sorted(selected):
             deliver_work(db, load, row, student_id)
-    result = work_data(row)
+    result = {**work_data(row), 'material_ids': sorted(set(body.material_ids))}
     recorded(db, user, 'teaching', load.id, 'work_created', after=result)
     return commit_idempotent(db, receipt, result)
 
@@ -381,7 +403,9 @@ def edit_work(load_id: int, work_id: int, body: WorkEdit, user=Depends(teacher_o
     row = owned_work(db, load, work_id)
     if row.version != body.version:
         raise HTTPException(409, 'Задание изменено. Обновите раздел.')
-    before = work_data(row)
+    prior_ids = list(db.scalars(select(WorkMaterial.material_id).where(WorkMaterial.work_id == row.id)
+                                .order_by(WorkMaterial.material_id)))
+    before = {**work_data(row), 'material_ids': prior_ids}
     patch = body.model_dump(exclude_unset=True, exclude={'version'})
     if 'due' in patch and 'due_at' not in patch:
         patch['due_at'] = None
@@ -405,9 +429,11 @@ def edit_work(load_id: int, work_id: int, body: WorkEdit, user=Depends(teacher_o
                 target_students(db, load, updated) if (
                     updated.state != 'draft' or updated.recipient_ids or updated.team_lead_id or updated.class_id) else set())
     save_work_fields(row, updated, prev_due=row.due_at or base_due(row.due))
+    if 'material_ids' in patch:
+        set_work_materials(db, load, row.id, updated.material_ids)
     row.version += 1
     update_deliveries(db, load, row, selected, before)
-    result = work_data(row)
+    result = {**work_data(row), 'material_ids': sorted(set(updated.material_ids))}
     recorded(db, user, 'teaching', load.id, 'work_edited', before, result)
     db.commit()
     return result
@@ -432,7 +458,14 @@ def work_detail(load_id: int, work_id: int, user=Depends(teacher_only), db: Sess
         notes, attempts = attempt_details(db, row.id)
         submissions.append({**submission_data(row), 'student': name, 'student_id': row.student_id,
                             'deadline_id': row.deadline_id, 'feedback': notes, 'attempts': attempts})
-    return {**work_data(work), 'submissions': submissions, 'recipients': [
+    linked = db.execute(select(TeachingMaterial.id, TeachingMaterial.title, TeachingMaterial.access)
+                        .join(WorkMaterial).join(TeachingAssignment).where(WorkMaterial.work_id == work.id,
+                                                                          *eligible_materials(load)))
+    material_cards = [dict(id=key, title=title, access=access) for key, title, access in linked]
+    material_ids = list(db.scalars(select(WorkMaterial.material_id).where(WorkMaterial.work_id == work.id)
+                                   .order_by(WorkMaterial.material_id)))
+    return {**work_data(work), 'submissions': submissions, 'material_ids': material_ids, 'course_materials': material_cards,
+            'recipients': [
         dict(id=deadline.student_id, deadline_id=deadline.id, name=name, due_at=iso(effective_due(deadline, delivery, work)))
         for deadline, delivery, name in recipients
     ], 'classes': [
@@ -440,6 +473,18 @@ def work_detail(load_id: int, work_id: int, user=Depends(teacher_only), db: Sess
         for row in db.scalars(select(ScheduledClass).where(ScheduledClass.load_id == load.id, ScheduledClass.status == 'active')
                               .order_by(ScheduledClass.starts_at).limit(100))
     ]}
+
+
+@router.get('/{load_id:int}/material-options')
+def work_material_options(load_id: int, q: str = Query('', max_length=100), user=Depends(teacher_only), db: Session = Depends(get_db)):
+    from .main import search_text, text_search
+
+    load = owned_load(db, user, load_id)
+    query = select(TeachingMaterial.id, TeachingMaterial.title).join(TeachingAssignment).where(*eligible_materials(load))
+    if q := search_text(q):
+        query = query.where(text_search(TeachingMaterial.title, q))
+    rows = db.execute(query.order_by(TeachingMaterial.updated_at.desc(), TeachingMaterial.id.desc()).limit(51)).all()
+    return {'items': [dict(id=key, title=title) for key, title in rows[:50]], 'more': len(rows) > 50}
 
 
 @router.get('/{load_id:int}/works/{work_id}/submissions/{submission_id}/files/{attachment_id}')

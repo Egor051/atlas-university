@@ -1,18 +1,20 @@
 """Persistent direct messages. Every dialog read or write scopes its participants."""
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
-from pydantic import Field, field_validator
-from sqlalchemy import func, or_, select, update
-from sqlalchemy.orm import Session
+from pydantic import Field, field_validator, model_validator
+from sqlalchemy import case, func, or_, select, update
+from sqlalchemy.orm import Session, joinedload
 
 from .db import Notification, User, utc_now
 from .improvements import reserve_write
+from .material_upload import MaterialUpload, decode_upload, download_upload
 from .services import begin_idempotent, commit_idempotent
 from .storage_guards import lock_owner
-from .university_db import DirectContact, DirectDialog, DirectMessage
+from .university_db import DirectAttachment, DirectContact, DirectDialog, DirectMessage
 from .workspace import notify
 
 MAX_DIALOGS = 60
 MAX_MESSAGES = 2000
+MAX_SENDER_FILE_BYTES = 64 * 1024 * 1024
 CONTACT_ROLES = ('teacher', 'staff')
 
 
@@ -47,12 +49,19 @@ def create_router():
     write = [Depends(require_same_origin)]
 
     class MessageBody(StrictBody):
-        message: str = Field(min_length=1, max_length=3000)
+        message: str = Field(default='', max_length=3000)
+        file: MaterialUpload | None = None
 
         @field_validator('message', mode='before')
         @classmethod
         def trim(cls, value):
             return value.strip() if isinstance(value, str) else value
+
+        @model_validator(mode='after')
+        def has_content(self):
+            if not self.message and self.file is None:
+                raise ValueError('Напишите сообщение или приложите файл')
+            return self
 
     class StartBody(MessageBody):
         recipient_id: int = Field(strict=True, ge=1, le=2147483647)
@@ -74,7 +83,8 @@ def create_router():
 
     def message_payload(row, actor):
         return dict(id=row.id, mine=row.sender_id == actor.id, body=row.body, created_at=date_iso(row.created_at),
-                    is_read=row.read_at is not None)
+                    is_read=row.read_at is not None, file=dict(name=row.file.name, size=row.file.size,
+                        url=f'/api/direct/dialogs/{row.dialog_id}/messages/{row.id}/file') if row.file else None)
 
     @router.get('/recipients')
     def recipients(q: str = Query('', max_length=100), _user=Depends(require_student), db: Session = Depends(get_db)):
@@ -105,7 +115,8 @@ def create_router():
         q = search_text(q)
         unread_count = (select(func.count()).select_from(DirectMessage)
                         .where(DirectMessage.dialog_id == DirectDialog.id, *unread_condition(user)).scalar_subquery())
-        last_message = (select(func.substr(DirectMessage.body, 1, 160)).where(DirectMessage.dialog_id == DirectDialog.id)
+        last_message = (select(case((DirectMessage.body == '', 'Вложение'), else_=func.substr(DirectMessage.body, 1, 160)))
+                        .where(DirectMessage.dialog_id == DirectDialog.id)
                         .order_by(DirectMessage.id.desc()).limit(1).scalar_subquery())
         query = (select(DirectDialog, User, unread_count, last_message)
                  .join(User, User.id == counterpart(user)).where(owner_condition(user)))
@@ -122,7 +133,7 @@ def create_router():
                user=Depends(require_user), db: Session = Depends(get_db)):
         row = owned_dialog(db, dialog_id, user)
         other = db.get(User, row.contact_id if user.role == 'student' else row.student_id)
-        query = select(DirectMessage).where(DirectMessage.dialog_id == row.id)
+        query = select(DirectMessage).where(DirectMessage.dialog_id == row.id).options(joinedload(DirectMessage.file))
         if before:
             query = query.where(DirectMessage.id < before)
         latest = db.scalars(query.order_by(DirectMessage.id.desc()).limit(51)).all()
@@ -133,17 +144,38 @@ def create_router():
                     older_before=latest[49].id if len(latest) > 50 else None,
                     read_through=latest[0].id if latest and not before else None)
 
-    def send(db, request, response, user, row, recipient_id, message, target):
-        receipt, prior = begin_idempotent(db, request, response, user, 'direct-send', {**target, 'message': message})
+    @router.get('/dialogs/{dialog_id}/messages/{message_id}/file')
+    def message_file(dialog_id: int, message_id: int, user=Depends(require_user), db: Session = Depends(get_db)):
+        row = owned_dialog(db, dialog_id, user)
+        file = db.scalar(select(DirectAttachment).join(DirectMessage).where(
+            DirectMessage.dialog_id == row.id, DirectAttachment.message_id == message_id))
+        if file is None:
+            raise HTTPException(404, 'Вложение не найдено')
+        return download_upload(file.name, file.content)
+
+    def send(db, request, response, user, row, contact, body, target):
+        attachment = None
+        fingerprint = {**target, 'message': body.message}
+        if body.file:
+            if contact.role != 'teacher':
+                raise HTTPException(403, 'Вложения доступны в переписке с преподавателем')
+            attachment = decode_upload(body.file)
+            fingerprint['file'] = (attachment['file_name'], attachment['file_digest'])
+        receipt, prior = begin_idempotent(db, request, response, user, 'direct-send', fingerprint)
         if prior is not None:
             return prior
+        if attachment:
+            used = db.scalar(select(func.coalesce(func.sum(DirectAttachment.size), 0)).join(DirectMessage)
+                             .where(DirectMessage.sender_id == user.id))
+            if used + attachment['file_size'] > MAX_SENDER_FILE_BYTES:
+                raise HTTPException(409, 'Достигнут лимит вложений в личных сообщениях')
         now = utc_now()
         reserve_write(db, user.id, 'direct', now)
         if row is None:
             count = db.scalar(select(func.count()).select_from(DirectDialog).where(DirectDialog.student_id == user.id))
             if count >= MAX_DIALOGS:
                 raise HTTPException(409, 'Достигнут предел диалогов')
-            row = DirectDialog(student_id=user.id, contact_id=recipient_id, updated_at=now)
+            row = DirectDialog(student_id=user.id, contact_id=contact.id, updated_at=now)
             db.add(row)
             db.flush()
         else:
@@ -155,7 +187,10 @@ def create_router():
         notice = notify(db, recipient, 'Новое личное сообщение', f'Отправитель: {user.full_name}',
                         f'/app/direct/{row.id}', category='direct')
         db.flush()
-        new = DirectMessage(dialog_id=row.id, sender_id=user.id, body=message, created_at=now, notification_id=notice.id)
+        new = DirectMessage(dialog_id=row.id, sender_id=user.id, body=body.message, created_at=now, notification_id=notice.id)
+        if attachment:
+            new.file = DirectAttachment(name=attachment['file_name'], size=attachment['file_size'],
+                                        content=attachment['file_content'])
         db.add(new)
         db.flush()
         # The receipt needs only the stable IDs, not a second copy of the message.
@@ -164,17 +199,17 @@ def create_router():
     @router.post('/dialogs', status_code=201, dependencies=write)
     def start(body: StartBody, request: Request, response: Response, user=Depends(require_student), db: Session = Depends(get_db)):
         lock_owner(db, user.id)
-        valid_contact(db, body.recipient_id)
+        contact, _label = valid_contact(db, body.recipient_id)
         row = db.scalar(select(DirectDialog).where(DirectDialog.student_id == user.id,
                                                   DirectDialog.contact_id == body.recipient_id).with_for_update())
-        return send(db, request, response, user, row, body.recipient_id, body.message, {'recipient_id': body.recipient_id})
+        return send(db, request, response, user, row, contact, body, {'recipient_id': body.recipient_id})
 
     @router.post('/dialogs/{dialog_id}/messages', status_code=201, dependencies=write)
     def reply(dialog_id: int, body: MessageBody, request: Request, response: Response,
               user=Depends(require_user), db: Session = Depends(get_db)):
         lock_owner(db, user.id)
         row = owned_dialog(db, dialog_id, user, for_update=True)
-        return send(db, request, response, user, row, row.contact_id, body.message, {'dialog_id': dialog_id})
+        return send(db, request, response, user, row, db.get(User, row.contact_id), body, {'dialog_id': dialog_id})
 
     @router.post('/dialogs/{dialog_id}/read', dependencies=write)
     def read(dialog_id: int, body: ReadBody, user=Depends(require_user), db: Session = Depends(get_db)):

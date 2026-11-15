@@ -62,7 +62,8 @@ def check_member(db, load, student_id):
 
 def load_payload(row):
     return dict(id=row.id, group_id=row.group_id, group=row.group.code, assignment_id=row.assignment_id,
-                discipline=row.discipline.title, teacher=row.assignment.teacher.user.full_name, version=row.version)
+                discipline_id=row.discipline_id, discipline=row.discipline.title,
+                teacher=row.assignment.teacher.user.full_name, version=row.version)
 
 
 def event_payload(row, author, date_iso):

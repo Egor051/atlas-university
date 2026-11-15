@@ -27,8 +27,8 @@ from improvement_runtime import ROOT, browser_login, browser_visit, geometry, is
 WIDTHS = [(360, 800), (390, 844), (768, 1024), (1440, 1000)]
 LEGACY_ROUTES = {'plan': 'assignments', 'tasks': 'assignments', 'planning': 'assignments',
                  'calendar': 'schedule', 'notes': 'courses', 'learning/notes': 'courses',
-                 'portfolio': 'profile', 'attendance': 'grades', 'library': 'materials',
-                 'flashcards': 'materials', 'quizzes': 'materials', 'focus': 'assignments'}
+                 'portfolio': 'profile', 'attendance': 'grades', 'library': 'courses',
+                 'flashcards': 'courses', 'quizzes': 'courses', 'materials': 'courses', 'focus': 'assignments'}
 KEY_SCREENS = {"home", "schedule", "requests", "certificates", "announcements", "direct", "staff", "announcement-admin"}
 FEATURE_CONTROLS = {
     "home": ".announcement-timeline",

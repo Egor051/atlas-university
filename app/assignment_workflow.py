@@ -195,6 +195,10 @@ def assignment_payload(db, deadline, delivery, work, submission, owner_id, lead_
     stale = due < utc_now() and status in ACTIONABLE
     feedback, versions = attempt_details(db, submission.id) if include_history and submission else ([], [])
     used = len(versions) if include_history else None
+    materials = []
+    if work and include_history:
+        from .work_materials import student_work_materials
+        materials = student_work_materials(db, work.id, db.get(User, deadline.student_id))
     remaining = min(policy['max_attempts'] or 50, 50)
     if not policy['allow_resubmission'] and status != 'revision_required':
         remaining = 1
@@ -203,7 +207,7 @@ def assignment_payload(db, deadline, delivery, work, submission, owner_id, lead_
                 instructions=work.instructions if work else DEFAULT_INSTRUCTIONS, feedback=feedback, attempts=versions,
                 submission=submission_data(submission, include_text=include_history), overdue=stale,
                 status=status, state=state, description=policy['description'], criteria=policy['criteria'],
-                kind=policy['kind'], custom_kind=policy['custom_kind'], materials=policy['materials'],
+                kind=policy['kind'], custom_kind=policy['custom_kind'], materials=policy['materials'], course_materials=materials,
                 max_points=policy['max_points'] if work else None, methods=policy['methods'], formats=policy['formats'],
                 allow_late=policy['allow_late'], allow_resubmission=policy['allow_resubmission'],
                 max_attempts=policy['max_attempts'], attempts_used=used, team_lead=lead_name,
@@ -217,11 +221,15 @@ def assignment_payload(db, deadline, delivery, work, submission, owner_id, lead_
 
 
 def student_assignment_results(db, student_id, *, include_history=False, limit=200, offset=0,
-                               min_date=None, max_date=None, recent_first=False):
+                               min_date=None, max_date=None, recent_first=False, subject=None, discipline_id=None):
     query = (select(Deadline, WorkDelivery, GroupWork).select_from(Deadline)
              .outerjoin(WorkDelivery, WorkDelivery.deadline_id == Deadline.id)
              .outerjoin(GroupWork, GroupWork.id == WorkDelivery.work_id)
              .where(Deadline.student_id == student_id, visible_deadline()))
+    if subject is not None:
+        legacy = and_(GroupWork.id.is_(None), Deadline.subject == subject)
+        managed = GroupWork.load_id.in_(select(TeachingLoad.id).where(TeachingLoad.discipline_id == discipline_id))
+        query = query.where(or_(legacy, managed) if discipline_id is not None else legacy)
     if min_date is not None:
         query = query.where(Deadline.due_date >= min_date)
     if max_date is not None:
