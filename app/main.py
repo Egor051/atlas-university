@@ -28,7 +28,7 @@ from starlette.middleware.gzip import GZipMiddleware
 
 from .certificate_catalog import APPENDIX_4, APPENDIX_4_FORM, APPENDIX_4_NAME, COMMISSIONER_OPTIONS, OFFICE
 from .certificates import CertificateIssue, appendix_4_enrollment, appendix_4_html, enrollment_rows, get_destination, prepare_appendix_4, public_service
-from .db import (SessionLocal, User, LoginSession, Lesson, LessonChange, Grade,
+from .db import (SessionLocal, User, LoginSession, Grade,
                  Deadline, DocumentRequest, Notification, DOC_TYPES, DOC_NAMES, CERTIFICATE_NAMES,
                  RequestEvent, RequestIdempotency, LoginAttempt,
                  password_hasher, initialize_database, CAMPUS_TZ, campus_today,
@@ -308,43 +308,39 @@ def logout(request: Request,response:Response, db:Session=Depends(get_db), _:Non
 def me(user:User=Depends(require_user)):
     return public_user(user)
 
-def get_week_schedule(db: Session, user: User, week_start: date):
-    from .scheduling import student_classes
-    end=week_start+timedelta(days=7)
-    additions = {}
-    for lesson in student_classes(db,user,week_start):
-        additions.setdefault(lesson['date'],[]).append(lesson)
-    lessons=db.scalars(select(Lesson).where(Lesson.student_id==user.id).order_by(Lesson.weekday,Lesson.start_time)).all()
-    changes=db.scalars(select(LessonChange).where(LessonChange.student_id==user.id,LessonChange.day>=week_start,LessonChange.day<end)).all()
-    by_key={(c.lesson_id,c.day):c for c in changes}
-    days=[]
-    for offset in range(7):
-        day=week_start+timedelta(days=offset)
-        daily=additions.get(str(day),[])
-        for l in lessons:
-            if l.weekday != day.weekday():continue
-            change=by_key.get((l.id,day))
-            start = change.new_start if change and change.new_start else l.start_time
-            end = l.end_time
-            if change and change.new_start:
-                original_start = datetime.strptime(l.start_time, '%H:%M')
-                original_end = datetime.strptime(l.end_time, '%H:%M')
-                duration = original_end - original_start
-                end = (datetime.strptime(start, '%H:%M') + duration).strftime('%H:%M')
-            daily.append(dict(id=l.id,date=str(day),start=change.new_start if change and change.new_start else l.start_time,
-                              end=end,title=l.title,kind=l.kind,room=change.new_room if change and change.new_room else l.room,
-                              teacher=l.teacher,color=l.color,changed=bool(change),note=change.note if change else None,
-                              original_room=l.room,original_start=l.start_time,original_end=l.end_time))
-        daily.sort(key=lambda x:x['start'])
-        days.append({'date':str(day),'items':daily})
-    return days
+class ScheduleDismiss(StrictBody):
+    date: date
+    view: Literal['week', 'month'] = 'week'
+    keys: list[str] = Field(min_length=1, max_length=300)
 
 @app.get('/api/schedule')
-def schedule(week:date|None=None,user:User=Depends(require_student),db:Session=Depends(get_db)):
-    target=week or campus_today()
-    if abs((target-campus_today()).days)>370: raise HTTPException(422,'Недопустимый период')
-    monday=target-timedelta(days=target.weekday())
-    return {'week_start':str(monday),'days':get_week_schedule(db,user,monday), 'timezone': 'Europe/Moscow'}
+def schedule(week: date | None = None, user: User = Depends(require_student), db: Session = Depends(get_db),
+             view: Literal['week', 'month'] = 'week'):
+    from .schedule_occurrences import check_date
+    from .schedule_views import student_days, unseen_changes, view_bounds
+
+    target = check_date(week or campus_today())
+    first, last = view_bounds(target, view)
+    days = student_days(db, user, first, last)
+    return {'week_start': str(first), 'date': str(target), 'view': view, 'days': days, 'timezone': 'Europe/Moscow',
+            'changes': unseen_changes(db, user.id, days)}
+
+
+@app.post('/api/schedule/dismiss', dependencies=[Depends(require_same_origin)])
+def dismiss_schedule(body: ScheduleDismiss, user: User = Depends(require_student), db: Session = Depends(get_db)):
+    from .schedule_occurrences import check_date
+    from .schedule_views import student_days, unseen_changes, view_bounds
+    from .storage_guards import lock_owner
+    from .workspace_db import ScheduleDismissal
+
+    first, last = view_bounds(check_date(body.date), body.view)
+    lock_owner(db, user.id)
+    changes = unseen_changes(db, user.id, student_days(db, user, first, last))
+    requested = set(body.keys)
+    saved = [row['key'] for row in changes if row['key'] in requested]
+    db.add_all(ScheduleDismissal(student_id=user.id, change_key=key) for key in saved)
+    db.commit()
+    return {'changes': [row for row in changes if row['key'] not in requested]}
 
 
 def ics_text(value):
@@ -364,20 +360,25 @@ def fold_ics(line):
 
 
 @app.get('/api/schedule/export')
-def export_schedule(week: date | None = None, user: User = Depends(require_student), db: Session = Depends(get_db)):
-    data = schedule(week, user, db)
+def export_schedule(week: date | None = None, user: User = Depends(require_student), db: Session = Depends(get_db),
+                    view: Literal['week', 'month'] = 'week'):
+    data = schedule(week, user, db, view)
     lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ATLAS Campus//Schedule//RU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:АТЛАС — расписание занятий', 'X-WR-TIMEZONE:Europe/Moscow', 'BEGIN:VTIMEZONE', 'TZID:Europe/Moscow', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0300', 'TZOFFSETTO:+0300', 'TZNAME:MSK', 'END:STANDARD', 'END:VTIMEZONE']
     stamp = utc_now().strftime('%Y%m%dT%H%M%SZ')
     for day in data['days']:
         for lesson in day['items']:
             start = day['date'].replace('-', '') + 'T' + lesson['start'].replace(':', '') + '00'
-            end = day['date'].replace('-', '') + 'T' + lesson['end'].replace(':', '') + '00'
+            end = lesson['end_date'].replace('-', '') + 'T' + lesson['end'].replace(':', '') + '00'
             description = f"{lesson['kind']} · {lesson['teacher']}"
             if lesson['note']:
                 description += '\n' + lesson['note']
-            lines.extend(['BEGIN:VEVENT', f"UID:lesson-{user.id}-{lesson['id']}-{day['date']}@atlas-concept.local", f'DTSTAMP:{stamp}', f'DTSTART;TZID=Europe/Moscow:{start}', f'DTEND;TZID=Europe/Moscow:{end}', 'SUMMARY:' + ics_text(lesson['title']), 'LOCATION:' + ics_text(lesson['room']), 'DESCRIPTION:' + ics_text(description), 'STATUS:CONFIRMED', 'END:VEVENT'])
+            status = 'CANCELLED' if lesson['status'] == 'cancelled' else 'CONFIRMED'
+            lines.extend(['BEGIN:VEVENT', f"UID:{lesson['uid']}-{user.id}@atlas-concept.local", f'DTSTAMP:{stamp}',
+                          f"SEQUENCE:{lesson['version']-1}", f'DTSTART;TZID=Europe/Moscow:{start}', f'DTEND;TZID=Europe/Moscow:{end}',
+                          'SUMMARY:' + ics_text(lesson['title']), 'LOCATION:' + ics_text(lesson['room']),
+                          'DESCRIPTION:' + ics_text(description), f'STATUS:{status}', 'END:VEVENT'])
     lines.append('END:VCALENDAR')
-    return Response('\r\n'.join(fold_ics(line) for line in lines) + '\r\n', media_type='text/calendar; charset=utf-8', headers={'Content-Disposition': f'attachment; filename="atlas-week-{data["week_start"]}.ics"'})
+    return Response('\r\n'.join(fold_ics(line) for line in lines) + '\r\n', media_type='text/calendar; charset=utf-8', headers={'Content-Disposition': f'attachment; filename="atlas-{view}-{data["date"]}.ics"'})
 
 @app.get('/api/grades')
 def grades(user:User=Depends(require_student),db:Session=Depends(get_db)):
@@ -709,20 +710,22 @@ def read_all_notifications(user:User=Depends(require_user),db:Session=Depends(ge
 @app.get('/api/dashboard')
 def dashboard(user:User=Depends(require_student),db:Session=Depends(get_db)):
     from .assignment_workflow import visible_deadline
+    from .schedule_views import student_days
     now = datetime.now(CAMPUS_TZ)
     today = now.date()
     monday=today-timedelta(days=today.weekday())
-    days=get_week_schedule(db,user,monday)
+    days = student_days(db, user, monday, monday + timedelta(days=13), markers=False)
     incoming = db.scalars(select(Deadline).where(Deadline.student_id == user.id, Deadline.is_done.is_(False),
                          visible_deadline(now.astimezone(timezone.utc))).order_by(Deadline.due_date, Deadline.id).limit(3)).all()
     grade_data=grades(user,db)
     recent=db.scalars(select(Notification).where(Notification.student_id==user.id).order_by(Notification.created_at.desc()).limit(3)).all()
     open_requests=db.scalar(select(func.count()).select_from(DocumentRequest).where(DocumentRequest.student_id==user.id,DocumentRequest.status.not_in(['ready', 'rejected'])))
     unread=db.scalar(select(func.count()).select_from(Notification).where(Notification.student_id==user.id,Notification.is_read==False))
-    upcoming_days = days + get_week_schedule(db, user, monday + timedelta(days=7))
-    next_lesson = next((lesson for day in upcoming_days for lesson in day['items'] if day['date'] > str(today) or (day['date'] == str(today) and lesson['end'] > now.strftime('%H:%M'))), None)
-    return {'profile':public_user(user),'today':next((d['items'] for d in days if d['date']==str(today)),[]),
-            'week_classes':sum(len(d['items']) for d in days),'grades':grade_data,
+    active = [lesson for day in days for lesson in day['items'] if lesson['status'] == 'active']
+    next_lesson = next((lesson for lesson in active if lesson['date'] >= str(today) and
+                        (lesson['end_date'], lesson['end']) > (str(today), now.strftime('%H:%M'))), None)
+    return {'profile':public_user(user),'today':[lesson for lesson in active if lesson['date'] == str(today)],
+            'week_classes':sum(lesson['is_lesson'] and lesson['date'] <= days[6]['date'] for lesson in active),'grades':grade_data,
             'deadlines':[deadline_payload(d) for d in incoming],
             'notifications':[notification_payload(n) for n in recent],
             'open_requests':open_requests,'unread_count':unread,
@@ -807,6 +810,7 @@ def static_files(filename:str, v: str = ''):
              'university.css':'text/css','operations.css':'text/css','operations.js':'text/javascript',
              'academics.css':'text/css','academics.js':'text/javascript',
              'units.js':'text/javascript','announcements.js':'text/javascript','announcements.css':'text/css',
+             'schedule.js':'text/javascript','schedule.css':'text/css',
              'shell.css':'text/css','viewport.js':'text/javascript','theme.css':'text/css','theme.js':'text/javascript',
              'favicon.svg':'image/svg+xml'}
     if filename not in allowed: raise HTTPException(404)
@@ -829,6 +833,7 @@ from .direct import create_router as direct_router
 from .workspace import create_router as workspace_router
 from .teaching import router as teaching_router
 from .scheduling import router as scheduling_router
+from .calendar_admin import router as calendar_router
 from .references import router as registry_router
 from .table_imports import router as tables_router
 from .units import router as units_router
@@ -838,6 +843,7 @@ app.include_router(direct_router())
 app.include_router(workspace_router())
 app.include_router(teaching_router)
 app.include_router(scheduling_router)
+app.include_router(calendar_router)
 app.include_router(registry_router)
 app.include_router(tables_router)
 app.include_router(units_router)

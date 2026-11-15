@@ -139,6 +139,7 @@ def test_dispatch_dean_admin_publish_and_csv_import(frontend_page):
     form.get_by_label('Дата',exact=True).fill(day)
     form.get_by_label('Начало',exact=True).fill('19:00')
     form.get_by_label('Окончание',exact=True).fill('20:00')
+    form.get_by_label('Основание для занятия вне учебного периода').fill('Разовое занятие изолированной приёмки')
     form.get_by_label('Комментарий',exact=True).fill('Демонстрационный разбор графа')
     save(dispatch)
     expect(dispatch).to_have_url(re.compile(r'/app/schedule-changes/\d+$'))
@@ -168,7 +169,7 @@ def test_dispatch_dean_admin_publish_and_csv_import(frontend_page):
     try:
         student=student_context.new_page()
         enter(student,base,0,'/app/schedule?date='+day)
-        expect(student.locator('.lesson-row').filter(has_text='Михаил Орлов')).to_contain_text('19:00')
+        expect(student.locator('.schedule-event').filter(has_text='Михаил Орлов')).to_contain_text('19:00')
     finally:
         student_context.close()
 

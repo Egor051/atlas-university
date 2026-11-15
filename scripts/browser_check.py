@@ -169,7 +169,7 @@ def run():
                 expect(page.locator('.day-pick')).to_have_count(7)
                 page.locator('.day-pick').last.click()
                 expect(page.locator('.day-pick').last).to_be_focused()
-                expect(page.locator('.day-view')).to_contain_text('В этот день занятий нет')
+                expect(page.locator('.day-view')).to_contain_text('Выходной')
                 screenshot(page, 'mobile-schedule-day')
                 with page.expect_download() as download:
                     page.locator('a[href*="/schedule/export"]').click()

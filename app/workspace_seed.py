@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from .db import CAMPUS_TZ, Deadline, Grade, User, campus_today, password_hasher, utc_now
+from .schedule_calendar import DEMO_WINDOW
 from .university_db import Teacher, TeachingAssignment
 from .workspace_db import AcademicGroup, Classroom, GroupMember, GroupWork, ScheduledClass, TeachingLoad, WorkDelivery
 
@@ -61,10 +62,11 @@ def seed_workspace(db):
             # One managed occurrence is ready for the dispatcher to move or cancel.
             day = campus_today() + timedelta(days=(4-campus_today().weekday()) % 7 + 7)
             start = datetime.combine(day, time(16, 35), CAMPUS_TZ).astimezone(timezone.utc)
-            db.add(ScheduledClass(load_id=load.id, group_id=group.id, teacher_id=assignment.teacher_id,
-                                  room_id=rooms[0].id, starts_at=start, ends_at=start+timedelta(minutes=60),
-                                  kind='seminar', equipment='проектор', note='Разбор решений по графам',
-                                  series='demo-orlov-seminar', status='active'))
+            if DEMO_WINDOW[0] <= day <= DEMO_WINDOW[1]:
+                db.add(ScheduledClass(load_id=load.id, group_id=group.id, teacher_id=assignment.teacher_id,
+                                      room_id=rooms[0].id, starts_at=start, ends_at=start+timedelta(minutes=60),
+                                      kind='practice', equipment='проектор', note='Разбор решений по графам',
+                                      series='demo-orlov-seminar', status='active'))
             deadline = db.scalar(select(Deadline).where(Deadline.student_id == student.id, Deadline.subject == subject)
                                  .order_by(Deadline.due_date, Deadline.id).limit(1))
             if deadline:

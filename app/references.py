@@ -30,7 +30,7 @@ class RoomBody(Versioned):
     building: str = Field(min_length=2, max_length=100)
     code: str = Field(min_length=2, max_length=80)
     capacity: int = Field(strict=True, ge=1, le=500)
-    kind: Literal['lecture','seminar','lab']
+    kind: Literal['lecture','seminar','lab','online']
     equipment: str = Field(default='', max_length=160)
     accessible: bool = Field(default=False, strict=True)
     available: bool = Field(default=True, strict=True)
@@ -112,8 +112,9 @@ def write_reference(db, user, dataset, body, *, apply=True):
         future = db.scalars(select(ScheduledClass).where(relation == row.id, ScheduledClass.status == 'active',
                                   ScheduledClass.ends_at > utc_now()))
         for event in future:
-            errors = room_problems(candidate, event.load.group, event.kind, event.equipment) if is_room else room_problems(
-                event.room, candidate, event.kind, event.equipment)
+            capacity = event.subgroup.capacity if event.subgroup else 1 if event.student_id else None
+            errors = room_problems(candidate if is_room else event.room, event.load.group if is_room else candidate,
+                                   event.kind, event.equipment, capacity=capacity)
             if errors:
                 raise HTTPException(409, 'Опубликованное занятие не соответствует изменениям. ' + errors[0])
         if not is_room and db.scalar(select(func.count()).select_from(GroupMember)
@@ -181,7 +182,7 @@ def write_member(db, user, body, *, apply=True, capacity_check=True):
         row = GroupMember(student_id=student.id, group_id=group.id)
         db.add(row)
     elif old_group != group.id:
-        row.group_id, row.version = group.id, row.version+1
+        row.group_id, row.subgroup_id, row.version = group.id, None, row.version+1
     student.group_name = group.code
     db.flush()
     if old_group != group.id:

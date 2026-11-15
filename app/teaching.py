@@ -136,12 +136,19 @@ def class_day(row):
     return as_utc(row.starts_at).astimezone(CAMPUS_TZ).date()
 
 
+def class_participants(db, meeting):
+    from .scheduling import recipients
+    return recipients(db, dict(group_id=meeting.group_id, subgroup_id=meeting.subgroup_id, student_id=meeting.student_id))
+
+
 def save_attendance(db, user, load, body, *, apply=True):
     check_member(db, load, body.student_id)
     if not campus_today()-timedelta(days=370) <= body.day <= campus_today():
         raise HTTPException(422, 'Отметка посещаемости относится к прошедшему учебному дню')
     if body.class_id:
         meeting = scoped_class(db, load, body.class_id)
+        if body.student_id not in class_participants(db, meeting):
+            raise HTTPException(404, 'Студент не участвует в этом занятии')
         if class_day(meeting) != body.day or as_utc(meeting.starts_at) > utc_now():
             raise HTTPException(422, 'Отметка должна относиться к начавшемуся занятию на выбранную дату')
     row = attendance_record(db, load, body.student_id, body.day, body.class_id)
@@ -175,15 +182,17 @@ def details(load_id: int, day: date | None = None, class_id: int | None = Query(
     from .scheduling import KIND
 
     load = owned_load(db, user, load_id)
-    day = class_day(scoped_class(db, load, class_id)) if class_id else day or campus_today()
+    meeting = scoped_class(db, load, class_id) if class_id else None
+    day = class_day(meeting) if meeting else day or campus_today()
     sessions = db.scalars(select(ScheduledClass).where(ScheduledClass.load_id == load.id, ScheduledClass.status == 'active')
                           .order_by(ScheduledClass.starts_at.desc()).limit(200)).all()
     people = roster(db, load.group_id)
+    attendance_ids = class_participants(db, meeting) if meeting else {person.id for person in people}
     ids = [person.id for person in people]
     grades, attendance = {}, {}
     for row in db.scalars(select(Grade).where(Grade.student_id.in_(ids), Grade.subject == load.discipline.title).order_by(Grade.id)):
         grades.setdefault(row.student_id, row)
-    for row in db.scalars(select(Attendance).where(Attendance.student_id.in_(ids), Attendance.subject == load.discipline.title,
+    for row in db.scalars(select(Attendance).where(Attendance.student_id.in_(attendance_ids), Attendance.subject == load.discipline.title,
                                                    attendance_scope(day, class_id)).order_by(Attendance.id)):
         attendance.setdefault(row.student_id, row)
     attendance_by_student = {}
@@ -208,6 +217,7 @@ def details(load_id: int, day: date | None = None, class_id: int | None = Query(
                          for row in sessions],
             'students': [dict(id=p.id, name=p.full_name, number=p.student_number,
                               grade=grade_data(grades.get(p.id)), attendance=attendance_data(attendance.get(p.id)),
+                              class_participant=p.id in attendance_ids,
                               attendance_counts=attendance_by_student.get(p.id, {})) for p in people],
             'summary': dict(student_count=len(people), assessed=len(scores), average=round(sum(scores)/len(scores),1) if scores else None,
                             submitted=submitted, attendance=dict(totals)),
@@ -232,8 +242,12 @@ def points(load_id: int, body: PointsBody, request: Request, response: Response,
     receipt, replay = begin_idempotent(db, request, response, user, f'points:{load.id}', body.model_dump())
     if replay is not None:
         return replay
-    if body.class_id and as_utc(scoped_class(db, load, body.class_id).starts_at) > utc_now():
-        raise HTTPException(422, 'Начисление относится к уже начавшемуся занятию')
+    if body.class_id:
+        meeting = scoped_class(db, load, body.class_id)
+        if body.student_id not in class_participants(db, meeting):
+            raise HTTPException(404, 'Студент не участвует в этом занятии')
+        if as_utc(meeting.starts_at) > utc_now():
+            raise HTTPException(422, 'Начисление относится к уже начавшемуся занятию')
     before = grade_data(grade_record(db, load, body.student_id))
     if before['version'] != body.version:
         raise HTTPException(409, 'Ведомость уже изменилась. Обновите данные.')

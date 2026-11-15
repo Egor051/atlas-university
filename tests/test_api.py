@@ -20,6 +20,8 @@ def test_public_assets_and_protected_apis():
     with client() as api:
         assert api.get('/').status_code==200
         assert api.get('/static/app.js').status_code==200
+        assert api.get('/static/schedule.js').status_code==200
+        assert api.get('/static/schedule.css').status_code==200
         assert api.get('/api/health').json()['ok'] is True
         for url in ['/api/me','/api/grades','/api/learning/progress','/api/dashboard','/api/requests','/api/staff/requests']:
             assert api.get(url).status_code==401
@@ -87,7 +89,7 @@ def test_validation_and_schedule():
         sign_in(api,'mark.demo','AtlasDemo!2026-M')
         assert api.post('/api/requests',json={'type':'statement','comment':'мало'},headers={'X-Requested-With':'ATLAS'}).status_code==422
         assert api.post('/api/requests',json={'type':'injected','comment':'test'},headers={'X-Requested-With':'ATLAS'}).status_code==422
-        assert api.get('/api/schedule?week=2005-01-01').status_code==422
+        assert api.get('/api/schedule?week=1999-01-01').status_code==422
         own = api.get('/api/me').json()['id']
         with SessionLocal() as db:
             changed = db.scalar(select(LessonChange.day).where(LessonChange.student_id == own).limit(1))

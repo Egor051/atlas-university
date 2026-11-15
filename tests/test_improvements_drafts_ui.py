@@ -24,10 +24,11 @@ def test_nearest_lesson_selects_its_date_and_changed_banner_opens_change(fronten
     dashboard=page.request.get(base+'/api/dashboard').json();next_lesson=dashboard['next_lesson']
     page.get_by_role('button',name='Открыть расписание',exact=True).click()
     expect(page.locator('.day-pick.selected')).to_have_attribute('data-day',next_lesson['date'])
-    expect(page.locator('.lesson-row.search-match')).to_have_attribute('data-lesson-id',str(next_lesson['id']))
-    if page.get_by_role('button',name='Показать изменение',exact=True).count():
-        page.get_by_role('button',name='Показать изменение',exact=True).click()
-        expect(page.locator('.lesson-row.search-match .change-comparison')).to_contain_text('Было:')
+    expect(page.locator('.schedule-event.search-match')).to_have_attribute('data-lesson-id',str(next_lesson['id']))
+    change = page.get_by_role('link',name='Показать изменение',exact=True)
+    if change.count():
+        change.click()
+        expect(page.locator('.schedule-event.search-match .schedule-event-details[open]')).to_contain_text('Было')
 
 def test_request_survives_expired_cookie_and_same_user_reauthentication(frontend_page):
     page,base=frontend_page;enter(page,base);visit(page,base,'certificates');request_form(page)

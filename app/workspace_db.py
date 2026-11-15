@@ -1,7 +1,7 @@
 """Academic groups, teaching operations and the approved group timetable."""
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, Index, String, Text, UniqueConstraint
+from sqlalchemy import Date, DateTime, ForeignKey, Index, JSON, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -22,6 +22,46 @@ class GroupMember(Base):
     __tablename__ = 'academic_group_members'
     student_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
     group_id: Mapped[int] = mapped_column(ForeignKey('academic_groups.id'), index=True)
+    version: Mapped[int] = mapped_column(default=1)
+    subgroup_id: Mapped[int | None] = mapped_column(ForeignKey('academic_subgroups.id'))
+
+
+class AcademicSubgroup(Base):
+    __tablename__ = 'academic_subgroups'
+    __table_args__ = (UniqueConstraint('group_id', 'code', name='uq_academic_subgroup_code'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey('academic_groups.id'), index=True)
+    code: Mapped[str] = mapped_column(String(60))
+    capacity: Mapped[int]
+    version: Mapped[int] = mapped_column(default=1)
+
+
+class AcademicTerm(Base):
+    __tablename__ = 'academic_terms'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    academic_year: Mapped[int]
+    number: Mapped[int]
+    group_id: Mapped[int | None] = mapped_column(ForeignKey('academic_groups.id'), index=True)
+    program: Mapped[str] = mapped_column(String(180), default='')
+    starts_on: Mapped[date] = mapped_column(Date, index=True)
+    ends_on: Mapped[date] = mapped_column(Date)
+    weekdays: Mapped[str] = mapped_column(String(7))
+    periods: Mapped[list] = mapped_column(JSON)
+    legacy: Mapped[bool] = mapped_column(default=False)
+    source: Mapped[str] = mapped_column(String(300))
+    version: Mapped[int] = mapped_column(default=1)
+
+
+class AcademicDayRule(Base):
+    __tablename__ = 'academic_day_rules'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    group_id: Mapped[int | None] = mapped_column(ForeignKey('academic_groups.id'), index=True)
+    program: Mapped[str] = mapped_column(String(180), default='')
+    starts_on: Mapped[date] = mapped_column(Date, index=True)
+    ends_on: Mapped[date] = mapped_column(Date)
+    kind: Mapped[str] = mapped_column(String(20))
+    label: Mapped[str] = mapped_column(String(130), default='')
+    source: Mapped[str] = mapped_column(String(300))
     version: Mapped[int] = mapped_column(default=1)
 
 
@@ -71,9 +111,53 @@ class ScheduledClass(Base):
     series: Mapped[str] = mapped_column(String(32), index=True)
     status: Mapped[str] = mapped_column(String(20), default='active')
     version: Mapped[int] = mapped_column(default=1)
+    subgroup_id: Mapped[int | None] = mapped_column(ForeignKey('academic_subgroups.id'))
+    student_id: Mapped[int | None] = mapped_column(ForeignKey('users.id'))
+    title: Mapped[str] = mapped_column(String(180), default='', server_default='')
+    calendar_exception: Mapped[str] = mapped_column(String(300), default='', server_default='')
+    change_action: Mapped[str] = mapped_column(String(20), default='', server_default='')
+    previous: Mapped[dict | None] = mapped_column(JSON(none_as_null=True))
+    previous_day: Mapped[date | None] = mapped_column(Date, index=True)
     load: Mapped[TeachingLoad] = relationship()
     teacher: Mapped[Teacher] = relationship()
     room: Mapped[Classroom] = relationship()
+    subgroup: Mapped[AcademicSubgroup | None] = relationship()
+
+
+class LegacyClassOverride(Base):
+    __tablename__ = 'legacy_class_overrides'
+    __table_args__ = (UniqueConstraint('lesson_id', 'original_day', name='uq_legacy_occurrence'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey('lessons.id'))
+    original_day: Mapped[date] = mapped_column(Date, index=True)
+    day: Mapped[date] = mapped_column(Date, index=True)
+    previous_day: Mapped[date] = mapped_column(Date, index=True)
+    start: Mapped[str] = mapped_column(String(5))
+    end: Mapped[str] = mapped_column(String(5))
+    room: Mapped[str] = mapped_column(String(80))
+    teacher: Mapped[str] = mapped_column(String(120))
+    status: Mapped[str] = mapped_column(String(20))
+    note: Mapped[str] = mapped_column(String(300))
+    calendar_exception: Mapped[str] = mapped_column(String(300), default='')
+    version: Mapped[int]
+    change_action: Mapped[str] = mapped_column(String(20))
+    previous: Mapped[dict] = mapped_column(JSON)
+
+
+class ScheduleDismissal(Base):
+    __tablename__ = 'schedule_dismissals'
+    student_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    change_key: Mapped[str] = mapped_column(String(100), primary_key=True)
+
+
+class ScheduleCalendarAlert(Base):
+    __tablename__ = 'schedule_calendar_alerts'
+    __table_args__ = (Index('ix_schedule_calendar_alert_group_start', 'group_id', 'starts_on'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey('academic_groups.id'))
+    starts_on: Mapped[date] = mapped_column(Date)
+    ends_on: Mapped[date] = mapped_column(Date)
+    days: Mapped[list] = mapped_column(JSON)
 
 
 class ScheduleChange(Base):

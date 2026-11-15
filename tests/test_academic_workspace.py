@@ -52,6 +52,16 @@ def step(api, row, name, status=200, comment=''):
                          json=dict(step=name,version=row['version'],comment=comment),headers=HEAD),status)
 
 
+def term_for_test(admin, day, weeks, group_id):
+    first = day.isoformat()
+    last = (day+timedelta(weeks=weeks-1)).isoformat()
+    return body(admin.put('/api/scheduling/calendar/terms', headers=HEAD, json={
+        'group_id': group_id, 'academic_year': day.year, 'number': 1, 'weekdays': '0123456',
+        'starts_on': first, 'ends_on': last, 'periods': [{'kind': 'teaching', 'start': first, 'end': last}],
+        'source': 'Даты изолированного теста расписания',
+    }))
+
+
 def test_assessment_history_roster_and_stale_writes(roles):
     teacher,student,other,colleague,admin=(roles(r) for r in ('teacher','student','other','colleague','admin'))
     load=orlov(teacher)
@@ -212,6 +222,8 @@ def test_schedule_roles_series_conflicts_move_and_cancel(roles):
     dispatcher,dean,admin,student,other,teacher=(roles(r) for r in ('scheduler','staff','admin','student','other','teacher'))
     day=campus_today()+timedelta(days=18)
     slot={**new_slot(dispatcher,day),'weeks':2}
+    group_id=next(x['group_id'] for x in body(dispatcher.get('/api/scheduling/options'))['loads'] if x['id']==slot['load_id'])
+    term_for_test(admin,day,2,group_id)
     draft_data={'action':'create','slot':slot,'note':'Демонстрационный разбор'}
     endpoint='/api/scheduling/changes'
     assert dean.post(endpoint,json=draft_data,headers=HEAD).status_code==403
@@ -240,13 +252,14 @@ def test_schedule_roles_series_conflicts_move_and_cancel(roles):
     cancel={'action':'cancel','event_id':event,'event_version':2,'note':'Вымышленная причина отмены'}
     row=body(dispatcher.post(endpoint,json=cancel,headers=HEAD),201)
     step(admin,step(dean,step(dispatcher,row,'submit'),'agree'),'publish')
-    assert not any(x['id']==1000000000+event for x in items(student,day))
+    cancelled = next(x for x in items(student,day) if x['id']==1000000000+event)
+    assert cancelled['status']=='cancelled' and cancelled['change']['label']=='Отменено'
     assert any(n['title']=='Занятие отменено' for n in body(student.get('/api/notifications?filter=schedule')))
 
 
 def test_concurrent_publication_resolves_shared_room_conflict(roles):
     dispatcher,dean,admin=(roles(r) for r in ('scheduler','staff','admin'))
-    slot=new_slot(dispatcher,campus_today()+timedelta(days=26))
+    slot={**new_slot(dispatcher,campus_today()+timedelta(days=26)), 'calendar_exception': 'Разовое занятие при проверке конфликта'}
     rows=[]
     for note in ('Проект А','Проект Б'):
         row=body(dispatcher.post('/api/scheduling/changes',json={'action':'create','slot':slot,'note':note},headers=HEAD),201)

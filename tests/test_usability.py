@@ -148,7 +148,7 @@ def test_schedule_day_count_and_money_readability(frontend_page):
     expect(page.locator('[data-view="day"]')).to_have_attribute('aria-pressed', 'true')
     page.locator('.day-pick').last.click()
     expect(page.locator('.schedule-info')).to_contain_text('0 занятий')
-    expect(page.locator('.day-view')).to_contain_text('В этот день занятий нет')
+    expect(page.locator('.day-view')).to_contain_text('Выходной')
     visit(page, base, 'finance')
     for amount in page.locator('.finance-summary b').all():
         assert amount.bounding_box()['height'] < 35, 'Currency must remain on one line'

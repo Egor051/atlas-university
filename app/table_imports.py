@@ -20,7 +20,7 @@ from .references import (GroupBody, LoadBody, MemberBody, RoomBody, group_data, 
                          room_data, write_load, write_member, write_reference)
 from .scheduling import ChangeBody, class_data, class_query, create_draft, own_timetable, validate_change, week_bounds
 from .table_formats import MAX_UPLOAD, read_table, table_bytes
-from .teaching import AttendanceBody, MarkBody, attendance_scope, class_day, save_attendance, save_grade, scoped_class
+from .teaching import AttendanceBody, MarkBody, attendance_scope, class_day, class_participants, save_attendance, save_grade, scoped_class
 from .university_db import Teacher, TeachingAssignment
 from .workspace import load_payload, load_query, lock_workspace, owned_load, recorded, roster
 from .workspace_db import AcademicGroup, Classroom, GroupMember, ScheduledClass, TableImport
@@ -30,7 +30,7 @@ Format = Literal['csv','xlsx']
 router = APIRouter(prefix='/api/tables')
 coordinators = {'scheduler','staff','admin'}
 DATA = {
-    'schedule': ('Расписание', 'load_id teacher_id room_id day start end kind equipment weeks note', 'load_id teacher_id room_id day start end kind', coordinators|{'teacher'}, {'scheduler'}),
+    'schedule': ('Расписание', 'load_id teacher_id room_id day start end kind equipment weeks interval subgroup_id student_id title calendar_exception note', 'load_id teacher_id room_id day start end kind', coordinators|{'teacher'}, {'scheduler'}),
     'rooms': ('Аудитории','id version building code capacity kind equipment accessible available', 'building code capacity kind', coordinators, {'scheduler','admin'}),
     'groups': ('Учебные группы','id version code program capacity accessible', 'code program capacity', coordinators, {'admin'}),
     'loads': ('Учебная нагрузка','id version group_id assignment_id', 'group_id assignment_id', coordinators|{'teacher'}, {'admin'}),
@@ -39,7 +39,7 @@ DATA = {
     'attendance': ('Журнал посещаемости','student_id day status note version class_id', 'student_id day status version', {'teacher'}, {'teacher'}),
 }
 MODELS = {'rooms':RoomBody, 'groups':GroupBody, 'loads':LoadBody, 'students':MemberBody, 'grades':MarkBody, 'attendance':AttendanceBody}
-INTS = {'id','version','load_id','teacher_id','room_id','weeks','capacity','group_id','assignment_id','student_id','score','class_id'}
+INTS = {'id','version','load_id','teacher_id','room_id','weeks','interval','capacity','group_id','subgroup_id','assignment_id','student_id','score','class_id'}
 
 
 class Upload(StrictBody):
@@ -125,7 +125,13 @@ def export_rows(dataset, db, user, load, day, class_id=None):
             marks.setdefault(row.student_id,row)
         return [dict(student_id=uid,name=person.full_name,score=marks[uid].current if uid in marks else None,
                      version=marks[uid].version if uid in marks else 0) for uid,person in people.items()]
-    day = class_day(scoped_class(db, load, class_id)) if class_id else day or campus_today()
+    if class_id:
+        meeting = scoped_class(db, load, class_id)
+        day = class_day(meeting)
+        participants = class_participants(db, meeting)
+        people = {uid: person for uid, person in people.items() if uid in participants}
+    else:
+        day = day or campus_today()
     present = {}
     for row in db.scalars(select(Attendance).where(Attendance.student_id.in_(people),Attendance.subject==load.discipline.title,
                                                   attendance_scope(day, class_id)).order_by(Attendance.id)):
@@ -236,7 +242,7 @@ def check_rows(db, user, dataset, load, parsed):
     for number,body in parsed:
         try:
             if dataset=='schedule':
-                key=(body.slot.load_id,body.slot.day,body.slot.start)
+                key=(body.slot.load_id,body.slot.day,body.slot.start,body.slot.subgroup_id,body.slot.student_id)
                 _, intervals=validate_change(db,body,queued)
                 queued.extend(intervals)
             elif dataset in {'rooms','groups'}:

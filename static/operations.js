@@ -9,12 +9,17 @@
     {id:'teach-consultations',label:'Мои консультации',icon:'clock',hint:'Время приёма и записи студентов',roles:['teacher']},
     {id:'timetable-admin',label:'Расписание занятий',icon:'calendar',hint:'Опубликованные занятия и проекты переноса',roles:offices},
     {id:'schedule-changes',label:'Проекты расписания',icon:'plan',hint:'Подготовка, согласование и утверждение',roles:offices},
+    {id:'academic-calendar',label:'Учебный календарь',icon:'calendar',hint:'Семестры, исключения и подгруппы',roles:offices},
     {id:'registry',label:'Аудитории и группы',icon:'pin',hint:'Аудиторный фонд, группы, нагрузка и состав',roles:offices},
     {id:'tables',label:'Импорт и экспорт',icon:'file',hint:'CSV, XLSX, шаблоны, просмотр и журнал',roles:workers},
   ];
   const stateNames={draft:'Черновик',submitted:'На согласовании',agreed:'Согласован',returned:'Возвращён',published:'Опубликован'};
-  const actionNames={create:'Новое занятие',update:'Изменение занятия',cancel:'Отмена занятия'};
-  const kindNames={lecture:'Лекция',seminar:'Семинар',practice:'Практика',lab:'Лабораторная'};
+  const actionNames={create:'Новое событие',update:'Изменение занятия',cancel:'Отмена занятия',restore:'Восстановление занятия'};
+  const kindNames={lecture:'Лекция',practice:'Практическое занятие',lab:'Лабораторная работа',consultation:'Консультация',
+    credit:'Зачёт',exam:'Экзамен',retake:'Пересдача',organization:'Организационное мероприятие',other:'Учебное мероприятие'};
+  const periodNames={teaching:'Учебные недели',credit:'Зачётная неделя',exam:'Экзаменационная сессия',break:'Межсеместровые каникулы'};
+  const ruleNames={holiday:'Государственный праздник',off:'Выходной',working:'Учебный день',summer:'Летние каникулы',
+    break:'Межсеместровые каникулы',legacy:'Демонстрационный период'};
   const attendanceNames={present:'Присутствовал',absent:'Отсутствовал',excused:'Уважительная причина',late:'Опоздал'};
   const teachTabs={roster:'Студенты',grades:'Ведомость',attendance:'Посещаемость',works:'Задания',report:'Отчёт и история'};
   const registryTabs={rooms:'Аудитории',groups:'Группы',loads:'Нагрузка',students:'Состав групп'};
@@ -23,7 +28,8 @@
     id:'ID записи',version:'Версия',building:'Корпус',code:'Код',capacity:'Мест',kind:'Тип',equipment:'Оборудование',
     accessible:'Безбарьерный доступ',available:'Доступна',program:'Программа',group_id:'ID группы',assignment_id:'ID назначения',
     student_id:'ID студента',load_id:'ID нагрузки',teacher_id:'ID преподавателя',room_id:'ID аудитории',day:'Дата',
-    start:'Начало',end:'Окончание',weeks:'Недель',note:'Комментарий',status:'Отметка',score:'Итоговые баллы',reason:'Основание',class_id:'Занятие',
+    start:'Начало',end:'Окончание',weeks:'Число повторений',interval:'Интервал в неделях',subgroup_id:'ID подгруппы',
+    title:'Название события',calendar_exception:'Основание исключения',note:'Комментарий',status:'Отметка',score:'Итоговые баллы',reason:'Основание',class_id:'Занятие',
   };
   const callbacks=new WeakMap();
   const retries=new Map();
@@ -60,6 +66,7 @@
   }
 
   function cleanQuery(page,query,parts){
+    if(page==='academic-calendar')return /^(20\d\d)$/.test(query.year||'')?{year:Number(query.year)}:{};
     if(['timetable-admin','teach-schedule','registry'].includes(page)&&validDay(query.week))return {week:query.week};
     if(page==='registry'&&!parts.length&&Object.hasOwn(registryTabs,query.tab)&&!(query.tab==='students'&&role()!=='admin'))return {tab:query.tab};
     if(page==='teaching'&&parts.length===3)return {
@@ -81,6 +88,7 @@
   }
 
   async function load(page,parts,query){
+    if(page==='academic-calendar')return c.api('scheduling/calendar?year='+(query.year||c.today().slice(0,4)));
     if(page==='teach-schedule')return c.api(url('teaching/schedule',query));
     if(page==='teach-consultations'){
       const [data,loads]=await Promise.all([c.api('teaching/consultations'),c.api('teaching')]);
@@ -242,7 +250,7 @@
       day:selected==='attendance'?data.day:undefined,class_id:selected==='attendance'?data.class_id:undefined}),
       'Работа с таблицей','outline-button')}</div>`;
     return heading+picker+dayFilter+tables+
-      list(data.students,person=>{
+      list(data.students.filter(person=>!data.class_id||selected==='roster'||person.class_participant),person=>{
         const counts=person.attendance_counts;
         const details=selected==='grades'?'Накопленные баллы: '+(person.grade.score??'—'):selected==='attendance'?
           (attendanceNames[person.attendance.status]||'Отметки пока нет'):person.number+
@@ -269,22 +277,24 @@
     const dispatch=page==='timetable-admin'&&role()==='scheduler';
     const name=page==='teach-schedule'?'Мои занятия':page==='registry'?'Занятость аудитории '+data.title:'Расписание занятий';
     const base=page==='registry'?'/app/registry/'+c.state.routeParts[0]:'/app/'+page;
-    const tools=dispatch?button('class-create','Подготовить занятие')+link('/app/schedule-changes','Проекты','outline-button'):
-      page==='timetable-admin'?link('/app/schedule-changes','Проекты','outline-button'):'';
+    const tools=page==='timetable-admin'?(dispatch?button('class-create','Подготовить занятие'):'')+
+      link('/app/schedule-changes','Проекты','outline-button')+link('/app/academic-calendar','Учебный календарь','outline-button'):'';
     return title(name,'Время занятий — МСК (UTC+3).',tools)+weekControls(base,data.week)+
-      list(data.items,x=>row(esc(x.discipline),p(c.dateFmt(x.day,{day:'numeric',month:'long'})+' · '+x.start+'–'+x.end)+
-        p([x.kind_label,x.group,x.teacher,x.room].filter(Boolean).join(' · '))+p(x.status==='cancelled'?'Отменено. '+x.note:x.note),
-        dispatch&&x.status==='active'?button('class-update','Изменить',x.id)+button('class-cancel','Отменить',x.id):''),
+      list(data.items,(x,i)=>row(esc(x.title||x.discipline),p(c.dateFmt(x.day,{day:'numeric',month:'long'})+' · '+x.start+'–'+x.end)+
+        p([x.kind_label,x.group,x.subgroup,x.student_id&&!x.legacy_day?'Индивидуально':'',x.teacher,x.room].filter(Boolean).join(' · '))+
+        p(x.status==='cancelled'?'Отменено. '+x.note:x.note),
+        dispatch&&x.key?(x.status==='active'?button('class-update','Изменить',i)+button('class-cancel','Отменить',i):button('class-restore','Восстановить',i)):''),
       'Занятий на этой неделе нет','Выберите другую неделю.');
   }
 
   function changeLabel(value, options){
     const details=value.change, slot=details.slot;
-    if(!slot)return p('Занятие №'+value.event_id)+p(details.note);
+    if(!slot)return p('Занятие №'+(value.event_id||details.legacy?.id))+p(details.note);
     const load=options?.loads.find(x=>x.id===slot.load_id), teacher=options?.teachers.find(x=>x.id===slot.teacher_id),
       room=options?.rooms.find(x=>x.id===slot.room_id);
-    return p([load?.discipline,load?.group,teacher?.name,room?.code,kindNames[slot.kind]].filter(Boolean).join(' · '))+
-      p(c.dateFmt(slot.day)+' · '+slot.start+'–'+slot.end+' МСК'+(slot.weeks>1?' · '+slot.weeks+' недель':''))+p(details.note);
+    return p([slot.title||load?.discipline,load?.group,teacher?.name||slot.teacher,room?.code||slot.room,kindNames[slot.kind]].filter(Boolean).join(' · '))+
+      p(c.dateFmt(slot.day)+' · '+slot.start+'–'+slot.end+' МСК'+(slot.weeks>1?' · повторений '+slot.weeks+' · шаг '+(slot.interval||1)+' нед.':''))+
+      p(slot.calendar_exception?('Основание исключения · '+slot.calendar_exception):'')+p(details.note);
   }
 
   function changes(data){
@@ -302,6 +312,98 @@
     const names={created:'Создан',edited:'Отредактирован',submit:'Передан на согласование',agree:'Согласован',publish:'Утверждён',return:'Возвращён'};
     return title(data.title,actionNames[data.action]+' · '+stateNames[data.state],steps)+section('Параметры',changeLabel(data,data.options))+
       section('Журнал согласования',`<ol class="op-log">${data.history.map(x=>`<li><b>${esc(names[x.action]||x.action)}</b><small>${esc(x.author)} · ${c.stamp(x.created_at)} МСК</small>${p(x.after?.comment)}</li>`).join('')}</ol>`);
+  }
+
+  function calendarPage(data){
+    const editable=role()==='admin';
+    const groupName=id=>data.groups.find(group=>group.id===id)?.code||'';
+    const scope=x=>groupName(x.group_id)||x.program||'Весь вуз';
+    const dates=x=>c.dateFmt(x.starts_on,{day:'numeric',month:'short',year:'numeric'})+' — '+
+      c.dateFmt(x.ends_on,{day:'numeric',month:'short',year:'numeric'});
+    const edit=(name,x)=>editable?button('calendar-'+name,'Изменить',x.id)+
+      button('calendar-delete-'+name,'Удалить',x.id):'';
+    const yearForm=`<form data-op-filter="calendar" class="op-inline-form">
+      ${input('year','Первый год учебного года',data.year,'number','min="2000" max="2099" required')}
+      <button class="outline-button" type="submit">Открыть</button></form>`;
+    const terms=list(data.terms,x=>row(esc('Семестр '+x.number+' · '+scope(x)),p(dates(x))+
+      x.periods.map(part=>p(periodNames[part.kind]+' · '+dates({starts_on:part.start,ends_on:part.end}))).join('')+
+      p(x.source),edit('term',x)),'Семестры не опубликованы','Укажите даты по утверждённому учебному графику.');
+    const rules=list(data.rules,x=>row(esc(ruleNames[x.kind]+' · '+scope(x)),p(dates(x))+p(x.label)+p(x.source),
+      x.kind==='legacy'?'':edit('rule',x)),'Дополнительных правил нет','Федеральные праздничные даты учитываются автоматически.');
+    const groups=list(data.subgroups,x=>row(esc(groupName(x.group_id)+' · '+x.code),p('Мест '+x.capacity),
+      editable?button('calendar-subgroup','Изменить',x.id):''),'Подгрупп пока нет','Подгруппа нужна для занятий с частью группы.');
+    const members=editable?list(data.members,x=>row(esc(x.name),
+      p([groupName(x.group_id),data.subgroups.find(s=>s.id===x.subgroup_id)?.code||'Общая группа'].join(' · ')),
+      button('calendar-member','Назначить подгруппу',x.id))):'';
+    return title('Учебный календарь','',link('/app/timetable-admin','К расписанию','outline-button'))+yearForm+
+      section('Семестры', (editable?button('calendar-term','Добавить семестр'):'')+terms)+
+      section('Каникулы и исключения', (editable?button('calendar-rule','Добавить правило'):'')+rules)+
+      section('Подгруппы',(editable?button('calendar-subgroup','Добавить подгруппу'):'')+groups)+
+      (editable?section('Состав подгрупп',members):'');
+  }
+
+  function periodFields(part,index){
+    return `<div data-calendar-period class="op-form-grid calendar-period">
+      ${select('period_kind_'+index,'Период',Object.entries(periodNames),part.kind||'teaching')}
+      ${input('period_start_'+index,'Начало периода',part.start,'date','required')}
+      ${input('period_end_'+index,'Конец периода',part.end,'date','required')}
+      ${button('calendar-remove-period','Убрать период')}</div>`;
+  }
+
+  function calendarForm(action,id,data){
+    const base='scheduling/calendar/';
+    const choices=data.groups.map(x=>[x.id,x.code]);
+    const subgroupChoices=group=>[['','Общая группа'],...data.subgroups.filter(s=>s.group_id===group).map(x=>[x.id,x.code])];
+    if(action==='member'){
+      const member=data.members.find(x=>x.id===id);
+      return modal('Назначить подгруппу',member.name,
+        select('subgroup_id','Подгруппа',subgroupChoices(member.group_id),member.subgroup_id??''),
+        v=>request(base+'members','PUT',{student_id:id,subgroup_id:Number(v.subgroup_id)||null,version:member.version}));
+    }
+    if(action==='subgroup'){
+      const subgroup=data.subgroups.find(x=>x.id===id);
+      const group=subgroup?data.groups.find(x=>x.id===subgroup.group_id):null;
+      return modal(subgroup?'Изменить подгруппу':'Добавить подгруппу','',
+        (group?p(group.code):select('group_id','Группа',choices))+
+        input('code','Название',subgroup?.code,'text','required maxlength="60"')+
+        input('capacity','Вместимость',subgroup?.capacity??'','number','min="1" max="200" required'),
+        v=>request(base+'subgroups','PUT',{id:subgroup?.id,version:subgroup?.version||0,
+          group_id:group?.id||Number(v.group_id),code:v.code,capacity:Number(v.capacity)}));
+    }
+    const isTerm=action.endsWith('term'), collection=isTerm?'terms':'rules';
+    const entry=data[collection].find(x=>x.id===id);
+    if(action.startsWith('delete-'))return modal('Удалить запись календаря','Укажите актуальные даты, если вы меняете границы периода.',
+      p(entry.source),()=>request(base+collection+'/'+id+'?version='+entry.version,'DELETE'),undefined,'Удалить');
+    const scope=[['','Весь вуз'],...choices.map(([id,name])=>['g:'+id,name]),
+      ...[...new Set(data.groups.map(x=>x.program))].map(name=>['p:'+name,name])];
+    const savedScope=entry?.group_id?'g:'+entry.group_id:entry?.program?'p:'+entry.program:'';
+    const range=`<div class="op-form-grid">${input('starts_on',isTerm?'Начало семестра':'Первый день',entry?.starts_on,'date','required')}
+      ${input('ends_on',isTerm?'Конец семестра':'Последний день',entry?.ends_on,'date','required')}</div>`;
+    const dates=select('scope','Календарь для',scope,savedScope)+range+input('source','Основание или источник дат',entry?.source,'text','required minlength="3" maxlength="300"');
+    const specific=isTerm?`<div class="op-form-grid">
+      ${input('academic_year','Первый год учебного года',entry?.academic_year??data.year,'number','min="2000" max="2098" required')}
+      ${input('number','Номер семестра',entry?.number??1,'number','min="1" max="4" required')}</div>
+      ${choiceGroup('weekday','Учебные дни недели',['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map((text,i)=>[String(i),text]),
+      (entry?.weekdays||'01234').split(''))}
+      <div data-calendar-periods>${(entry?.periods||[{}]).map(periodFields).join('')}</div>
+      ${button('calendar-add-period','Добавить период')}
+      ${choiceGroup('legacy','Прежнее регулярное расписание',[['yes','Использовать прежний шаблон в учебные недели']],entry?.legacy?['yes']:[])}`:
+      select('kind','Причина',Object.entries(ruleNames).filter(([name])=>name!=='legacy'),entry?.kind||'off')+
+      input('label','Уточнение',entry?.label,'text','maxlength="130"');
+    return modal(entry?'Изменить учебный календарь':isTerm?'Добавить семестр':'Добавить правило',
+      isTerm?'Укажите точные даты по учебному графику.':'',dates+specific,(v,fd)=>{
+        const detail={id:entry?.id,version:entry?.version||0,group_id:v.scope.startsWith('g:')?Number(v.scope.slice(2)):null,
+          program:v.scope.startsWith('p:')?v.scope.slice(2):'',starts_on:v.starts_on,ends_on:v.ends_on,source:v.source};
+        if(isTerm){
+          const periods=Object.keys(v).filter(x=>x.startsWith('period_kind_')).map(x=>{
+            const i=x.slice('period_kind_'.length);
+            return {kind:v[x],start:v['period_start_'+i],end:v['period_end_'+i]};
+          });
+          Object.assign(detail,{academic_year:Number(v.academic_year),number:Number(v.number),
+            weekdays:fd.getAll('weekday').join(''),periods,legacy:fd.has('legacy')});
+        }else Object.assign(detail,{kind:v.kind,label:v.label});
+        return request(base+collection,'PUT',detail);
+      },isTerm?value=>c.route('academic-calendar',{context:{year:value.academic_year}}):undefined);
   }
 
   function registry(data){
@@ -371,7 +473,7 @@
 
   function render(page,data){
     const renderers={teaching,'teach-schedule':()=>timetable(data,page),'teach-consultations':consultations,
-      'timetable-admin':()=>timetable(data,page),'schedule-changes':changes,registry,tables:tablePage};
+      'timetable-admin':()=>timetable(data,page),'schedule-changes':changes,'academic-calendar':calendarPage,registry,tables:tablePage};
     return renderers[page](data);
   }
 
@@ -513,25 +615,48 @@
     return options.teachers.filter(row=>row.discipline_id===selected?.discipline_id).map(row=>[row.id,row.name]);
   }
 
+  function classAudience(options,load,field){
+    const group=options.loads.find(row=>row.id===Number(load))?.group_id;
+    if(field==='subgroup_id')return [['','Вся группа'],...options.subgroups.filter(x=>x.group_id===group).map(x=>[x.id,x.code])];
+    return [['','Для группы или подгруппы'],...options.students.filter(x=>x.group_id===group).map(x=>[x.id,x.name])];
+  }
+
   function classForm(action,id,data){
-    const saved=action==='edit-change'?data.change:null, event=data.items?.find(x=>x.id===id);
+    const saved=action==='edit-change'?data.change:null, event=action==='class-create'?null:data.items?.[id];
     const kind=saved?.action||action.replace('class-','');
     const fields=saved?.slot||event||{};
+    const legacy=saved?.legacy||(event?.legacy_day?{id:event.id,day:event.legacy_day}:null);
+    const noSlot=['cancel','restore'].includes(kind);
     const choice=fields.load_id??data.options.loads[0]?.id;
-    const parts=kind==='cancel'?'':`<div class="op-form-grid">${select('load_id','Группа и дисциплина',
-      data.options.loads.map(x=>[x.id,x.group+' · '+x.discipline]),choice,'data-op-load')}${select('teacher_id','Преподаватель',
+    const date=fields.day||(q().week&&q().week>c.today()?q().week:c.addDays(c.today(),1));
+    const timeFields=`${input('day','Дата',date,'date','required')}${input('start','Начало',fields.start||'17:00','time','required')}
+      ${input('end','Окончание',fields.end||'18:00','time','required')}`;
+    const exceptionField=input('calendar_exception','Основание для занятия вне учебного периода',fields.calendar_exception,'text','maxlength="300"');
+    const audienceFields=kind==='create'?select('load_id','Группа и дисциплина',
+      data.options.loads.map(x=>[x.id,x.group+' · '+x.discipline]),choice,'data-op-load required')+
+      select('subgroup_id','Подгруппа',classAudience(data.options,choice,'subgroup_id'),fields.subgroup_id??'')+
+      select('student_id','Студент для индивидуального события',classAudience(data.options,choice,'student_id'),fields.student_id??''):'';
+    const parts=noSlot?'':legacy?`<div class="op-form-grid">${timeFields}
+      ${input('room','Аудитория или формат',fields.room,'text','required maxlength="80"')}
+      ${input('teacher','Преподаватель',fields.teacher,'text','required maxlength="120"')}</div>${exceptionField}`:
+      `<div class="op-form-grid">${audienceFields}${select('teacher_id','Преподаватель',
       appointmentTeachers(data.options,choice),fields.teacher_id)}${select('room_id','Аудитория',
-      data.options.rooms.map(x=>[x.id,x.code+' · '+x.capacity+' мест'+(x.available?'':' · недоступна')]),fields.room_id)}
-      ${select('kind','Вид занятия',Object.entries(kindNames),fields.kind||'seminar')}
-      ${input('day','Дата',fields.day||c.addDays(c.today(),1),'date','required')}${input('start','Начало',fields.start||'17:00','time','required')}
-      ${input('end','Окончание',fields.end||'18:00','time','required')}${kind==='create'?input('weeks','Повторять недель',fields.weeks||1,'number','required min="1" max="16"'):''}</div>
-      ${input('equipment','Оборудование через запятую',fields.equipment,'text','maxlength="160"')}`;
+      data.options.rooms.map(x=>[x.id,x.code+(x.kind==='online'?' · дистанционный формат':' · '+x.capacity+' мест')+
+        (x.available?'':' · недоступна')]),fields.room_id)}
+      ${select('kind','Вид события',Object.entries(kindNames),fields.kind==='seminar'?'practice':fields.kind||'lecture')}${timeFields}
+      ${kind==='create'?input('weeks','Число повторений с первой датой',fields.weeks||1,'number','required min="1" max="32"')+
+        input('interval','Шаг между занятиями в неделях',fields.interval||1,'number','required min="1" max="4"'):''}</div>
+      ${input('title','Название или тема события',fields.title,'text','maxlength="180"')}
+      ${input('equipment','Оборудование через запятую',fields.equipment,'text','maxlength="160"')}${exceptionField}`;
     const eventId=saved?.event_id||event?.id, eventVersion=saved?.event_version||event?.version;
-    return modal(actionNames[kind],'Параметры проекта. Время вводится по Москве.',parts+area('note',kind==='cancel'?'Причина отмены':'Комментарий',saved?.note||event?.note),
+    return modal(actionNames[kind],noSlot?(event?.title||event?.discipline||''):'Время вводится по Москве.',
+      parts+area('note',kind==='cancel'?'Причина отмены':'Комментарий',saved?.note??(kind==='update'?event?.note:'')),
       v=>{
         const note=v.note;delete v.note;
-        const body={action:kind,note,...(eventId?{event_id:eventId,event_version:eventVersion}:{}),
-          ...(kind==='cancel'?{}:{slot:numbers({...v,weeks:v.weeks||1},'load_id','teacher_id','room_id','weeks')})};
+        const body={action:kind,note,...(legacy?{legacy,event_version:eventVersion}:eventId?{event_id:eventId,event_version:eventVersion}:{})};
+        if(!noSlot)body.slot=legacy?v:numbers({...v,load_id:v.load_id??choice,
+          subgroup_id:Number(v.subgroup_id??fields.subgroup_id)||null,student_id:Number(v.student_id??fields.student_id)||null,
+          weeks:v.weeks||1,interval:v.interval||1},'load_id','teacher_id','room_id','weeks','interval');
         return saved?request('scheduling/changes/'+data.id,'PUT',{...body,version:data.version}):request('scheduling/changes','POST',body);
       },value=>c.route('schedule-changes',{parts:[String(value.id)]}));
   }
@@ -544,7 +669,7 @@
     const capacity=input('capacity','Число мест',record.capacity||24,'number',`required min="1" max="${tab==='groups'?200:500}"`);
     const fields={
       rooms:input('building','Корпус',record.building,'text','required maxlength="100"')+code+capacity+
-        select('kind','Тип помещения',Object.entries({lecture:'Лекционная',seminar:'Семинарская',lab:'Лаборатория'}),record.kind)+
+        select('kind','Тип помещения',Object.entries({lecture:'Лекционная',seminar:'Семинарская',lab:'Лаборатория',online:'Дистанционный формат'}),record.kind)+
         input('equipment','Оборудование через запятую',record.equipment,'text','maxlength="160"')+
         yesNo('accessible','Безбарьерный доступ',record.accessible)+yesNo('available','Помещение доступно',record.available??true),
       groups:code+input('program','Учебная программа',record.program,'text','required maxlength="180"')+capacity+yesNo('accessible','Требуется безбарьерный доступ',record.accessible),
@@ -621,6 +746,7 @@
   function click(action,id){
     const data=current();
     if(!data||c.state.pending)return;
+    if(action.startsWith('calendar-'))return calendarForm(action.slice(9),id,data);
     if(action.startsWith('class-')||action==='edit-change')return classForm(action,id,data);
     if(action.startsWith('step-')){
       const step=action.slice(5);
@@ -637,7 +763,24 @@
     c=context;
     document.addEventListener('click',event=>{
       const el=event.target.closest('[data-op-action]');
-      if(el)click(el.dataset.opAction,Number(el.dataset.id));
+      if(!el)return;
+      const action=el.dataset.opAction;
+      if(action==='calendar-add-period'||action==='calendar-remove-period'){
+        const form=el.closest('[data-op-form]');
+        const periods=c.$('[data-calendar-periods]',form);
+        if(action==='calendar-add-period'&&periods.children.length<32){
+          const index=1+Math.max(-1,...[...periods.querySelectorAll('[name^=period_kind_]')].map(x=>Number(x.name.split('_').at(-1))));
+          periods.insertAdjacentHTML('beforeend',periodFields({},index));
+          periods.lastElementChild.querySelector('select').focus();
+        }
+        if(action==='calendar-remove-period'&&periods.children.length>1){
+          el.closest('[data-calendar-period]').remove();
+          form.querySelector('[data-op-action="calendar-add-period"]').focus();
+        }
+        form.dataset.dirty='true';
+        return;
+      }
+      click(action,Number(el.dataset.id));
     });
     document.addEventListener('submit',event=>{
       const form=event.target;
@@ -651,7 +794,7 @@
         event.preventDefault();
         const values=Object.fromEntries(new FormData(form)), type=form.dataset.opFilter;
         const datasetChanged=type==='tables'&&values.dataset!==(q().dataset||current().items[0]?.id);
-        const context=type==='work-review'?values:type==='tables'?{...values,scope:datasetChanged?undefined:values.scope}:type==='week'?
+        const context=['work-review','calendar'].includes(type)?values:type==='tables'?{...values,scope:datasetChanged?undefined:values.scope}:type==='week'?
           {week:values['filter-day']}:type==='teaching-session'?{tab:form.dataset.tab,class_id:values.class_id}:
           {tab:'attendance',day:values['filter-day']};
         c.route(c.state.page,{parts:c.state.routeParts,context});
@@ -661,9 +804,12 @@
       const el=event.target;
       if(el.matches('[data-op-file]'))pickFile(el);
       if(el.matches('[data-op-load]')){
-        const choices=appointmentTeachers(current().options,el.value);
-        const teachers=c.$('#op-teacher_id');
-        teachers.replaceChildren(...choices.map(([id,name])=>new Option(name,id)));
+        const options=current().options;
+        const selectors={teacher_id:appointmentTeachers(options,el.value),
+          subgroup_id:classAudience(options,el.value,'subgroup_id'),student_id:classAudience(options,el.value,'student_id')};
+        for(const [name, choices] of Object.entries(selectors)){
+          el.form.elements[name].replaceChildren(...choices.map(([id,label])=>new Option(label,id)));
+        }
       }
       if(el.closest('[data-op-map]'))c.$('[data-op-action="apply-table"]')?.setAttribute('disabled','');
       const form=el.closest('[data-op-form]');if(form){form.dataset.dirty='true';if(['kind','state'].includes(el.name))toggleWorkFields(form);}

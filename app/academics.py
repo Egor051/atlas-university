@@ -7,6 +7,8 @@ from sqlalchemy import select
 from .academic_points import PointAward, award_data
 from .db import CAMPUS_TZ, Grade, Lesson, campus_today
 from .learning_db import Attendance
+from .schedule_calendar import KIND, LESSON_KINDS
+from .schedule_occurrences import audience
 from .session_security import as_utc
 from .workspace import load_query
 from .workspace_db import GroupMember, ScheduledClass, TeachingLoad
@@ -70,10 +72,10 @@ def attendance_summary(statuses):
 
 
 def _class_rows(db, student, group_ids, load_by_id, marks):
-    from .scheduling import KIND
-
-    meetings = db.scalars(select(ScheduledClass).where(ScheduledClass.group_id.in_(group_ids),
-                          ScheduledClass.status == 'active').order_by(ScheduledClass.starts_at.desc())).all()
+    query = select(ScheduledClass).where(ScheduledClass.group_id.in_(group_ids),
+                                        ScheduledClass.status == 'active', ScheduledClass.kind.in_(LESSON_KINDS))
+    meetings = db.scalars(audience(query, db.get(GroupMember, student.id), student.id)
+                         .order_by(ScheduledClass.starts_at.desc())).all()
     session_days = Counter((load_by_id[row.load_id].discipline.title,
                             as_utc(row.starts_at).astimezone(CAMPUS_TZ).date()) for row in meetings if row.load_id in load_by_id)
     by_class = {mark.class_id: mark for mark in marks if mark.class_id}

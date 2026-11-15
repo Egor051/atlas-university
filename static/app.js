@@ -65,7 +65,7 @@
   const staffPages = [{id:'staff',label:'Учебный офис',icon:'file',hint:'Очередь заявлений и справок'},...campus.pages.filter(p=>p.staff),profile,settings,notifications];
   const section = (id,label,icon,hint,children) => ({id,label,icon,hint,children});
   const account = section('account','Мой кабинет','user','Профиль и настройки',['profile','settings']);
-  const planningOffice = section('schedule-work','Организация занятий','calendar','Расписание, согласование и справочники',['timetable-admin','schedule-changes','registry','tables']);
+  const planningOffice = section('schedule-work','Организация занятий','calendar','Расписание, согласование и справочники',['timetable-admin','schedule-changes','academic-calendar','registry','tables']);
   const sections = {
     student:[
       section('records','Занятия и оценки','graduation','Расписание, оценки, посещаемость и экзамены',['schedule','grades','exams']),
@@ -104,7 +104,7 @@
   const startPage = role => ({student:'home',staff:'staff',teacher:'teacher',scheduler:'timetable-admin',admin:'registry',union:'union-office',vuc:'vuc-office'})[role];
   const transitions = {submitted:['review','needs_info','rejected'],review:['processing','needs_info','ready','rejected'],processing:['ready','needs_info','rejected'],needs_info:['review','rejected'],ready:[],rejected:[]};
   const pageTitle = page => menuFor(state.user.role).find(p=>p.id===page)?.label;
-  const state = {user:null,sessionEpoch:0,page:'home',routeHref:'/',routeParts:[],routeContext:{},historyEntry:0,data:{},week:null,day:null,scheduleMode:matchMedia('(max-width: 700px)').matches?'day':'week',unread:0,requestFilter:'all',requestView:'mine',serviceQuery:'',noticeFilter:'all',staffFilter:'active',staffQuery:'',config:{demo_mode:false},loadingId:0,modalId:0,pending:0,requestOffset:0,noticeOffset:0,staffOffset:0};
+  const state = {user:null,sessionEpoch:0,page:'home',routeHref:'/',routeParts:[],routeContext:{},historyEntry:0,data:{},scheduleMode:'week',unread:0,requestFilter:'all',requestView:'mine',serviceQuery:'',noticeFilter:'all',staffFilter:'active',staffQuery:'',config:{demo_mode:false},loadingId:0,modalId:0,pending:0,requestOffset:0,noticeOffset:0,staffOffset:0};
   const app = $('#app');
   const conceptNotice = $('.concept-bar', app).outerHTML;
   const drawerMedia=matchMedia('(max-width: 900px)');
@@ -127,7 +127,6 @@
   const dueDays = value => Math.round((asDate(value)-asDate(today()))/86400000);
   const relative = value => {const n=dueDays(value);return n<0?`Просрочено на ${-n} дн.`:n===0?'Сегодня':n===1?'Завтра':`Через ${n} дн.`;};
   const greeting = () => {const h=Number(moscowParts().hour);return h<11?'Доброе утро':h<17?'Добрый день':'Добрый вечер';};
-  state.week=monday(today());state.day=today();
 
   function toast(message) {const el=$('#toast');el.textContent='';const box=document.createElement('div');box.className='toast-message';box.textContent=message;el.append(box);clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.replaceChildren(),5000);}
   async function api(path,options={}) {
@@ -176,7 +175,7 @@
       const [dashboard,announcements]=await Promise.all([api('dashboard'),window.ATLASAnnouncements.homeFeed()]);
       return {...dashboard,announcements};
     }
-    if(page==='schedule')return api('schedule?week='+state.week);
+    if(page==='schedule')return api('schedule?'+new URLSearchParams({week:state.routeContext.date||today(),view:state.scheduleMode==='month'?'month':'week'}));
     if(page==='grades')return api('learning/progress');
     if(['requests','certificates'].includes(page)){
       const kind=page==='certificates'?'certificate':'request';
@@ -202,7 +201,10 @@
     const result={};
     const id=Number(context.id);
     if(Number.isSafeInteger(id)&&id>0)result.id=id;
-    if(/^\d{4}-\d{2}-\d{2}$/.test(context.date||'')&&Math.abs(dueDays(context.date))<=360&&isoDate(asDate(context.date))===context.date)result.date=context.date;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(context.date||'')&&isoDate(asDate(context.date))===context.date&&
+       (page==='schedule'?/^20/.test(context.date):Math.abs(dueDays(context.date))<=360))result.date=context.date;
+    if(page==='schedule'&&['day','week','month'].includes(context.view))result.view=context.view;
+    if(page==='schedule'&&result.id&&context.change==='1')result.change='1';
     if(context.subject?.trim())result.subject=context.subject.trim().slice(0,130);
     if(context.kind?.trim())result.kind=context.kind.trim().slice(0,40);
     return result;
@@ -250,10 +252,8 @@
       state.requestView='mine';state.requestFilter='all';state.requestOffset=0;state.serviceQuery='';
     }
     state.page=target;state.routeParts=detail;state.routeContext=next;
-    if(query&&!extension){
-      if(target==='schedule'&&next.date){state.day=next.date;state.week=monday(next.date);state.scheduleMode='day';}
-      campus.prepareRoute(target,next);
-    }else if(target==='schedule'&&previousPage==='schedule'&&previous.date){state.day=today();state.week=monday(state.day);}
+    if(target==='schedule')state.scheduleMode=next.view||(next.date||matchMedia('(max-width: 700px)').matches?'day':'week');
+    if(query&&!extension)campus.prepareRoute(target,next);
     if(fromHistory||replace||state.routeHref===href){
       state.historyEntry=history.state?.atlasEntry??0;
       history.replaceState({atlasEntry:state.historyEntry},'',href);
@@ -270,7 +270,11 @@
     if(!query||extension||epoch!==state.sessionEpoch||modalId!==state.modalId||loadId!==state.loadingId||$('.error-state'))return;
     if(target==='schedule'){
       const row=next.id?$(`[data-lesson-id="${next.id}"]`):null;
-      if(row){row.classList.add('search-match');row.tabIndex=-1;row.scrollIntoView({block:'center',behavior:'instant'});row.focus({preventScroll:true});}
+      if(row){
+        const details=row.querySelector('.schedule-event-details');
+        if(details&&next.change==='1')details.open=true;
+        row.classList.add('search-match');row.tabIndex=-1;row.scrollIntoView({block:'center',behavior:'instant'});row.focus({preventScroll:true});
+      }
     }else if(target!=='grades')await campus.openContext(target,next);
   }
   function goToUrl(url,options={}){
@@ -485,17 +489,6 @@
       ${window.ATLASAnnouncements.timeline(d.announcements)}
       <div class="home-sections"><div class="home-widget-column">${deadlines}${notifications}</div><div class="home-widget-column">${todayLessons}${shortcuts}</div></div>`;
   }
-  function schedulePage(d){
-    const weekdays=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];const count=d.days.reduce((n,x)=>n+x.items.length,0);const changes=d.days.flatMap(x=>x.items).filter(x=>x.changed);
-    if(!d.days.some(x=>x.date===state.day))state.day=d.week_start;
-    const visibleDays=state.scheduleMode==='day'?d.days.filter(x=>x.date===state.day):d.days;const visibleCount=visibleDays.reduce((n,x)=>n+x.items.length,0);
-    return head('Время для учёбы','Расписание','Пары, аудитории и преподаватели. Время — московское.',`<a class="outline-button" href="/api/schedule/export?week=${encodeURIComponent(d.week_start)}" download>${icon('download')} Скачать расписание</a>`)+
-      `<div class="schedule-toolbar"><div class="week-switch"><button class="square-btn" data-action="prev-week" aria-label="Предыдущая неделя">${icon('left')}</button><h2>${dateFmt(d.week_start,{day:'numeric',month:'short'})} — ${dateFmt(addDays(d.week_start,6),{day:'numeric',month:'short'})}</h2><button class="square-btn" data-action="next-week" aria-label="Следующая неделя">${icon('right')}</button></div><div class="toolbar-actions"><button class="outline-button" data-action="this-week">Сегодня</button><div class="segmented" aria-label="Вид расписания"><button data-view="day" aria-pressed="${state.scheduleMode==='day'}">День</button><button data-view="week" aria-pressed="${state.scheduleMode==='week'}">Неделя</button></div></div></div>
-      ${changes.length?`<div class="change-banner">${icon('alert')}<span><b>На этой неделе есть изменения: ${changes.length}</b><span>Обновлённые пары отмечены жёлтым. Время указано по Москве.</span><button class="mini-link" data-route="schedule" data-date="${esc(d.days.find(day=>day.items.some(x=>x.changed)).date)}" data-record-id="${Number(changes[0].id)}">Показать изменение</button></span></div>`:''}
-      ${state.scheduleMode==='day'?`<div class="day-picker" aria-label="Выбрать день">${d.days.map((day,i)=>`<button class="day-pick ${state.day===day.date?'selected':''}" data-day="${day.date}" aria-pressed="${state.day===day.date}"><span>${weekdays[i]}</span><b>${asDate(day.date).getDate()}</b><span class="day-count">${day.items.length?String(day.items.length):'—'}</span></button>`).join('')}</div>`:''}
-      <div class="schedule-info"><span>${visibleCount} занятий · ${state.scheduleMode==='day'?'Выбранный день':'Неделя'} · МСК (UTC+3)</span><span>Регулярное расписание с учётом переносов</span></div>
-      ${state.scheduleMode==='day'?`<section class="card card-pad day-view">${cardHead(dateFmt(state.day,{weekday:'long',day:'numeric',month:'long'}))}${lessonRows(visibleDays[0].items)}</section>`:`<div class="week-grid">${visibleDays.map((day,i)=>`<section class="day-column"><div class="day-head ${day.date===today()?'today':''}"><div><span>${weekdays[i]}</span><b>${asDate(day.date).getDate()}</b></div><span>${day.date===today()?'Сегодня':day.items.length+' зан.'}</span></div><div class="day-lessons">${day.items.length?day.items.map(l=>`<article class="day-lesson ${esc(l.color)} ${l.changed?'lesson-changed':''}"><div class="day-lesson-time">${esc(l.start)}–${esc(l.end)}</div><h3>${esc(l.title)}</h3><span class="lesson-kind">${esc(l.kind)}</span><p>${esc(l.teacher)}</p><div class="lesson-location">${icon('pin')} ${esc(l.room)}</div>${l.changed?`<div class="change-note">${icon('alert')} ${esc(l.note)}${l.original_room||l.original_start?`<small class="change-comparison">Было: ${esc(l.original_start)} · ${esc(l.original_room)} → Стало: ${esc(l.start)} · ${esc(l.room)}</small>`:''}</div>`:''}</article>`).join(''):'<div class="week-empty">Свободный день<span>Время для себя</span></div>'}</div></section>`).join('')}</div>`}`;
-  }
   function filterButtons(items,current,attribute){return `<div class="filter-tabs" aria-label="Фильтр списка">${items.map(([id,label,count])=>`<button ${attribute}="${id}" aria-pressed="${current===id}">${esc(label)}${count!==undefined?`<span>${count}</span>`:''}</button>`).join('')}</div>`;}
   function pagination(data,kind){return data.total>data.limit?`<nav class="pagination" aria-label="Страницы списка"><span>${data.offset+1}–${Math.min(data.offset+data.items.length,data.total)} из ${data.total}</span><div><button class="square-btn" data-pager="${kind}" data-offset="${Math.max(0,data.offset-data.limit)}" aria-label="Предыдущая страница" ${data.offset?'':'disabled'}>${icon('left')}</button><button class="square-btn" data-pager="${kind}" data-offset="${data.offset+data.limit}" aria-label="Следующая страница" ${data.has_more?'':'disabled'}>${icon('right')}</button></div></nav>`:'';}
   function requestRow(r,staff=false){return `<button class="request-row ${r.status==='ready'?'request-is-ready':''}" data-action="request-details" data-id="${r.id}"><span class="file-glyph ${r.status==='ready'?'ready':''}">${icon(r.status==='ready'?'checkCircle':'file')}</span><span class="request-row-main"><b>${esc(r.type)}</b><small>№ ${r.id} · ${timestampDate(r.created_at,{day:'numeric',month:'short'})}${staff?` · ${esc(r.student_name)} · ${esc(r.group)}`:''}</small>${r.staff_message?`<span class="request-preview">${esc(r.staff_message.slice(0,110))}</span>`:''}</span><span class="request-row-end">${badge(r)}<small>${r.status==='ready'?'Открыть результат':r.status==='rejected'?'Посмотреть причину':`Ориентир: ${dateFmt(r.due_at,{day:'numeric',month:'short'})}`}</small></span>${icon('right')}</button>`;}
@@ -575,7 +568,7 @@
   }
   function drawPage(){
     const target=$('#page-content'), page=state.page, data=state.data[page];if(!target||!data)return;
-    const renders={home:dashboard,schedule:schedulePage,grades:window.ATLASAcademics.render,requests:requestsPage,certificates:requestsPage,notifications:notificationsPage,profile:profilePage,staff:staffPage};
+    const renders={home:dashboard,schedule:window.ATLASSchedule.render,grades:window.ATLASAcademics.render,requests:requestsPage,certificates:requestsPage,notifications:notificationsPage,profile:profilePage,staff:staffPage};
     const extension=extensionFor(page);
     if(extension){
       target.innerHTML=extension.render(page,data);
@@ -1005,8 +998,6 @@
       return;
     }
     const demo=e.target.closest('#demo-dialog[open] [data-demo]');if(demo&&state.config.demo_mode){const u=demoAccounts[Number(demo.dataset.demo)];if(u)await submitLogin($('#login-form'),u,demo);return;}
-    const view=e.target.closest('[data-view]');if(view){state.scheduleMode=view.dataset.view;drawPage();$(`[data-view="${state.scheduleMode}"]`)?.focus({preventScroll:true});return;}
-    const day=e.target.closest('[data-day]');if(day){state.day=day.dataset.day;drawPage();$(`[data-day="${state.day}"]`)?.focus({preventScroll:true});return;}
     const pager=e.target.closest('[data-pager]');if(pager){const kind=pager.dataset.pager;state[{requests:'requestOffset',notifications:'noticeOffset',staff:'staffOffset'}[kind]]=Number(pager.dataset.offset);await updatePage();return;}
     for(const [attr,field,offset] of [['data-request-filter','requestFilter','requestOffset'],
       ['data-notice-filter','noticeFilter','noticeOffset'],['data-staff-filter','staffFilter','staffOffset']]){
@@ -1045,8 +1036,6 @@
     if(action==='request-history'){await loadRequestHistory(Number(el.dataset.id),Number(el.dataset.offset),el);return;}
     if(action==='search'){searchModal();return;}
     if(action==='retry'){await refreshCurrent(el);return;}
-    if(action==='this-week'){state.week=monday(today());state.day=today();await updatePage();return;}
-    if(action==='prev-week'||action==='next-week'){const week=addDays(state.week,action==='prev-week'?-7:7);if(Math.abs(dueDays(week))>360){toast('Расписание доступно в пределах года.');return;}state.week=week;state.day=week;await updatePage();return;}
     if(action==='logout'){el.disabled=true;try{await api('logout',{method:'POST'});clearSession();announceIdentity();history.replaceState({},'','/');showLogin();toast('Вы вышли из кабинета.');}catch(error){el.disabled=false;toast('Не удалось завершить сессию. '+error.message);}return;}
     if(action==='read-all'){el.disabled=true;try{await api('notifications/read-all',{method:'POST'});await refreshUnread();await updatePage({quiet:true});toast('Все уведомления прочитаны.');}catch(error){el.disabled=false;toast(error.message);}return;}
     if(action==='read-notification'){el.disabled=true;try{await markRead(el.dataset.id);await updatePage({quiet:true});$('.filter-tabs button[aria-pressed="true"]')?.focus({preventScroll:true});}catch(error){if(!error.stale){el.disabled=false;toast(error.message);}}return;}
@@ -1133,7 +1122,7 @@
   window.addEventListener('online',()=>toast('Подключение восстановлено. Можно обновить раздел.'));
   window.addEventListener('offline',()=>toast('Нет сети. Показаны уже загруженные данные; для сохранения нужен сервер.'));
   async function boot(){try{state.config=await api('config');}catch{/* Fail closed: do not advertise demo credentials if config is unavailable. */}try{state.user=await api('me');await campus.prepare();if(!state.user)return;await enterRoute();startPolling();}catch{showLogin();}}
-  const context={state,api,searchDelay,pendingDeadline:id=>deadlineWrites.get(id),$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,monday,refreshUnread,newRequestModal,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
-  improvements.init(context);campus.init(context);window.ATLASAcademics.init(context);extensions.forEach(ext=>ext.init(context));
+  const context={state,api,searchDelay,pendingDeadline:id=>deadlineWrites.get(id),$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,isoDate,monday,refreshUnread,newRequestModal,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
+  improvements.init(context);campus.init(context);window.ATLASAcademics.init(context);window.ATLASSchedule.bind(context);extensions.forEach(ext=>ext.init(context));
   boot();
 })();
