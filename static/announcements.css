@@ -109,7 +109,7 @@
   background: var(--announcement-marker, var(--atlas-accent-mark));
 }
 .announcement-excerpt { overflow-wrap: anywhere; color: var(--text); font-size: .9rem; }
-.announcement-filters, .announcement-editor-fields {
+.announcement-editor-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(9.5rem, 100%), 1fr));
   gap: var(--atlas-row-pad, 12px);

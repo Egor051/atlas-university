@@ -1,19 +1,31 @@
 /* Shared spacing, navigation and application surfaces. */
 :root {
-  --atlas-gap: 16px;
-  --atlas-card-pad: 20px;
-  --atlas-row-pad: 12px;
+  --atlas-gap: 14px;
+  --atlas-card-pad: 16px;
+  --atlas-row-pad: 10px;
   --atlas-control-height: 44px;
+  --atlas-content-block-pad: 18px;
+  --atlas-content-gutter: 28px;
 }
 
 .compact-campus {
   --atlas-gap: 10px;
-  --atlas-card-pad: 14px;
+  --atlas-card-pad: 12px;
   --atlas-row-pad: 7px;
   --atlas-control-height: 38px;
+  --atlas-content-block-pad: 14px;
+  --atlas-content-gutter: 20px;
 }
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 650px) {
   .compact-campus { --atlas-control-height: 44px; }
+}
+@media (max-width: 900px) {
+  :root { --atlas-content-gutter: 20px; }
+  .compact-campus { --atlas-content-gutter: 14px; }
+}
+@media (max-width: 650px) {
+  :root { --atlas-card-pad: 14px; --atlas-content-block-pad: 14px; --atlas-content-gutter: 16px; }
+  .compact-campus { --atlas-content-block-pad: 12px; }
 }
 
 .shell { --sidebar-width: 240px; }
@@ -21,7 +33,7 @@
 .sidebar {
   width: var(--sidebar-width);
   padding: var(--atlas-gap) 8px 12px;
-  background: var(--atlas-surface);
+  background: var(--atlas-navigation);
   transition: width 210ms ease;
 }
 .main { margin-left: var(--sidebar-width); transition: margin-left 210ms ease; }
@@ -61,8 +73,8 @@
 .side-person-copy { min-width: 0; }
 .side-person-copy > span { color: var(--muted); }
 .side-person .avatar { display: grid; place-items: center; margin: 0; font-size: 12px; }
-.topbar, .section-nav, .bottom-nav { background: var(--atlas-surface); }
-.topbar { min-height: calc(var(--atlas-control-height) + 16px); padding-block: var(--atlas-row-pad); }
+.topbar, .section-nav, .bottom-nav { background: var(--atlas-navigation); }
+.topbar { min-height: calc(var(--atlas-control-height) + 12px); padding-block: var(--atlas-row-pad); }
 .top-actions { gap: min(1vw, 10px); }
 .section-nav { padding-block: 3px; }
 .section-nav > * { min-height: calc(var(--atlas-control-height) - 8px); color: var(--atlas-accent-text); }
@@ -163,6 +175,7 @@
   background: var(--atlas-elevated);
   border: 1px solid var(--atlas-divider);
   border-radius: 15px;
+  box-shadow: var(--atlas-dialog-shadow);
 }
 .demo-dialog::backdrop { background: var(--atlas-scrim); }
 .demo-list { margin-top: 0; }
@@ -215,15 +228,11 @@
 .theme-choices label:has(:focus-visible) { outline: 2px solid var(--atlas-focus); outline-offset: 2px; }
 .theme-choices input:focus-visible { outline: none; }
 
-/* Compact view changes shared spacing without scaling text or hit areas. */
-.compact-campus :is(.content, .modal, .card-pad, .campus-tile, .disclosure-body) { padding: var(--atlas-card-pad); }
-.compact-campus :is(.home-sections, .grid-dashboard, .campus-grid, .campus-metrics, .compact-list, .grade-summary, .requests-layout, .service-catalog, .day-picker, .week-grid, .ops-grid) { gap: var(--atlas-gap); }
-.compact-campus :is(.title-row, .campus-section, .modal-head, .disclosure, .filter-tabs, .field, .campus-toolbar) { margin-bottom: var(--atlas-gap); }
-.compact-campus :is(.compact-row, .campus-metric, .lesson-row, .deadline-item, .notice-preview, .notification-full, .request-row, .campus-log > article, .disclosure > summary, .day-lesson, .day-pick, .service-card) { padding-block: var(--atlas-row-pad); }
-.compact-campus :is(.primary-button, .outline-button, .muted-button, .danger-button, .quiet-button, .mini-link, .filter-tabs button, .field :is(input:not([type="checkbox"]):not([type="radio"]),select), .search-field, .search-trigger) {
+/* Keep the reduced density of components which don't set their own spacing. */
+.compact-campus :is(.grid-dashboard, .campus-metrics, .compact-list, .grade-summary, .requests-layout, .service-catalog, .day-picker, .week-grid, .ops-grid) { gap: var(--atlas-gap); }
+.compact-campus :is(.campus-metric, .campus-log > article, .day-lesson, .day-pick, .service-card) { padding-block: var(--atlas-row-pad); }
+.compact-campus :is(.quiet-button, .mini-link, .filter-tabs button, .search-trigger) {
   min-height: var(--atlas-control-height);
   padding-block: var(--atlas-row-pad);
 }
-.compact-campus :is(.field textarea) { padding-block: var(--atlas-row-pad); }
 .compact-campus :is(.grade-table, .ops-table) :is(th,td) { padding-block: var(--atlas-row-pad); }
-.compact-campus .topbar { padding-block: var(--atlas-row-pad); }

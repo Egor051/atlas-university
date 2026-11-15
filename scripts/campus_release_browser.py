@@ -52,7 +52,7 @@ def observe(page, label, output, report, width, theme, scheme, *, contrast):
         report['failures'].append({'screen': path, 'shell': dimensions})
     effective_dark = theme == 'dark' or (theme == 'system' and scheme == 'dark')
     if dimensions['system_dark'] != (scheme == 'dark') or dimensions['scheme'] != (
-        '#151420' if effective_dark else '#f5f6fa'
+        '#313338' if effective_dark else '#f5f6fa'
     ):
         report['failures'].append({'screen': path, 'theme_mismatch': dimensions})
     if contrast:

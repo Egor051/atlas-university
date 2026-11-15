@@ -61,10 +61,10 @@
     return c.head('','Успеваемость и посещаемость','Посещения, результаты работ и история начислений по дисциплинам.',
       `<a class="outline-button" data-route="exams" href="/app/exams">Сессия и зачёты ${c.icon('right')}</a>`)+
       (items.length?`<section class="card card-pad academic-progress" aria-label="Результаты по дисциплинам">
-        <div class="academic-filters">
-          <label class="search-field">${c.icon('search')}<input type="search" id="academic-search" maxlength="130" aria-label="Поиск по дисциплинам и преподавателям" placeholder="Поиск"></label>
-          <label>Дисциплина<select id="academic-discipline"><option value="">Все дисциплины</option>${options(subjects)}</select></label>
-          <label>Семестр<select id="academic-semester"><option value="">Все семестры</option>${options(semesters)}<option value="unknown">Не указан</option></select></label>
+        <div class="filter-bar academic-filters">
+          <label class="search-field filter-query">${c.icon('search')}<input type="search" id="academic-search" maxlength="130" aria-label="Поиск по дисциплинам и преподавателям" placeholder="Поиск"></label>
+          <label class="filter-field">Дисциплина<select id="academic-discipline"><option value="">Все дисциплины</option>${options(subjects)}</select></label>
+          <label class="filter-field">Семестр<select id="academic-semester"><option value="">Все семестры</option>${options(semesters)}<option value="unknown">Не указан</option></select></label>
         </div>
         <p class="academic-result-count" id="academic-count" role="status">Дисциплин: ${items.length}</p>
         <div class="grade-table-wrap academic-scroll" tabindex="0" role="region" aria-label="Таблица академических результатов">

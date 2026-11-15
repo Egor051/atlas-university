@@ -82,7 +82,7 @@
 
   function caseList(page,data){
     const {status}=c.state.routeContext;
-    const filters=`<form class="op-inline-form" data-unit-filter>
+    const filters=`<form class="filter-bar op-inline-form" data-unit-filter>
       ${ui.select('status','Статус',[['','Все статусы'],...Object.entries(statuses)],status)}
       <button type="submit" class="outline-button">Показать</button></form>`;
     const items=ui.list(data.cases.items,item=>ui.row(

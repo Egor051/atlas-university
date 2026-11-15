@@ -17,7 +17,7 @@
     const dark = mode === 'dark' || (mode === 'system' && system.matches);
     document.documentElement.dataset.theme = mode;
     colorScheme.content = mode === 'system' ? 'light dark' : mode;
-    themeColor.content = dark ? '#151420' : '#f5f6fa';
+    themeColor.content = dark ? '#313338' : '#f5f6fa';
   }
 
   function sync(value) {

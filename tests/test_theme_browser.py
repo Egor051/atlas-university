@@ -11,7 +11,7 @@ from test_university_browser import enter
 pytestmark = pytest.mark.skipif(os.environ.get('ATLAS_RUN_BROWSER_TESTS') != '1',
                                 reason='Opt-in isolated real Chromium')
 LIGHT = 'rgb(245, 246, 250)'
-DARK = 'rgb(21, 20, 32)'
+DARK = 'rgb(49, 51, 56)'
 
 
 def expect_theme(page, mode, background):
@@ -100,7 +100,21 @@ def test_certificate_preview_uses_current_theme_and_prints_on_light_paper(fronte
     expect(document.locator('.warning')).to_have_text('Не имеет юридической силы')
     assert 'theme=dark' in document.url
     expect(document.locator('body')).to_have_css('background-color', DARK)
-    expect(document.locator('footer')).to_have_css('border-top-color', 'rgb(66, 61, 83)')
+    expect(document.locator('footer')).to_have_css('border-top-color', 'rgb(64, 66, 73)')
     document.emulate_media(media='print')
     expect(document.locator('body')).to_have_css('background-color', 'rgb(255, 255, 255)')
     document.close()
+
+
+@pytest.mark.parametrize('scheme', ['light', 'dark'])
+def test_keyboard_search_has_a_visible_focus_outline(frontend_page, scheme):
+    page, base = frontend_page
+    page.emulate_media(color_scheme=scheme)
+    enter(page, base, 0)
+    page.keyboard.press('Control+k')
+    field = page.locator('.search-large')
+    expect(field.locator('input')).to_be_focused()
+    expect(field).to_have_css('outline-width', '2px')
+    expect(field).to_have_css('outline-style', 'solid')
+    page.keyboard.press('Escape')
+    expect(field).to_have_count(0)

@@ -15,6 +15,7 @@
   const weekdays=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
   const roleLabels={student:'Студент',teacher:'Преподаватель',staff:'Учебный офис'};
   const drafts=new Map(), receipts=new Map(), reading=new Set();
+  const messengerSearches=new WeakMap();
   const dayFormat=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Moscow',day:'numeric',month:'long',year:'numeric'});
   const timeFormat=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Moscow',hour:'2-digit',minute:'2-digit'});
   let c, unread=0, poll, historyPoll;
@@ -27,8 +28,8 @@
     const params=new URLSearchParams(Object.entries(query).filter(([,value])=>value!==undefined&&value!==null&&value!=='')).toString();
     return base+(params?'?'+params:'');
   };
-  const appLink=(href,label,cls='mini-link')=>`<a class="${cls}" href="${esc(href)}" data-app-link>${esc(label)}</a>`;
-  const title=(name,description='',actions='')=>c.head('',esc(name),esc(description),actions);
+  const appLink=(href,label,cls='mini-link',attributes='')=>`<a class="${cls}" href="${esc(href)}" data-app-link ${attributes}>${esc(label)}</a>`;
+  const title=(name,description='',actions='',meta='')=>c.head('',esc(name),esc(description),actions,meta);
   const section=(name,content)=>`<section class="card card-pad school-section"><h2>${esc(name)}</h2>${content}</section>`;
   const empty=(name,description)=>c.empty('book',name,description);
   const safeSearch=value=>String(value??'').replace(/[\x00-\x1f]/g,'').trim().slice(0,100);
@@ -60,7 +61,7 @@
         ...(parts.length&&id(query.before)?{before:Number(query.before)}:{}),
         ...(!parts.length&&isStudent()&&id(query.recipient)?{recipient:Number(query.recipient)}:{}),
         ...(q?{q}:{}),
-        ...(!parts.length&&isStudent()&&rq?{rq}:{}),
+        ...(isStudent()&&rq?{rq}:{}),
         ...(id(query.offset)?{offset:Number(query.offset)}:{}),
       };
     }
@@ -95,8 +96,9 @@
     return {...dialog,mode:'dialog',title:dialog.person.name};
   }
 
+  /** @param {{type?: string, query?: boolean, max?: number, required?: boolean}} options */
   function input(name,label,value='',options={}){
-    return `<div class="field"><label for="school-${name}">${esc(label)}</label><input id="school-${name}" type="${options.type||'text'}" name="${name}" value="${esc(value)}" maxlength="${options.max||100}" ${options.required?'required':''}></div>`;
+    return `<div class="field ${options.query?'filter-query':''}"><label for="school-${name}">${esc(label)}</label><input id="school-${name}" type="${options.type||'text'}" name="${name}" value="${esc(value)}" maxlength="${options.max||100}" ${options.required?'required':''}></div>`;
   }
 
   function select(name,label,choices,value,required=false){
@@ -104,14 +106,15 @@
   }
 
   function searchForm(page,fields,reset=false){
-    return `<form class="school-filter" data-school-filter="${page}">${fields}<div class="school-actions"><button class="outline-button" type="submit">${icon('search')} Найти</button>${reset?appLink('/app/'+page,'Сбросить'):''}</div></form>`;
+    return `<form class="filter-bar school-filter" role="search" aria-label="Поиск и фильтры" data-school-filter="${page}">${fields}<div class="filter-actions"><button class="outline-button" type="submit">${icon('search')} Найти</button>${reset?appLink('/app/'+page,'Сбросить'):''}</div></form>`;
   }
 
   function pager(page,data,query=c.state.routeContext){
     const hasNext=data.offset+data.limit<data.total;
     if(!data.offset&&!hasNext)return '';
     const url=offset=>path('/app/'+page,{...query,offset:offset||undefined});
-    return `<nav class="campus-pagination" aria-label="Страницы результатов"><span>${data.total?`${data.offset+1}–${Math.min(data.offset+data.limit,data.total)} из ${data.total}`:'Нет результатов'}</span><div>${data.offset?appLink(url(Math.max(0,data.offset-data.limit)),'Предыдущая','outline-button'):''}${hasNext?appLink(url(data.offset+data.limit),'Следующая','outline-button'):''}</div></nav>`;
+    const attributes=page==='direct'?'data-messenger-link="page"':'';
+    return `<nav class="campus-pagination" aria-label="Страницы результатов"><span>${data.total?`${data.offset+1}–${Math.min(data.offset+data.limit,data.total)} из ${data.total}`:'Нет результатов'}</span><div>${data.offset?appLink(url(Math.max(0,data.offset-data.limit)),'Предыдущая','outline-button',attributes):''}${hasNext?appLink(url(data.offset+data.limit),'Следующая','outline-button',attributes):''}</div></nav>`;
   }
 
   function directoryCards(items){
@@ -134,11 +137,15 @@
     const actions=own?appLink('/app/teaching','Группы и дисциплины','primary-button')+appLink('/app/materials-admin','Публикации','outline-button')+appLink('/app/direct','Личные сообщения','outline-button')+appLink('/app/notifications','Уведомления','outline-button')+appLink('/app/university','Каталог университета','outline-button')
       :data.can_message?appLink(path('/app/direct',{recipient:data.recipient_id}),'Написать преподавателю','primary-button')+
         appLink(path('/app/consultations',{subject:data.disciplines[0]?.title}),'Запись на консультацию','outline-button'):'';
+    const materials=data.materials.length?`<ul class="school-list school-material-preview">${data.materials.map(row=>`<li><h3>${appLink('/app/materials/'+row.id,row.title,'school-card-link')}</h3><p class="school-meta">${esc(row.kind_label)} · ${esc(row.discipline.title)} · ${c.dateFmt(row.created_at,{day:'numeric',month:'short',year:'numeric'})}</p><p>${esc(row.description)}</p></li>`).join('')}</ul>
+      <div class="school-section-footer">${appLink(path('/app/materials',{teacher:data.id}),'Все материалы преподавателя')}</div>`
+      :'<p class="compact-empty">У преподавателя пока нет публикаций.</p>';
     return title(own?'Кабинет преподавателя':data.title,[own?data.title:'',data.position,data.department].filter(Boolean).join(' · '),actions)+
-      `<div class="school-detail-grid">${section('Академическая информация',`<p>${esc(data.description)}</p>`)}${section('Дисциплины',disciplineList(data.disciplines))}
-      ${section('Занятия · МСК',teachingSchedule(data.schedule,'lesson'))}${section('Консультации · МСК',teachingSchedule(data.schedule,'consultation'))}</div>`+
-      section('Учебные материалы',data.materials.length?materialCards(data.materials)+appLink(path('/app/materials',{teacher:data.id}),'Все материалы преподавателя')
-        :'<p class="compact-empty">У преподавателя пока нет публикаций.</p>');
+      `<div class="school-detail-grid">
+        ${section('Академическая информация',`<p>${esc(data.description)}</p>`)}${section('Дисциплины',disciplineList(data.disciplines))}
+        ${section('Учебные материалы',materials)}
+        <div class="school-stack">${section('Занятия · МСК',teachingSchedule(data.schedule,'lesson'))}${section('Консультации · МСК',teachingSchedule(data.schedule,'consultation'))}</div>
+      </div>`;
   }
 
   function directory(data){
@@ -152,7 +159,7 @@
     const related=isStudent()?appLink('/app/contacts','Контакты и корпуса','outline-button')+
       appLink('/app/union','Профсоюз','outline-button')+appLink('/app/vuc','ВУЦ','outline-button'):'';
     return title('Университет','Институты, кафедры и преподаватели.',related)+
-      searchForm('university',input('q','Поиск по каталогу',q.q)+select('faculty','Подразделение',[['','Все подразделения'],...data.faculties.map(row=>[row.slug,row.title])],q.faculty)+
+      searchForm('university',input('q','Поиск по каталогу',q.q,{type:'search',query:true})+select('faculty','Подразделение',[['','Все подразделения'],...data.faculties.map(row=>[row.slug,row.title])],q.faculty)+
         select('kind','Показывать',[['','Всё'],...directoryKinds],q.kind),Object.keys(q).length>0)+directoryCards(data.items);
   }
 
@@ -166,7 +173,7 @@
 
   function materialFilters(page,data){
     const query=c.state.routeContext;
-    return searchForm(page,input('q','Название, дисциплина или автор',query.q)+
+    return searchForm(page,input('q','Название, дисциплина или автор',query.q,{type:'search',query:true})+
       select('kind','Тип материала',[['','Все типы'],...Object.entries(data.kinds)],query.kind)+
       select('discipline','Дисциплина',[['','Все дисциплины'],...data.disciplines.map(row=>[row.id,row.title])],query.discipline)+
       (query.teacher?`<input type="hidden" name="teacher" value="${Number(query.teacher)}">`:''),Object.keys(query).length>0);
@@ -179,9 +186,12 @@
         materialFilters('materials',data)+(data.items.length?materialCards(data.items):empty('Материалы не найдены','Измените поиск или фильтры.'))+pager('materials',data);
     }
     const slides=data.kind==='slides';
-    return title(data.title,data.description,fileLink(data)+(data.can_edit?editButton(data,'edit','Изменить'):''))+
-      `<div class="school-material-meta"><span>${esc(data.kind_label)} · ${esc(data.discipline.title)} · ${c.dateFmt(data.created_at,{day:'numeric',month:'long',year:'numeric'})}</span>${appLink(data.author.href,data.author.title)}</div>
-      ${slides?`<nav class="school-slide-nav" aria-label="Слайды">${data.sections.map((row,i)=>`<button type="button" class="mini-link" data-school-slide="${i}">${esc(row.heading)}</button>`).join('')}</nav>`:''}
+    const meta=`<ul class="school-material-meta" aria-label="Сведения о материале">
+      <li>${esc(data.kind_label)}</li><li>${esc(data.discipline.title)}</li>
+      <li><time datetime="${esc(data.created_at)}">${c.dateFmt(data.created_at,{day:'numeric',month:'long',year:'numeric'})}</time></li>
+      <li>${appLink(data.author.href,data.author.title,'school-card-link')}</li></ul>`;
+    return title(data.title,data.description,fileLink(data)+(data.can_edit?editButton(data,'edit','Изменить'):''),meta)+
+      `${slides?`<nav class="school-slide-nav" aria-label="Слайды">${data.sections.map((row,i)=>`<button type="button" class="mini-link" data-school-slide="${i}">${esc(row.heading)}</button>`).join('')}</nav>`:''}
       <article class="card card-pad school-reader ${slides?'school-slides':''}">${data.sections.map((row,i)=>`<section id="material-part-${i}" tabindex="-1">${row.heading?`<h2>${esc(row.heading)}</h2>`:''}${row.paragraphs.map(text=>`<p>${esc(text)}</p>`).join('')}</section>`).join('')}</article>`;
   }
 
@@ -205,15 +215,97 @@
       <button type="submit" class="primary-button">${icon('send')} Отправить</button></form>`;
   }
 
+  const inboxQuery=()=>{
+    const {q,rq,offset}=c.state.routeContext;
+    return {q,rq,offset};
+  };
+
   function dialogRows(data){
-    const {q,offset}=c.state.routeContext;
+    const query=inboxQuery();
     return data.inbox.items.length?data.inbox.items.map(row=>{
       const current=row.id===data.id;
-      return `<a class="messenger-item" href="${esc(path('/app/direct/'+row.id,{q,offset}))}" data-app-link ${current?'aria-current="page"':''}>
+      return `<a class="messenger-item" href="${esc(path('/app/direct/'+row.id,query))}" data-app-link data-messenger-link ${current?'aria-current="page"':''}>
         <span class="messenger-avatar" aria-hidden="true">${esc(row.person.initials)}</span><span class="messenger-person"><b>${esc(row.person.name)}</b><small>${esc(row.preview)}</small></span>
         <span class="messenger-meta"><time datetime="${esc(row.updated_at)}">${c.stamp(row.updated_at)}</time>
         ${row.unread_count?`<span class="campus-pill" aria-label="Непрочитанных: ${Number(row.unread_count)}">${Number(row.unread_count)}</span>`:''}</span></a>`;
-    }).join(''):`<p class="compact-empty">${q?'Собеседники по запросу не найдены.':'Диалогов пока нет.'}</p>`;
+    }).join(''):`<p class="compact-empty">${query.q?'Собеседники по запросу не найдены.':'Диалогов пока нет.'}</p>`;
+  }
+
+  function inboxResults(data){
+    return `<div class="messenger-items" data-messenger-items>${dialogRows(data)}</div>${pager('direct',data.inbox,inboxQuery())}`;
+  }
+
+  function recipientResults(items){
+    return items.length?`<ul class="school-list school-contacts">${items.map(row=>`<li>${appLink(path('/app/direct',{...inboxQuery(),recipient:row.id}),row.name,'school-card-link','data-messenger-link')}<p>${esc(row.label)}</p></li>`).join('')}</ul>`
+      :`<p class="compact-empty">${c.state.routeContext.rq?'Адресаты по запросу не найдены.':'Нет доступных адресатов.'}</p>`;
+  }
+
+  function messengerSearch(key,label,content){
+    return `<form class="messenger-search" data-messenger-search="${key}" role="search" aria-label="${label}">
+      ${input(key,label,c.state.routeContext[key],{type:'search'})}
+      <p class="messenger-search-status" data-messenger-status role="status"></p>
+      <button type="submit" class="outline-button" hidden>Повторить</button>
+    </form><div data-messenger-results="${key}">${content}</div>`;
+  }
+
+  function syncMessengerLinks(query){
+    for(const link of c.$$('[data-messenger-link]')){
+      const url=new URL(link.href);
+      for(const key of ['q','rq','offset']){
+        if(key==='offset'&&link.dataset.messengerLink==='page')continue;
+        if(query[key])url.searchParams.set(key,query[key]);
+        else url.searchParams.delete(key);
+      }
+      link.setAttribute('href',url.pathname+url.search);
+    }
+  }
+
+  function searchMessenger(form,{immediate=false}={}){
+    const key=form.dataset.messengerSearch, input=form.elements[key];
+    const query=safeSearch(input.value), inbox=key==='q';
+    const {sessionEpoch,loadingId}=c.state, data=c.state.data.direct;
+    const results=c.$(`[data-messenger-results="${key}"]`);
+    const status=c.$('[data-messenger-status]',form), retry=c.$('button',form);
+    clearTimeout(messengerSearches.get(form)?.timer);
+    const search={timer:0,pending:true,failed:false};
+    messengerSearches.set(form,search);
+    const current=()=>form.isConnected&&c.state.page==='direct'&&sessionEpoch===c.state.sessionEpoch&&
+      loadingId===c.state.loadingId&&messengerSearches.get(form)===search;
+    status.classList.remove('sr-only','messenger-search-error');
+    status.textContent=inbox?'Ищем диалоги…':'Ищем адресатов…';
+    retry.hidden=true;
+    results.hidden=true;
+    results.setAttribute('aria-busy','true');
+    search.timer=setTimeout(async()=>{
+      if(!current())return;
+      try{
+        const response=await c.api(path(inbox?'direct/dialogs':'direct/recipients',{q:query}));
+        if(!current())return;
+        const context={...c.state.routeContext};
+        if(query)context[key]=query;
+        else delete context[key];
+        if(inbox)delete context.offset;
+        c.replaceRouteContext(context);
+        if(inbox)data.inbox=response;
+        else data.contacts=response.items;
+        results.innerHTML=inbox?inboxResults(data):recipientResults(data.contacts);
+        syncMessengerLinks(context);
+        status.classList.add('sr-only');
+        status.textContent=inbox?`Найдено диалогов: ${response.total}.`:`Найдено адресатов: ${response.items.length}.`;
+        results.hidden=false;
+      }catch(error){
+        if(!current()||error.stale)return;
+        search.failed=true;
+        status.classList.add('messenger-search-error');
+        status.textContent=(inbox?'Не удалось найти диалоги. ':'Не удалось найти адресатов. ')+error.message;
+        retry.hidden=false;
+      }finally{
+        if(current()){
+          search.pending=false;
+          results.removeAttribute('aria-busy');
+        }
+      }
+    },immediate||!query?0:c.searchDelay);
   }
 
   function messages(data){
@@ -230,21 +322,18 @@
   }
 
   function direct(data){
-    const query=c.state.routeContext, {q,rq,offset}=query;
-    const listUrl=path('/app/direct',{q,offset});
-    const contacts=data.contacts?`<details class="messenger-contacts" ${rq||!data.inbox.total?'open':''}><summary>Новый диалог</summary>
-      ${searchForm('direct',input('rq','Поиск адресата',rq)+(q?`<input type="hidden" name="q" value="${esc(q)}">`:''))}
-      ${data.contacts.length?`<ul class="school-list school-contacts">${data.contacts.map(row=>`<li>${appLink(path('/app/direct',{recipient:row.id,q,offset}),row.name,'school-card-link')}<p>${esc(row.label)}</p></li>`).join('')}</ul>`:'<p class="compact-empty">Адресаты по запросу не найдены.</p>'}</details>`:'';
-    const sidebar=`<nav class="messenger-inbox" aria-label="Диалоги">${searchForm('direct',input('q','Поиск диалога',q),Boolean(q))}${contacts}
-      <div class="messenger-items" data-messenger-items>${dialogRows(data)}</div>${pager('direct',data.inbox)}</nav>`;
-    const back=appLink(listUrl,'К списку диалогов','mini-link messenger-back');
+    const query=inboxQuery();
+    const contacts=data.contacts?`<details class="messenger-contacts" ${query.rq||!data.inbox.total?'open':''}><summary>Новый диалог</summary>
+      ${messengerSearch('rq','Поиск адресата',recipientResults(data.contacts))}</details>`:'';
+    const sidebar=`<nav class="messenger-inbox" aria-label="Диалоги">${messengerSearch('q','Поиск диалога',inboxResults(data))}${contacts}</nav>`;
+    const back=appLink(path('/app/direct',query),'К списку диалогов','mini-link messenger-back','data-messenger-link');
     let panel='<div class="messenger-placeholder compact-empty">Выберите диалог, чтобы открыть переписку.</div>';
     if(data.mode!=='list'){
       const other=data.person;
       const history=data.mode==='dialog'?`<div class="messenger-history" tabindex="0" aria-label="История переписки" data-messenger-history>
         ${data.older_before?'<button type="button" class="mini-link messenger-older" data-messenger-older>Более ранние сообщения</button>':''}
         <div data-messenger-messages>${messages(data)}</div></div>`:'<div class="messenger-placeholder compact-empty">Здесь начнётся переписка.</div>';
-      const footer=data.mode==='compose'?compose(other.id,'recipient'):query.before?appLink(path('/app/direct/'+data.id,{q,offset}),'К последним сообщениям','outline-button')+compose(data.id,'dialog'):compose(data.id,'dialog');
+      const footer=data.mode==='compose'?compose(other.id,'recipient'):c.state.routeContext.before?appLink(path('/app/direct/'+data.id,query),'К последним сообщениям','outline-button','data-messenger-link')+compose(data.id,'dialog'):compose(data.id,'dialog');
       panel=`<section class="messenger-thread" aria-labelledby="messenger-name"><header class="messenger-header">${back}<span class="messenger-avatar" aria-hidden="true">${esc(other.initials)}</span>
         <div><h2 id="messenger-name">${esc(other.name)}</h2><p>${esc(other.label||roleLabels[other.role]||'')}</p></div></header>${history}${footer}</section>`;
     }
@@ -303,7 +392,7 @@
 
   async function submit(form){
     if(c.state.pending)return;
-    const epoch=c.state.sessionEpoch, href=c.state.routeHref, type=form.dataset.schoolForm, errorBox=c.$('[data-school-error]',form);
+    const epoch=c.state.sessionEpoch, type=form.dataset.schoolForm, errorBox=c.$('[data-school-error]',form);
     const {endpoint,method,body}=mutation(form);
     let headers;
     if(method==='POST'){
@@ -338,14 +427,14 @@
       const draftKey=form.dataset.mode+':'+form.dataset.target;
       if(!inCurrentThread||drafts.get(draftKey)===submittedText)drafts.delete(draftKey);
       c.toast('Сообщение отправлено.');
-      if(href!==c.state.routeHref||!form.isConnected)return;
+      if(!form.isConnected||c.state.page!=='direct')return;
       if(inCurrentThread){
         if(messageInput.value===submittedText)messageInput.value='';
         await pollConversation({afterSend:true});
         return;
       }
-      const {q,offset,before}=c.state.routeContext, dialogId=String(result.dialog_id);
-      await c.route('direct',{parts:[dialogId],context:{q,offset},replace:form.dataset.mode==='recipient'||Boolean(before)});
+      const dialogId=String(result.dialog_id), before=c.state.routeContext.before;
+      await c.route('direct',{parts:[dialogId],context:inboxQuery(),replace:form.dataset.mode==='recipient'||Boolean(before)});
       if(epoch===c.state.sessionEpoch&&c.state.page==='direct'&&c.state.routeParts[0]===dialogId)c.$('#direct-message')?.focus({preventScroll:true});
       return;
     }
@@ -424,17 +513,19 @@
   function pollConversation({afterSend=false}={}){
     const data=c.state.data.direct;
     if(c.state.page!=='direct'||!data||(historyPoll&&!afterSend)||c.state.pending||c.state.routeContext.before)return;
-    const epoch=c.state.sessionEpoch, href=c.state.routeHref, loadingId=c.state.loadingId;
+    const epoch=c.state.sessionEpoch, loadingId=c.state.loadingId;
     const {q,offset}=c.state.routeContext;
+    const form=c.$('[data-messenger-search="q"]'), search=messengerSearches.get(form);
+    const refreshInbox=!search?.pending&&!search?.failed;
     const request=Promise.all([
-      c.api(path('direct/dialogs',{q,offset}),{quietAuth:true}),
+      refreshInbox?c.api(path('direct/dialogs',{q,offset}),{quietAuth:true}):null,
       data.mode==='dialog'?c.api('direct/dialogs/'+data.id,{quietAuth:true}):null,
     ]).then(([inbox,latest])=>{
-      if(historyPoll!==request||epoch!==c.state.sessionEpoch||href!==c.state.routeHref||
+      if(historyPoll!==request||epoch!==c.state.sessionEpoch||c.state.page!=='direct'||
         loadingId!==c.state.loadingId||c.state.data.direct!==data||c.state.pending)return;
-      const list=c.$('[data-messenger-items]');
-      if(list&&!list.contains(document.activeElement)&&JSON.stringify(data.inbox.items)!==JSON.stringify(inbox.items)){
-        data.inbox=inbox;list.innerHTML=dialogRows(data);
+      const list=c.$('[data-messenger-results="q"]');
+      if(inbox&&list&&messengerSearches.get(form)===search&&!list.contains(document.activeElement)&&JSON.stringify(data.inbox)!==JSON.stringify(inbox)){
+        data.inbox=inbox;list.innerHTML=inboxResults(data);
       }
       const history=c.$('[data-messenger-history]');
       if(!history||!latest)return;
@@ -474,12 +565,14 @@
     });
     document.addEventListener('submit',event=>{
       const form=event.target;
-      if(form.dataset.schoolFilter){
+      if(form.dataset.messengerSearch){
+        event.preventDefault();
+        form.elements[form.dataset.messengerSearch].focus({preventScroll:true});
+        searchMessenger(form,{immediate:true});
+      }else if(form.dataset.schoolFilter){
         event.preventDefault();
         const context=Object.fromEntries(new FormData(form));
-        const parts=form.dataset.schoolFilter==='direct'&&form.elements.q&&!form.elements.rq?c.state.routeParts:[];
-        if(form.dataset.schoolFilter==='direct'&&form.elements.q&&!form.elements.rq&&c.state.routeContext.recipient)context.recipient=c.state.routeContext.recipient;
-        c.route(form.dataset.schoolFilter,{context,parts});
+        c.route(form.dataset.schoolFilter,{context});
       }else if(form.dataset.schoolForm){
         event.preventDefault();submit(form);
       }
@@ -488,9 +581,15 @@
       if(event.target.matches?.('[data-messenger-history]')&&atEnd(event.target))markThreadRead(c.state.data.direct);
     },true);
     document.addEventListener('input',event=>{
-      const form=event.target.closest('form[data-school-form]');
-      if(!form)return;
-      if(form.dataset.schoolForm==='message')drafts.set(form.dataset.mode+':'+form.dataset.target,event.target.value);
+      const input=event.target;
+      if(!(input instanceof HTMLInputElement||input instanceof HTMLTextAreaElement||input instanceof HTMLSelectElement))return;
+      const form=input.form;
+      if(form?.dataset.messengerSearch){
+        if(!(event instanceof InputEvent&&event.isComposing))searchMessenger(form);
+        return;
+      }
+      if(!form?.dataset.schoolForm)return;
+      if(form.dataset.schoolForm==='message')drafts.set(form.dataset.mode+':'+form.dataset.target,input.value);
       if(form.dataset.schoolForm==='material')form.dataset.dirty='true';
     });
     document.addEventListener('change',async event=>{

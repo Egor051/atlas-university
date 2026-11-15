@@ -1,18 +1,15 @@
 .op-section { margin: 12px 0; min-width: 0; }
 .op-section > h2 { margin-bottom: 12px; }
-.op-actions, .op-tabs, .op-week, .op-inline-form {
+.op-actions, .op-tabs, .op-week {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
 }
-.op-tabs, .op-week, .op-inline-form, .op-section > .op-actions { margin: 0 0 14px; }
+.op-tabs, .op-week, .op-inline-form, .op-section > .op-actions { margin: 0 0 var(--atlas-gap); }
 .op-tabs > * { display: inline-flex; align-items: center; min-height: 34px; padding: 4px 8px; }
 .op-tabs > [aria-current] { color: var(--atlas-accent-text); background: var(--atlas-accent-surface); border-radius: 8px; font-weight: 700; }
-.op-inline-form { align-items: end; }
-.op-inline-form .field { margin: 0; min-width: 0; max-width: 100%; }
-.op-inline-form .field:has(select) { overflow: clip; overflow-clip-margin: 4px; }
-.op-inline-form select { max-width: min(100%, 330px); }
+.op-inline-form > .field { flex: 0 1 auto; max-width: min(100%, 330px); }
 .op-row h3 { margin: 0; font-size: 15px; }
 .op-row, .op-row .row-copy { min-width: 0; overflow-wrap: anywhere; }
 .op-row .op-actions { justify-content: flex-end; }

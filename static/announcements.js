@@ -62,7 +62,7 @@
   const options = (choices, selected) => Object.entries(choices).map(([value, text]) =>
     `<option value="${esc(value)}"${String(selected ?? '') === value ? ' selected' : ''}>${esc(text)}</option>`).join('');
   const filter = (name, label, choices, selected) =>
-    `<label class="announcement-field"><span>${esc(label)}</span><select name="${name}">${options(choices, selected)}</select></label>`;
+    `<label class="announcement-field filter-field"><span>${esc(label)}</span><select name="${name}">${options(choices, selected)}</select></label>`;
   const priority = row => `<span class="announcement-priority" data-priority="${esc(row.priority)}">${esc(priorityLabels[row.priority])}</span>`;
   const metadata = (row, full = false) => `<p class="announcement-meta">${priority(row)}<span>${esc(categories[row.category])}</span>${date(row.published_at || row.created_at, full)}${row.pinned ? '<span>Закреплено</span>' : ''}</p>`;
 
@@ -108,8 +108,8 @@
     const editor = isOffice(page);
     const query = c.state.routeContext;
     const listStatuses = editor ? {'': 'Все статусы', ...statuses} : {published: 'Опубликованные', archived: 'Архив'};
-    const tools = `<form class="card card-pad announcement-filters" data-announcement-filters role="search" aria-label="Поиск и фильтры объявлений">
-      <label class="announcement-field"><span>Поиск</span><input name="q" type="search" value="${esc(query.q || '')}" maxlength="100" placeholder="Заголовок или текст"></label>
+    const tools = `<form class="card card-pad filter-bar announcement-filters" data-announcement-filters role="search" aria-label="Поиск и фильтры объявлений">
+      <label class="announcement-field filter-query"><span>Поиск</span><input name="q" type="search" value="${esc(query.q || '')}" maxlength="100" placeholder="Заголовок или текст"></label>
       ${filter('status', 'Статус', listStatuses, query.status || (editor ? '' : 'published'))}
       ${filter('category', 'Категория', {'': 'Все категории', ...categories}, query.category)}
       ${filter('priority', 'Приоритет', {'': 'Любой', ...priorities}, query.priority)}

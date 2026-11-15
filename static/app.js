@@ -115,6 +115,7 @@
   let lastFocus, pollTimer, searchTimer, globalSearchTimer;
   let reminderCheckedAt=0, badgePoll;
   let staffSearchId=0;
+  const searchDelay=160;
   const deadlineWrites=new Map();
   const moscowParts = () => Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).map(p => [p.type,p.value]));
   const today = () => {const p=moscowParts();return `${p.year}-${p.month}-${p.day}`;};
@@ -218,9 +219,11 @@
     const parts=nested?rest.slice(1):rest;
     return {page:!parts.length||extensionFor(page)?.validParts(page,parts)?page:null,parts,context:Object.fromEntries(query)};
   }
-  function replaceRouteContext(){
-    if(!Object.keys(state.routeContext).length)return;
-    state.routeContext={};state.routeHref=state.routeHref.split('?')[0];
+  function replaceRouteContext(context={}){
+    const query=new URLSearchParams(context).toString();
+    const href=state.routeHref.split('?')[0]+(query?'?'+query:'');
+    if(href===state.routeHref)return;
+    state.routeContext=context;state.routeHref=href;
     history.replaceState({atlasEntry:state.historyEntry},'',state.routeHref);
   }
   async function route(page,{replace=false,fromHistory=false,parts=[],context={}}={}){
@@ -445,7 +448,7 @@
       badge.textContent=state.unread>99?'99+':state.unread;
     }
   }
-  function head(kicker,title,description,actions=''){return `<div class="title-row"><div><h1 class="page-title" id="page-title" tabindex="-1">${title}</h1>${description?`<p class="page-subtitle">${description}</p>`:''}</div>${actions?`<div class="page-actions">${actions}</div>`:''}</div>`;}
+  function head(kicker,title,description,actions='',meta=''){return `<div class="title-row"><div><h1 class="page-title" id="page-title" tabindex="-1">${title}</h1>${description?`<p class="page-subtitle">${description}</p>`:''}${meta}</div>${actions?`<div class="page-actions">${actions}</div>`:''}</div>`;}
   function disclosure(title,content,extra=''){return `<details class="card disclosure ${extra}"><summary>${title}${icon('right')}</summary><div class="disclosure-body">${content}</div></details>`;}
   function cardHead(title,link='',label='Открыть'){return `<div class="card-titlebar"><h2 class="card-title">${title}</h2>${link?`<button class="mini-link" data-route="${link}">${label} ${icon('arrow')}</button>`:''}</div>`;}
   function empty(name,title,description,action=''){return `<div class="empty-state"><span class="empty-icon">${icon(name)}</span><h3>${esc(title)}</h3><p>${esc(description)}</p>${action}</div>`;}
@@ -560,7 +563,7 @@
     const counts=data.counts;const visible=data.items;
     return head('','Учебный офис','Разберите обращения и заказы справок.')+
       filterButtons([['request','Заявки'],['certificate','Справки'],['all','Вся очередь']],state.staffKind||'request','data-staff-kind')+
-      `<div class="grade-summary"><div class="card summary-metric"><span class="summary-icon">${icon('file')}</span><div><b>${counts.active}</b><p>Ожидают решения</p></div></div><div class="card summary-metric"><span class="summary-icon orange">${icon('clock')}</span><div><b>${counts.overdue}</b><p>Срок требует внимания</p></div></div><div class="card summary-metric"><span class="summary-icon teal">${icon('checkCircle')}</span><div><b>${counts.ready}</b><p>Результат готов</p></div></div></div><section class="card card-pad">${cardHead('Очередь обращений')}<div class="staff-tools"><label class="search-field">${icon('search')}<input id="staff-search" maxlength="100" value="${esc(state.staffQuery)}" placeholder="Номер, студент, группа…" aria-label="Поиск по очереди" autocomplete="off" /></label>${filterButtons([['active','В работе',counts.active],['all','Все',counts.all],['submitted','Новые',counts.submitted],['ready','Готовые',counts.ready],['overdue','Просрочены',counts.overdue]],state.staffFilter,'data-staff-filter')}</div><div id="staff-results" class="request-list">${visible.length?visible.map(r=>requestRow(r,true)).join(''):empty('checkCircle','Обращений не найдено','По этому фильтру обращений нет. Попробуйте другой фильтр или запрос.')}${pagination(data,'staff')}</div></section>`;
+      `<div class="grade-summary"><div class="card summary-metric"><span class="summary-icon">${icon('file')}</span><div><b>${counts.active}</b><p>Ожидают решения</p></div></div><div class="card summary-metric"><span class="summary-icon orange">${icon('clock')}</span><div><b>${counts.overdue}</b><p>Срок требует внимания</p></div></div><div class="card summary-metric"><span class="summary-icon teal">${icon('checkCircle')}</span><div><b>${counts.ready}</b><p>Результат готов</p></div></div></div><section class="card card-pad">${cardHead('Очередь обращений')}<div class="filter-bar staff-tools"><label class="search-field">${icon('search')}<input id="staff-search" maxlength="100" value="${esc(state.staffQuery)}" placeholder="Номер, студент, группа…" aria-label="Поиск по очереди" autocomplete="off" /></label>${filterButtons([['active','В работе',counts.active],['all','Все',counts.all],['submitted','Новые',counts.submitted],['ready','Готовые',counts.ready],['overdue','Просрочены',counts.overdue]],state.staffFilter,'data-staff-filter')}</div><div id="staff-results" class="request-list">${visible.length?visible.map(r=>requestRow(r,true)).join(''):empty('checkCircle','Обращений не найдено','По этому фильтру обращений нет. Попробуйте другой фильтр или запрос.')}${pagination(data,'staff')}</div></section>`;
   }
   function drawPage(){
     const target=$('#page-content'), page=state.page, data=state.data[page];if(!target||!data)return;
@@ -801,7 +804,7 @@
         try{const result=await api('campus/search?q='+encodeURIComponent(q));if(current!==revision||modalId!==state.modalId||epoch!==state.sessionEpoch)return;
           const target=$('#search-personal');if(!target)return;target.innerHTML='<p class="search-group-label">Мои данные</p>'+((result.items||[]).length?result.items.map(x=>`<button class="search-result" data-search-target="${esc(x.target)}" data-search-id="${Number(x.id)}">${icon('file')}<span><b>${esc(x.title)}</b><small>${esc(x.category)} · ${esc(x.snippet)}</small></span>${icon('right')}</button>`).join(''):'<p class="search-empty">В ваших данных совпадений нет.</p>');
         }catch(error){if(!error.stale&&current===revision&&modalId===state.modalId&&epoch===state.sessionEpoch){const target=$('#search-personal');if(target){target.replaceChildren();const message=document.createElement('p');message.className='search-empty';message.setAttribute('role','alert');message.textContent=error.message;target.append(message);}}}
-      },240);
+      },searchDelay);
     };
     draw('');$('#search-input').addEventListener('input',e=>draw(e.target.value.trim()));
   }
@@ -1043,7 +1046,27 @@
     }catch(error){if(!error.stale){input.checked=!done;toast(error.message);}}
     finally{if(deadlineWrites.get(id)===write)deadlineWrites.delete(id);if(epoch===state.sessionEpoch&&uid===state.user?.id){if(input.isConnected)input.disabled=false;if(state.page==='plan'){drawPage();($(`[data-deadline="${id}"]`)||$('.filter-tabs button[aria-pressed="true"]'))?.focus();}}}
   });
-  document.addEventListener('input',e=>{if(e.target.id==='staff-search'){state.staffQuery=e.target.value;state.staffOffset=0;state.loadingId++;clearTimeout(searchTimer);const requestId=++staffSearchId;const epoch=state.sessionEpoch;searchTimer=setTimeout(async()=>{const results=$('#staff-results');results?.setAttribute('aria-busy','true');try{const data=await load('staff');if(requestId!==staffSearchId||state.page!=='staff'||epoch!==state.sessionEpoch)return;state.data.staff=data;const holder=document.createElement('div');holder.innerHTML=staffPage(data);$('#staff-results')?.replaceWith($('#staff-results',holder));}catch(error){if(!error.stale)toast(error.message);}finally{results?.removeAttribute('aria-busy');}},300);}});
+  document.addEventListener('input',e=>{
+    const input=e.target;
+    if(!(input instanceof HTMLInputElement)||input.id!=='staff-search')return;
+    state.staffQuery=input.value;state.staffOffset=0;
+    const loadId=++state.loadingId, requestId=++staffSearchId, epoch=state.sessionEpoch;
+    const results=$('#staff-results');
+    const current=()=>requestId===staffSearchId&&loadId===state.loadingId&&state.page==='staff'&&epoch===state.sessionEpoch;
+    clearTimeout(searchTimer);
+    results?.setAttribute('aria-busy','true');
+    searchTimer=setTimeout(async()=>{
+      if(!current())return;
+      try{
+        const data=await load('staff');
+        if(!current())return;
+        state.data.staff=data;
+        const holder=document.createElement('div');holder.innerHTML=staffPage(data);
+        results?.replaceWith($('#staff-results',holder));
+      }catch(error){if(!error.stale&&current())toast(error.message);}
+      finally{if(current())results?.removeAttribute('aria-busy');}
+    },searchDelay);
+  });
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
       if($('#demo-dialog[open]'))return;
@@ -1079,7 +1102,7 @@
   window.addEventListener('online',()=>toast('Подключение восстановлено. Можно обновить раздел.'));
   window.addEventListener('offline',()=>toast('Нет сети. Показаны уже загруженные данные; для сохранения нужен сервер.'));
   async function boot(){try{state.config=await api('config');}catch{/* Fail closed: do not advertise demo credentials if config is unavailable. */}try{state.user=await api('me');await campus.prepare();if(!state.user)return;await enterRoute();startPolling();}catch{showLogin();}}
-  const context={state,api,deadlinePending:id=>deadlineWrites.has(Number(id)),$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,monday,refreshUnread,newRequestModal,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
+  const context={state,api,searchDelay,deadlinePending:id=>deadlineWrites.has(Number(id)),$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,monday,refreshUnread,newRequestModal,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
   improvements.init(context);campus.init(context);window.ATLASAcademics.init(context);extensions.forEach(ext=>ext.init(context));
   boot();
 })();

@@ -101,17 +101,24 @@ def test_direct_concurrent_replay_permissions_read_boundary_and_notice(accounts)
     assert contact['role'] == 'teacher'
     assert student.get('/api/direct/recipients', params={'q': 'учебный офис'}).json()['items'][0]['role'] == 'staff'
     assert teacher.get('/api/direct/recipients').status_code == 403
+    other_user = other.get('/api/me').json()
+    recipients = student.get('/api/direct/recipients', params={'q': other_user['full_name'][0]}).json()['items']
+    assert other_user['id'] not in {item['id'] for item in recipients}
     start = '/api/direct/dialogs'
     body = {'recipient_id': contact['id'], 'message': 'Вопрос по обходу ' + uuid.uuid4().hex}
     assert student.post(start, json=body).status_code == 403
-    assert student.post(start, json={**body, 'recipient_id': other.get('/api/me').json()['id']}, headers=HEAD).status_code == 404
+    assert student.post(start, json={**body, 'recipient_id': other_user['id']}, headers=HEAD).status_code == 404
     assert student.post(start, json={**body, 'sender_id': 1}, headers=HEAD).status_code == 422
     key = {**HEAD, 'Idempotency-Key': uuid.uuid4().hex}
     with ThreadPoolExecutor(max_workers=2) as pool:
         results = list(pool.map(lambda _: student.post(start, json=body, headers=key), range(2)))
     assert sorted(result.status_code for result in results) == [200, 201]
     assert results[0].json() == results[1].json()
-    path = start + '/' + str(results[0].json()['dialog_id'])
+    dialog_id = results[0].json()['dialog_id']
+    path = f'{start}/{dialog_id}'
+    for client, can_see in ((student, True), (other, False)):
+        matches = client.get(start, params={'q': contact['name'][0]}).json()['items']
+        assert (dialog_id in {item['id'] for item in matches}) is can_see
     assert teacher.get('/api/direct/unread').json()['unread_count'] >= 1
     dialog_target = path.replace('/api/direct/dialogs', '/app/direct')
     teacher_notices = [row for row in teacher.get('/api/notifications?filter=direct').json()

@@ -1,11 +1,14 @@
 """Actual browser workflows on the disposable local HTTP application."""
 import os
 import re
+from urllib.parse import parse_qs, urlsplit
+from uuid import uuid4
 
 import pytest
 from playwright.sync_api import expect
 
-from test_frontend_contracts import frontend_browser, frontend_page, frontend_server, wait_for_held_response
+from test_frontend_contracts import (finish_browser_tasks, frontend_browser, frontend_page, frontend_server,
+                                     wait_for_held_response)
 
 pytestmark = pytest.mark.skipif(os.environ.get('ATLAS_RUN_BROWSER_TESTS') != '1',
                                 reason='Opt-in isolated real Chromium')
@@ -17,6 +20,96 @@ def enter(page, base, actor, destination='/'):
     page.get_by_role('button',name='Выбрать аккаунт',exact=True).click()
     page.locator(f'[data-demo="{actor}"]').click()
     expect(page.locator('#page-title')).to_be_visible()
+
+
+@pytest.mark.parametrize(('key', 'label', 'endpoint'), [
+    ('q', 'Поиск диалога', 'dialogs'), ('rq', 'Поиск адресата', 'recipients'),
+])
+def test_direct_live_search_keeps_latest_result(frontend_page, key, label, endpoint):
+    page, base = frontend_page
+    enter(page, base, 0, '/app/direct')
+    if key == 'q':
+        contacts = page.request.get(base + '/api/direct/recipients').json()['items']
+        for person in contacts:
+            if person['name'] in {'Михаил Орлов', 'Даниил Зорин'}:
+                response = page.request.post(base + '/api/direct/dialogs',
+                    data={'recipient_id': person['id'], 'message': 'Тестовый диалог для поиска'},
+                    headers={'Origin': base, 'X-Requested-With': 'ATLAS', 'Idempotency-Key': str(uuid4())})
+                assert response.status == 201
+        page.reload()
+    else:
+        details = page.locator('.messenger-contacts')
+        if details.get_attribute('open') is None:
+            details.locator('summary').click()
+
+    search = page.get_by_role('searchbox', name=label)
+    form = page.get_by_role('search', name=label)
+    results = page.locator(f'[data-messenger-results="{key}"]')
+    old_person = results.get_by_role('link', name=re.compile('Михаил Орлов'))
+    new_person = results.get_by_role('link', name=re.compile('Даниил Зорин'))
+    expect(old_person).to_be_visible()
+    expect(new_person).to_be_visible()
+    expect(page.get_by_role('button', name='Найти', exact=True)).to_have_count(0)
+
+    def request_for(value):
+        def match(url):
+            parsed = urlsplit(url)
+            return parsed.path == f'/api/direct/{endpoint}' and parse_qs(parsed.query).get('q') == [value]
+        return match
+
+    held = []
+    page.route(request_for('М'), lambda route: held.append((route, route.fetch())), times=1)
+    search.fill('М')
+    expect(form.get_by_role('status')).to_contain_text('Ищем')
+    wait_for_held_response(page, held)
+    search.fill('Зорин')
+    expect(new_person).to_be_visible()
+    expect(old_person).to_have_count(0)
+    expect(search).to_be_focused()
+    assert parse_qs(urlsplit(page.url).query)[key] == ['Зорин']
+
+    route, response = held[0]
+    assert response.ok and any('Михаил Орлов' == (item if key == 'rq' else item['person'])['name']
+                               for item in response.json()['items'])
+    with page.expect_response(lambda res: request_for('М')(res.url)):
+        route.fulfill(response=response)
+    finish_browser_tasks(page)
+    expect(new_person).to_be_visible()
+    expect(old_person).to_have_count(0)
+
+    search.fill('zz-no-matching-person')
+    expect(results).to_contain_text('по запросу не найдены')
+    page.route(request_for('Зорин'), lambda route: route.abort('failed'), times=1)
+    search.fill('Зорин')
+    expect(form.get_by_role('status')).to_contain_text('Не удалось найти')
+    form.get_by_role('button', name='Повторить').click()
+    expect(new_person).to_be_visible()
+    expect(search).to_be_focused()
+
+    search.clear()
+    expect(old_person).to_be_visible()
+    expect(new_person).to_be_visible()
+    assert key not in parse_qs(urlsplit(page.url).query)
+
+
+def test_material_filter_uses_one_control_baseline_in_compact_view(frontend_page):
+    page, base = frontend_page
+    enter(page, base, 0, '/app/settings')
+    page.get_by_label('Компактный вид').check()
+    page.get_by_role('button', name='Сохранить настройки').click()
+    expect(page.locator('.compact-campus')).to_have_count(1)
+    page.goto(base + '/app/materials?q=Анализ')
+    panel = page.get_by_role('search', name='Поиск и фильтры')
+    expect(panel).to_be_visible()
+    controls = panel.locator('input:visible, select, button, a')
+    bottoms = controls.evaluate_all('(nodes) => nodes.map(node => node.getBoundingClientRect().bottom)')
+    assert len(bottoms) == 5 and max(bottoms) - min(bottoms) <= 1, bottoms
+
+    page.set_viewport_size({'width': 360, 'height': 800})
+    boxes = controls.evaluate_all('nodes => nodes.map(node => node.getBoundingClientRect().toJSON())')
+    assert abs(boxes[1]['bottom'] - boxes[2]['bottom']) <= 1
+    assert boxes[0]['bottom'] <= boxes[1]['top'] and boxes[2]['bottom'] <= boxes[3]['top']
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
 
 
 def test_department_teacher_file_and_private_reply(frontend_page, tmp_path):

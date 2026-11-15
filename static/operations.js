@@ -133,12 +133,12 @@
   }
 
   function dateForm(name,label,value){
-    return `<form class="op-inline-form" data-op-filter="${name}">${input('filter-day',label,value,'date','required')}<button class="outline-button" type="submit">Показать</button></form>`;
+    return `<form class="filter-bar op-inline-form" data-op-filter="${name}">${input('filter-day',label,value,'date','required')}<button class="outline-button" type="submit">Показать</button></form>`;
   }
 
   function teachingSessionPicker(data,selected){
     const sessions=data.sessions.filter(item=>item.started||item.id===data.class_id);
-    return sessions.length?`<form class="op-inline-form" data-op-filter="teaching-session" data-tab="${selected}">
+    return sessions.length?`<form class="filter-bar op-inline-form" data-op-filter="teaching-session" data-tab="${selected}">
       ${select('class_id','Занятие',[['','Без привязки к занятию'],...sessions.map(item=>[item.id,
         `${c.stamp(item.starts_at)} · ${item.kind}${item.topic?' · '+item.topic:''}`])],data.class_id||'')}
       <button class="outline-button" type="submit">Открыть</button></form>`:'';
@@ -174,7 +174,7 @@
     const filter=q(),filtered=work.submissions.filter(item=>
       (!filter.status||filter.status===item.status)&&(!filter.student||filter.student===item.student_id)&&
       (!filter.timing||(filter.timing==='late')===!!item.attempts[0]?.late));
-    const filters=work.submissions.length?`<form class="op-inline-form" data-op-filter="work-review">
+    const filters=work.submissions.length?`<form class="filter-bar op-inline-form" data-op-filter="work-review">
       ${select('status','Статус проверки',[['','Все статусы'],...Object.entries(submissionStates)],filter.status)}
       ${select('student','Студент',[['','Все студенты'],...work.recipients.map(x=>[x.id,x.name])],filter.student)}
       ${select('timing','Срок сдачи',[['','Любой срок'],['on-time','Вовремя'],['late','С опозданием']],filter.timing)}
@@ -335,7 +335,7 @@
     const key=tableKey(meta.id,scope);
     const file=upload?.key===key?upload:null;
     const paths=format=>url('/api/tables/'+meta.id+'/export',{format,scope,day:q().day,class_id:q().class_id});
-    const chooser=`<form class="op-inline-form" data-op-filter="tables">${select('dataset','Таблица',data.items.map(x=>[x.id,x.title]),meta.id)}
+    const chooser=`<form class="filter-bar op-inline-form" data-op-filter="tables">${select('dataset','Таблица',data.items.map(x=>[x.id,x.title]),meta.id)}
       ${meta.scoped?select('scope','Дисциплина и группа',data.loads.map(x=>[x.id,x.discipline+' · '+x.group]),selected):''}
       ${['attendance','schedule'].includes(meta.id)?input('day',meta.id==='schedule'?'Неделя':'День',q().day||c.today(),'date'):''}
       <button class="outline-button" type="submit">Выбрать</button></form>`;
