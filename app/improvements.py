@@ -30,7 +30,7 @@ def canonical_resource_path(path):
     return '/'.join(parts)
 
 def quota_limit(bucket, period):
-    # Public shared fictional accounts need meaningful limits. Local development
+    # Shared accounts need meaningful limits. Local development
     # permits repeat automated acceptance; the same algorithm is tested below.
     limits = {'write': (180,2000), 'create': (60,500), 'draft': (120,3000)}
     if bucket == 'direct':

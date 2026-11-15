@@ -1,4 +1,4 @@
-"""Additive study workspace models. Every person and academic record is fictional."""
+"""Storage for the study workspace."""
 from __future__ import annotations
 
 import json
@@ -139,7 +139,7 @@ class FocusSession(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
-# Original, concise teaching material, authored for this fictional prototype.
+# Original teaching material.
 COURSE_CONTENT = {
     'Алгоритмы и структуры данных': [
         ('Сложность алгоритмов', 'O(n) описывает рост числа операций при увеличении входа. Для последовательного поиска нужно проверить до n элементов; двоичный поиск работает за O(log n), но требует упорядоченного массива. Сравнивайте время и дополнительную память отдельно.'),

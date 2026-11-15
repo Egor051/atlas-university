@@ -1,4 +1,4 @@
-"""Fictional academic groups and separate operations accounts."""
+"""Initial academic groups and accounts for operations roles."""
 from datetime import datetime, time, timedelta, timezone
 
 from sqlalchemy import select

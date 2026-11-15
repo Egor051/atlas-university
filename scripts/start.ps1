@@ -38,7 +38,7 @@ if (-not (Test-Path -LiteralPath ([IO.Path]::GetDirectoryName($dbPath)) -PathTyp
 }
 $env:DATABASE_URL = 'sqlite:///' + $dbPath.Replace([IO.Path]::DirectorySeparatorChar, [char]'/')
 Write-Host "ATLAS Campus: http://127.0.0.1:$Port"
-Write-Host 'Contest concept. All data is fictional. Press Ctrl+C to stop; your requests remain saved.'
+Write-Host 'Press Ctrl+C to stop the server. Requests are stored in the database.'
 $portProbe = [Net.Sockets.TcpClient]::new()
 try {
     $portProbe.Connect('127.0.0.1', $Port)

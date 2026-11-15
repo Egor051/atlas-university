@@ -1,4 +1,4 @@
-/* ATLAS 3 · connected learning and campus services. All data is fictional. */
+/* ATLAS Campus learning and campus services. */
 (() => {
   'use strict';
   const pages = [

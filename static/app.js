@@ -108,6 +108,7 @@
   const pageTitle = page => menuFor(state.user.role).find(p=>p.id===page)?.label;
   const state = {user:null,sessionEpoch:0,page:'home',routeHref:'/',routeParts:[],routeContext:{},historyEntry:0,data:{},week:null,day:null,scheduleMode:matchMedia('(max-width: 700px)').matches?'day':'week',unread:0,requestFilter:'all',requestView:'mine',serviceQuery:'',planFilter:'active',noticeFilter:'all',staffFilter:'active',staffQuery:'',config:{demo_mode:false},loadingId:0,modalId:0,pending:0,requestOffset:0,noticeOffset:0,staffOffset:0};
   const app = $('#app');
+  const conceptNotice = $('.concept-bar', app).outerHTML;
   const drawerMedia=matchMedia('(max-width: 900px)');
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   let openNavGroup=null, drawerFocus=null, navScrollTimer;
@@ -325,7 +326,6 @@
     const pinned=[...(role==='student'?['home']:role==='teacher'?['teacher']:[]),'announcements','notifications',...(role==='student'?[]:['direct','university'])];
     return pinned.map(id=>menu.find(p=>p.id===id)).filter(Boolean).map(p=>navItem(p)).join('')+groups;
   }
-  const conceptNotice=()=>`<div class="concept-bar" role="note">${icon('info')}<span>Конкурсный концепт · все данные вымышлены · неофициальный сервис</span></div>`;
   const sidebarKey=()=>`atlas.sidebar.${state.user.id}`;
   function savedSidebar(){
     try{return localStorage.getItem(sidebarKey())==='collapsed';}catch{return false;}
@@ -401,7 +401,7 @@
           <div class="top-actions"><span class="today-label">${dateFmt(today(),{day:'numeric',month:'long'})}</span><button class="search-trigger" data-action="search">${icon('search')}<span>Поиск по кабинету</span><kbd aria-hidden="true">Ctrl K</kbd></button><button type="button" class="circle-button" id="refresh-current" data-action="retry" title="Обновить данные раздела" aria-label="Обновить данные раздела">${icon('refresh')}</button>${notice}${directShortcut}<button class="avatar-button" data-route="profile" aria-label="Мой профиль, ${esc(u.initials)}">${avatar(u)}</button></div>
         </header>
         ${siblingNav()}
-        ${conceptNotice()}
+        ${conceptNotice}
         <div class="content" id="page-content" tabindex="-1"></div>
         <footer class="app-footer"><span>Время занятий — МСК (UTC+3)</span></footer>
       </main><nav class="bottom-nav" aria-label="Мобильная навигация">${mobile.map(p=>navItem(p,{mobile:true})).join('')}<button type="button" class="nav-item" data-action="drawer-open" aria-expanded="false" aria-controls="atlas-sidebar" aria-label="Открыть меню">${icon('menu')}<span>Меню</span></button></nav>
@@ -823,7 +823,7 @@
     document.body.classList.remove('nav-drawer-open');
     document.title='Вход в кампус — АТЛАС';
     app.innerHTML=`<main class="login-page" id="page-content">
-      ${conceptNotice()}
+      ${conceptNotice}
       <div class="login-root">
         <section class="login-art">
           ${logo()}

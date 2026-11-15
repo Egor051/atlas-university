@@ -1,1 +1,1 @@
-# ATLAS Campus prototype
+# ATLAS Campus

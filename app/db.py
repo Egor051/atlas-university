@@ -1,4 +1,4 @@
-"""Database models and deterministic, fictional demo fixture data."""
+"""Database models, migrations and seed fixtures."""
 from __future__ import annotations
 
 import os
@@ -329,10 +329,15 @@ def migrate_database():
             from .campus_copy_migration import upgrade_campus_copy
             upgrade_campus_copy(connection)
             connection.execute(SchemaMigration.__table__.insert().values(version='0016_trim_bundled_copy', applied_at=utc_now()))
+        if '0017_trim_remaining_copy' not in versions:
+            from .campus_copy_migration import upgrade_acceptance_copy, upgrade_library_copy
+            upgrade_library_copy(connection)
+            upgrade_acceptance_copy(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0017_trim_remaining_copy', applied_at=utc_now()))
 
 
 def seed_demo(session=None):
-    """Insert fictional fixtures only when the users table is completely empty."""
+    """Load seed fixtures only if the users table is empty."""
     with (nullcontext(session) if session is not None else SessionLocal()) as db:
         if db.query(User).first(): return
         students = [
@@ -445,6 +450,6 @@ if __name__ == '__main__':
         if not settings.demo_mode:
             raise SystemExit('Seeding requires DEMO_MODE=true')
         initialize_database()
-        print('Fictional demo fixtures initialized (existing users were preserved).')
+        print('Seed initialization complete.')
     else:
         raise SystemExit('Usage: python -m app.db [migrate|seed]')

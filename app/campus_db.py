@@ -1,4 +1,4 @@
-"""Personal portfolio for the fictional contest campus."""
+"""Storage for personal portfolios."""
 from datetime import date, datetime
 from sqlalchemy import ForeignKey, String, Text, Date, DateTime
 from sqlalchemy.orm import Mapped, mapped_column

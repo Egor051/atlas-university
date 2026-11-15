@@ -1,9 +1,13 @@
 """Update only known bundled copy, leaving user-authored content intact."""
-from sqlalchemy import exists, select, update
+import json
 
-from .db import DocumentRequest, RequestEvent
+from sqlalchemy import exists, select, update
+from sqlalchemy.engine import Connection
+
+from .db import DocumentRequest, Notification, RequestEvent, User
+from .improvement_db import PersonalDraft
 from .learning_db import Attendance, CourseModule
-from .services_db import CampusEvent, FinanceEntry
+from .services_db import CampusEvent, FinanceEntry, LibraryBook
 from .units_db import CenterProgram, CenterSession, UnitCaseEvent, UnitPublication
 from .university_db import Faculty, TeachingMaterial
 
@@ -95,3 +99,78 @@ def upgrade_campus_copy(connection):
     ):
         connection.execute(update(UnitPublication).where(UnitPublication.title == title, UnitPublication.body == body,
                            UnitPublication.version == 1).values(title=new_title, body=new_body))
+
+
+def upgrade_library_copy(connection: Connection):
+    descriptions = (
+        ('algorithms', 'Вымышленное пособие: сложность, сортировки, деревья и графы.',
+         'Сложность алгоритмов, сортировки, деревья и графы.'),
+        ('database', 'Вымышленное пособие: нормализация, запросы и транзакции.',
+         'Нормализация, запросы и транзакции.'),
+        ('probability', 'Вымышленный сборник задач с разбором учебных примеров.',
+         'Задачи с разбором учебных примеров.'),
+        ('interfaces', 'Вымышленный практикум по сценариям и проверке доступности.',
+         'Практикум по сценариям и проверке доступности.'),
+        ('software', 'Вымышленный учебник по требованиям, проектированию и проверкам.',
+         'Требования, проектирование и проверки.'),
+        ('networks', 'Вымышленные лабораторные работы по сетевым протоколам.',
+         'Лабораторные работы по сетевым протоколам.'),
+        ('data', 'Вымышленный практикум по описанию выборок и проверке моделей.',
+         'Практикум по описанию выборок и проверке моделей.'),
+        ('writing', 'Вымышленное пособие: планирование, конспектирование, оформление ссылок.',
+         'Планирование, конспектирование и оформление ссылок.'),
+    )
+    for key, old, new in descriptions:
+        connection.execute(update(LibraryBook).where(
+            LibraryBook.seed_key == f'demo-book-{key}', LibraryBook.description == old
+        ).values(description=new))
+
+
+def upgrade_acceptance_copy(connection: Connection):
+    # The November 11 acceptance runs created requests 4–8 on the shared student account.
+    # Match their stored text as well as the owner and IDs to preserve later edits.
+    owner = select(User.id).where(User.login == 'alina.demo').scalar_subquery()
+    old_comment = 'Все данные вымышлены.'
+    old_answer = 'Вымышленный образец готов.'
+    old_details = json.dumps({'copies': '1', 'purpose': 'Конкурсный образец справки'}, ensure_ascii=False)
+    comment = 'Проверка обработки заявки.'
+    details = json.dumps({'copies': '1', 'purpose': 'Проверка обработки справки'}, ensure_ascii=False)
+    request_type = 'Справка об обучении'
+    stage_copy = {
+        'review': ('на рассмотрении', 'Заявка принята на рассмотрение.'),
+        'processing': ('в работе', 'Заявка в работе.'),
+        'ready': ('готова', 'Справка подготовлена.'),
+    }
+
+    matching = (
+        DocumentRequest.id.in_((4, 5, 6, 7, 8)), DocumentRequest.student_id == owner,
+        DocumentRequest.type == request_type, DocumentRequest.status == 'ready',
+        DocumentRequest.comment == old_comment, DocumentRequest.details == old_details,
+        DocumentRequest.staff_message == old_answer,
+    )
+    request_ids = list(connection.scalars(select(DocumentRequest.id).where(*matching)))
+    for request_id in request_ids:
+        changed = connection.execute(update(DocumentRequest).where(DocumentRequest.id == request_id, *matching)
+                                     .values(comment=comment, details=details, staff_message=stage_copy['ready'][1]))
+        if changed.rowcount != 1:
+            continue
+        for status, (label, message) in stage_copy.items():
+            connection.execute(update(RequestEvent).where(
+                RequestEvent.request_id == request_id, RequestEvent.actor_role == 'staff',
+                RequestEvent.actor_name == 'Кира Миронова', RequestEvent.status == status,
+                RequestEvent.message == old_answer,
+            ).values(message=message))
+            prefix = f'{request_type}, №{request_id}: {label}.'
+            connection.execute(update(Notification).where(
+                Notification.request_id == request_id, Notification.student_id == owner,
+                Notification.body == f'{prefix} {old_answer}',
+            ).values(body=prefix))
+        if request_id == 4:
+            connection.execute(update(RequestEvent).where(
+                RequestEvent.request_id == request_id, RequestEvent.actor_role == 'student',
+                RequestEvent.message == f'Уточнение студента: {old_comment}',
+            ).values(message='Уточнение студента: проверка обработки заявки.'))
+    connection.execute(update(PersonalDraft).where(
+        PersonalDraft.user_id == owner, PersonalDraft.name == 'acceptance:9f2862bb0b984c4083a3e01811560208',
+        PersonalDraft.values_json == json.dumps({'comment': old_comment}, ensure_ascii=False),
+    ).values(values_json=json.dumps({'comment': comment}, ensure_ascii=False)))

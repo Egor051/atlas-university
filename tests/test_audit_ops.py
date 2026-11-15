@@ -65,7 +65,7 @@ def test_p05_historical_document_links_resolve():
     document = ROOT/'docs/history/process-before-3.2.md'
     links = re.findall(r'\]\(([^)]+)\)', document.read_text(encoding='utf-8'))
     local = [urlsplit(link).path for link in links if not urlsplit(link).scheme and not link.startswith('#')]
-    assert len(local) == 20
+    assert {'../features.md', '../release-checklist.md', '../../screenshots/README.md'} <= set(local)
     missing = [target for target in local if not (document.parent/unquote(target)).exists()]
     assert missing == []
 

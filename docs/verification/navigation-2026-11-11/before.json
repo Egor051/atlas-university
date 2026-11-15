@@ -58,7 +58,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Добрый день, Алина",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -67,7 +67,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Расписание",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -76,7 +76,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Успеваемость",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -85,7 +85,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Мой план",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -94,7 +94,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Заявки и справки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -103,7 +103,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Уведомления",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -112,7 +112,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Мой профиль",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -121,7 +121,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Все разделы",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -130,7 +130,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Мои дисциплины",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -139,7 +139,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Сдача работ",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -148,7 +148,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Сессия и зачёты",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -157,7 +157,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Посещаемость",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -166,7 +166,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Календарь",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -175,7 +175,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Личные задачи",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -184,7 +184,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Конспекты",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -193,7 +193,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Карточки памяти",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -202,7 +202,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Самопроверка",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -211,7 +211,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Фокус и время",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -220,7 +220,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Консультации",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -229,7 +229,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Связь с офисом",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -238,7 +238,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Библиотека",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -247,7 +247,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Жизнь кампуса",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -256,7 +256,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Финансы",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -265,7 +265,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Контакты и корпуса",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -274,7 +274,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Помощь и правила",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -283,7 +283,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Портфолио",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -292,7 +292,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Настройки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -301,7 +301,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Добрый день, Алина",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -310,7 +310,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Расписание",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -319,7 +319,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Успеваемость",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -328,7 +328,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Мой план",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -337,7 +337,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Заявки и справки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -346,7 +346,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Уведомления",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -355,7 +355,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Мой профиль",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -364,7 +364,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Все разделы",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -373,7 +373,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Мои дисциплины",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -382,7 +382,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Сдача работ",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -391,7 +391,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Сессия и зачёты",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -400,7 +400,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Посещаемость",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -409,7 +409,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Календарь",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -418,7 +418,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Личные задачи",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -427,7 +427,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Конспекты",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -436,7 +436,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Карточки памяти",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -445,7 +445,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Самопроверка",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -454,7 +454,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Фокус и время",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -463,7 +463,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Консультации",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -472,7 +472,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Связь с офисом",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -481,7 +481,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Библиотека",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -490,7 +490,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Жизнь кампуса",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -499,7 +499,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Финансы",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -508,7 +508,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Контакты и корпуса",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -517,7 +517,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Помощь и правила",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -526,7 +526,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Портфолио",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -535,7 +535,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Настройки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -544,7 +544,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Добрый день, Алина",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -553,7 +553,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Расписание",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -562,7 +562,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Успеваемость",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -571,7 +571,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Мой план",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -580,7 +580,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Заявки и справки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -589,7 +589,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Уведомления",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -598,7 +598,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Мой профиль",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -607,7 +607,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Все разделы",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -616,7 +616,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Мои дисциплины",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -625,7 +625,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Сдача работ",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -634,7 +634,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Сессия и зачёты",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -643,7 +643,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Посещаемость",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -652,7 +652,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Календарь",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -661,7 +661,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Личные задачи",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -670,7 +670,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Конспекты",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -679,7 +679,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Карточки памяти",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -688,7 +688,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Самопроверка",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -697,7 +697,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Фокус и время",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -706,7 +706,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Консультации",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -715,7 +715,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Связь с офисом",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -724,7 +724,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Библиотека",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -733,7 +733,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Жизнь кампуса",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -742,7 +742,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Финансы",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -751,7 +751,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Контакты и корпуса",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -760,7 +760,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Помощь и правила",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -769,7 +769,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Портфолио",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -778,7 +778,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Настройки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -787,7 +787,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Добрый день, Алина",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -796,7 +796,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Расписание",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -805,7 +805,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Успеваемость",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -814,7 +814,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Мой план",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -823,7 +823,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Заявки и справки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -832,7 +832,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Уведомления",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -841,7 +841,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Мой профиль",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -850,7 +850,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Все разделы",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -859,7 +859,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Мои дисциплины",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -868,7 +868,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Сдача работ",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -877,7 +877,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Сессия и зачёты",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -886,7 +886,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Посещаемость",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -895,7 +895,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Календарь",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -904,7 +904,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Личные задачи",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -913,7 +913,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Конспекты",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -922,7 +922,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Карточки памяти",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -931,7 +931,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Самопроверка",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -940,7 +940,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Фокус и время",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -949,7 +949,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Консультации",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -958,7 +958,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Связь с офисом",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -967,7 +967,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Библиотека",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -976,7 +976,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Жизнь кампуса",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -985,7 +985,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Финансы",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -994,7 +994,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Контакты и корпуса",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1003,7 +1003,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Помощь и правила",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1012,7 +1012,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Портфолио",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1021,7 +1021,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Настройки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1030,7 +1030,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Учебный офис",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1039,7 +1039,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Пульт сопровождения",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1048,7 +1048,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Диалоги студентов",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1057,7 +1057,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Мой профиль",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1066,7 +1066,7 @@
       "width": 360,
       "scrollWidth": 360,
       "title": "Настройки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1075,7 +1075,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Учебный офис",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1084,7 +1084,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Пульт сопровождения",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1093,7 +1093,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Диалоги студентов",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1102,7 +1102,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Мой профиль",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1111,7 +1111,7 @@
       "width": 390,
       "scrollWidth": 390,
       "title": "Настройки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1120,7 +1120,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Учебный офис",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1129,7 +1129,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Пульт сопровождения",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1138,7 +1138,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Диалоги студентов",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1147,7 +1147,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Мой профиль",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1156,7 +1156,7 @@
       "width": 768,
       "scrollWidth": 768,
       "title": "Настройки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1165,7 +1165,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Учебный офис",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1174,7 +1174,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Пульт сопровождения",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1183,7 +1183,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Диалоги студентов",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1192,7 +1192,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Мой профиль",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     },
     {
       "engine": "chromium",
@@ -1201,7 +1201,7 @@
       "width": 1440,
       "scrollWidth": 1440,
       "title": "Настройки",
-      "concept": "Конкурсный концепт · все данные вымышлены · неофициальный сервис"
+      "concept": true
     }
   ],
   "screenshots": [

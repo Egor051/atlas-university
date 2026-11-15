@@ -1,4 +1,4 @@
-"""Additive models for fictional campus services. No university integrations."""
+"""Storage for campus services."""
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta, timezone
@@ -161,7 +161,7 @@ def seed_services(db):
         seed_key = 'demo-event-' + key
         if db.scalar(select(CampusEvent.id).where(CampusEvent.seed_key == seed_key)) is None:
             db.add(CampusEvent(seed_key=seed_key, title=title, category=category, description=description, start_at=at(offset, 17), end_at=at(offset, 19), location=location, capacity=capacity, registered_count=0))
-    # Fixed, additive contest fixtures. Restarts never move a booked event or
+    # Fixed, additive calendar fixtures. Restarts never move a booked event or
     # reset its capacity/history. The two-day buffer means that even late on
     # 28 November a student can still book a genuinely future event or slot.
     existing_slots = set(db.scalars(select(ConsultationSlot.seed_key).where(ConsultationSlot.seed_key.like('contest-202611-%'))))
@@ -179,14 +179,14 @@ def seed_services(db):
             start = datetime.combine(contest_day, datetime.min.time(), CAMPUS_TZ).replace(hour=22).astimezone(timezone.utc)
             db.add(CampusEvent(seed_key=seed_key, title=title, category=category, description=description, start_at=start, end_at=start+timedelta(hours=1), location=location, capacity=capacity, registered_count=0))
     books = [
-        ('algorithms', 'Алгоритмы: учебный практикум', 'М. Орлов', 'Алгоритмы и структуры данных', 'Вымышленное пособие: сложность, сортировки, деревья и графы.', 5),
-        ('database', 'Проектирование баз данных', 'Е. Рябинина', 'Базы данных', 'Вымышленное пособие: нормализация, запросы и транзакции.', 4),
-        ('probability', 'Вероятность на примерах', 'Р. Соловьёв', 'Теория вероятностей', 'Вымышленный сборник задач с разбором учебных примеров.', 3),
-        ('interfaces', 'Интерфейсы и доступность', 'Н. Ласточкина', 'Проектирование интерфейсов', 'Вымышленный практикум по сценариям и проверке доступности.', 4),
-        ('software', 'Инженерия программных систем', 'А. Громов', 'Инженерия ПО', 'Вымышленный учебник по требованиям, проектированию и проверкам.', 5),
-        ('networks', 'Компьютерные сети: лабораторный курс', 'С. Белова', 'Компьютерные сети', 'Вымышленные лабораторные работы по сетевым протоколам.', 3),
-        ('data', 'Анализ данных в учебных проектах', 'Д. Зорин', 'Анализ данных', 'Вымышленный практикум по описанию выборок и проверке моделей.', 4),
-        ('writing', 'Как учиться и работать с источниками', 'В. Весенняя', 'Самостоятельная работа', 'Вымышленное пособие: планирование, конспектирование, оформление ссылок.', 6),
+        ('algorithms', 'Алгоритмы: учебный практикум', 'М. Орлов', 'Алгоритмы и структуры данных', 'Сложность алгоритмов, сортировки, деревья и графы.', 5),
+        ('database', 'Проектирование баз данных', 'Е. Рябинина', 'Базы данных', 'Нормализация, запросы и транзакции.', 4),
+        ('probability', 'Вероятность на примерах', 'Р. Соловьёв', 'Теория вероятностей', 'Задачи с разбором учебных примеров.', 3),
+        ('interfaces', 'Интерфейсы и доступность', 'Н. Ласточкина', 'Проектирование интерфейсов', 'Практикум по сценариям и проверке доступности.', 4),
+        ('software', 'Инженерия программных систем', 'А. Громов', 'Инженерия ПО', 'Требования, проектирование и проверки.', 5),
+        ('networks', 'Компьютерные сети: лабораторный курс', 'С. Белова', 'Компьютерные сети', 'Лабораторные работы по сетевым протоколам.', 3),
+        ('data', 'Анализ данных в учебных проектах', 'Д. Зорин', 'Анализ данных', 'Практикум по описанию выборок и проверке моделей.', 4),
+        ('writing', 'Как учиться и работать с источниками', 'В. Весенняя', 'Самостоятельная работа', 'Планирование, конспектирование и оформление ссылок.', 6),
     ]
     for key, title, author, subject, description, total in books:
         seed_key = 'demo-book-' + key

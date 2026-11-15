@@ -1,4 +1,4 @@
-"""ATLAS Campus contest concept. All student and staff data is fictional."""
+"""HTTP API for ATLAS Campus."""
 from __future__ import annotations
 
 import hashlib
@@ -283,7 +283,7 @@ def login(body: LoginBody, request: Request, response: Response, db: Session = D
     old_sessions = db.scalars(select(LoginSession.id).where(LoginSession.user_id == u.id).order_by(LoginSession.expires_at.desc()).offset(19)).all()
     if old_sessions:
         db.execute(delete(LoginSession).where(LoginSession.id.in_(old_sessions)))
-    # Multiple review sessions can coexist for shared *fictional* accounts.
+    # Multiple sessions can coexist for shared accounts.
     token=secrets.token_urlsafe(40)
     db.add(LoginSession(token_hash=hashlib.sha256(token.encode()).hexdigest(),
                         user_id=u.id,expires_at=now+SESSION_LIFETIME))

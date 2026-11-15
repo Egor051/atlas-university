@@ -1,4 +1,4 @@
-"""Scoped workflows for the fictional student union and VUC."""
+"""Role-scoped workflows for the student union and VUC."""
 from datetime import date, datetime, timedelta, timezone
 from html import escape
 import json

@@ -1,4 +1,4 @@
-"""Original teaching examples and fictional directory for the demo mode."""
+"""Initial directory records and teaching materials for DEMO_MODE."""
 from datetime import datetime, timezone
 
 from sqlalchemy import select

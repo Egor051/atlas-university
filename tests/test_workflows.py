@@ -14,7 +14,7 @@ from contextlib import closing
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import create_engine, select
 from fastapi.testclient import TestClient
 _test_directory = tempfile.TemporaryDirectory(prefix='atlas-workflows-')
 if 'app.db' not in sys.modules:
@@ -66,9 +66,85 @@ def test_additive_legacy_migration_preserves_records_and_is_repeatable():
                 ('0006_audit_integrity',), ('0007_university_library_direct',), ('0008_academic_workspace',),
                 ('0009_student_units',), ('0010_campus_announcements',), ('0011_certificate_issues',),
                 ('0012_global_notifications',), ('0013_academic_points',), ('0014_assignment_workflow',),
-                ('0015_announcement_summaries',), ('0016_trim_bundled_copy',),
+                ('0015_announcement_summaries',), ('0016_trim_bundled_copy',), ('0017_trim_remaining_copy',),
             ]
             assert database.execute('SELECT body,target FROM notifications WHERE id=201').fetchone() == ('Preserve notice', '/app/requests')
+
+
+def test_library_copy_updates_only_original_seeded_descriptions(tmp_path):
+    path = tmp_path / 'library.db'
+    migrate = 'from app.db import migrate_database, engine; migrate_database(); engine.dispose()'
+    url = 'sqlite:///' + str(path)
+    result = run_python(migrate, url)
+    assert result.returncode == 0, result.stderr
+    old = 'Вымышленное пособие: сложность, сортировки, деревья и графы.'
+    edited = 'Подборка запросов к реляционной базе данных.'
+    with closing(sqlite3.connect(path)) as db, db:
+        db.execute("DELETE FROM schema_migrations WHERE version='0017_trim_remaining_copy'")
+        db.executemany('INSERT INTO library_books (seed_key,title,author,subject,description,total,available) '
+                       'VALUES (?, ?, ?, ?, ?, 5, 3)', [
+                           ('demo-book-algorithms', 'Алгоритмы', 'Автор', 'Информатика', old),
+                           ('demo-book-database', 'Базы данных', 'Автор', 'Информатика', edited),
+                           (None, 'Другая запись', 'Автор', 'Информатика', old),
+                       ])
+    for _ in range(2):
+        result = run_python(migrate, url)
+        assert result.returncode == 0, result.stderr
+    with closing(sqlite3.connect(path)) as db:
+        assert db.execute('SELECT id,description,total,available FROM library_books ORDER BY id').fetchall() == [
+            (1, 'Сложность алгоритмов, сортировки, деревья и графы.', 5, 3),
+            (2, edited, 5, 3),
+            (3, old, 5, 3),
+        ]
+
+
+def test_acceptance_copy_preserves_owner_status_and_custom_text():
+    from app.campus_copy_migration import upgrade_acceptance_copy
+    from app.db import Base, DocumentRequest, Notification, RequestEvent, User, utc_now
+
+    test_engine = create_engine('sqlite://')
+    Base.metadata.create_all(test_engine)
+    old = 'Все данные вымышлены.'
+    answer = 'Вымышленный образец готов.'
+    request_type = 'Справка об обучении'
+    details = json.dumps({'copies': '1', 'purpose': 'Конкурсный образец справки'}, ensure_ascii=False)
+    now = utc_now()
+    with test_engine.begin() as connection:
+        connection.execute(User.__table__.insert(), [
+            dict(id=1, login='alina.demo', password_hash='fixture', full_name='Алина', initials='А',
+                 faculty='', program='', course=2, group_name='ИТ', student_number='1'),
+            dict(id=2, login='other', password_hash='fixture', full_name='Другой студент', initials='ДС',
+                 faculty='', program='', course=2, group_name='ИТ', student_number='2'),
+        ])
+        connection.execute(DocumentRequest.__table__.insert(), [
+            dict(id=request_id, student_id=student, type=request_type, comment=comment,
+                 details=details, status='ready', created_at=now, updated_at=now, staff_message=answer, version=4)
+            for request_id, student, comment in ((4, 1, old), (5, 2, old), (6, 1, 'Изменено владельцем.'))
+        ])
+        connection.execute(RequestEvent.__table__.insert(), [
+            dict(request_id=req, status='ready', message=message, actor_role='staff',
+                 actor_name='Кира Миронова', created_at=now)
+            for req, message in ((4, answer), (4, 'Дополнительный ответ.'), (5, answer))
+        ])
+        connection.execute(Notification.__table__.insert(),
+                           dict(request_id=4, student_id=1, title='Справка готова',
+                                body=f'{request_type}, №4: готова. {answer}', category='request',
+                                created_at=now, is_read=True))
+        upgrade_acceptance_copy(connection)
+        upgrade_acceptance_copy(connection)
+        assert connection.execute(select(DocumentRequest.id, DocumentRequest.comment, DocumentRequest.status,
+                                         DocumentRequest.version).order_by(DocumentRequest.id)).all() == [
+            (4, 'Проверка обработки заявки.', 'ready', 4),
+            (5, old, 'ready', 4),
+            (6, 'Изменено владельцем.', 'ready', 4),
+        ]
+        assert connection.scalars(select(RequestEvent.message).order_by(RequestEvent.id)).all() == [
+            'Справка подготовлена.', 'Дополнительный ответ.', answer,
+        ]
+        assert connection.execute(select(Notification.request_id, Notification.body, Notification.is_read)).one() == (
+            4, f'{request_type}, №4: готова.', True,
+        )
+    test_engine.dispose()
 
 
 def test_request_history_and_deadline_survive_new_process():

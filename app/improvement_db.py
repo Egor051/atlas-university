@@ -1,4 +1,4 @@
-"""Additive contest-hardening storage. No connections or seeding on import."""
+"""Storage for drafts, quotas and idempotency receipts."""
 from datetime import datetime
 from sqlalchemy import ForeignKey, String, Text, DateTime, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column

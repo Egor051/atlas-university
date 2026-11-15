@@ -1,4 +1,4 @@
-"""Seed data for the fictional union and the administrative VUC demonstration."""
+"""Initial records for the student union and VUC."""
 from datetime import timedelta
 
 from sqlalchemy import select
