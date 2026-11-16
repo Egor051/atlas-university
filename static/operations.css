@@ -34,6 +34,23 @@
 .assignment-files { padding-inline-start: 1rem; margin-block: 8px; overflow-wrap: anywhere; }
 .assignment-files li { margin-block: 5px; }
 .assignment-files small { margin-inline-start: 8px; color: var(--muted); }
+.work-form [hidden] { display: none; }
+.work-form input[type="file"] { min-width: 0; max-width: 100%; }
+.work-form details > summary { margin-bottom: 8px; }
+.work-form details:not([open]) > summary { margin-bottom: 0; }
+.work-review-row { grid-template-columns: minmax(0,1fr); }
+.work-review-row .op-actions { justify-content: flex-start; border-top: 1px solid var(--border); padding-top: 8px; }
+.work-attachment-heading { margin: 12px 0 4px; font-size: 14px; }
+.work-review-log .assignment-files { margin: 4px 0 0; }
+.work-review-log .assignment-files li { padding: 0; border: 0; }
+.work-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  align-items: start;
+  gap: 12px;
+}
+.work-compare-version { margin: 0; }
+.work-compare-version h3 { margin: 0 0 8px; font-size: 15px; }
 #campus-assignment-files { max-width: 100%; min-width: 0; }
 .op-section input[type="file"] { min-width: 0; max-width: 100%; }
 .unit-checklist {
@@ -62,7 +79,7 @@
 
 @media (max-width: 650px) {
   .op-row .op-actions { justify-content: flex-start; }
-  .op-form-grid { grid-template-columns: minmax(0,1fr); }
+  .op-form-grid, .work-compare-grid { grid-template-columns: minmax(0,1fr); }
 }
 
 @media (max-width: 480px) {

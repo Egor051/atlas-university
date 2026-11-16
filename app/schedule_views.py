@@ -120,7 +120,8 @@ def deadline_markers(db, user, first, last):
                       .outerjoin(GroupWork, GroupWork.id == WorkDelivery.work_id).where(
                           Deadline.student_id == user.id, Deadline.due_date.between(first, last), visible_deadline()))
     for row, delivery, work in rows:
-        has_time = bool((delivery and delivery.extended_until) or (work and work.due_at))
+        has_time = bool((delivery and (delivery.extended_until or delivery.individual_due_at or delivery.revision_due_at))
+                        or (work and work.due_at))
         clock = effective_due(row, delivery, work).astimezone(CAMPUS_TZ).strftime('%H:%M') if has_time else None
         yield str(row.due_date), dict(id=row.id, type='deadline', kind=KIND['deadline'], title=row.title,
                                       subject=row.subject, time=clock, done=row.is_done)

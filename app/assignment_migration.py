@@ -2,6 +2,14 @@
 from sqlalchemy import inspect
 
 
+def upgrade_assignment_feedback(connection):
+    columns = {column['name'] for column in inspect(connection).get_columns('academic_work_feedback')}
+    if 'remarks' not in columns:
+        connection.exec_driver_sql("ALTER TABLE academic_work_feedback ADD COLUMN remarks TEXT NOT NULL DEFAULT ''")
+    if 'previous_score' not in columns:
+        connection.exec_driver_sql('ALTER TABLE academic_work_feedback ADD COLUMN previous_score INTEGER')
+
+
 def upgrade_assignment_workflow(connection):
     timestamp = 'TIMESTAMP WITH TIME ZONE' if connection.dialect.name == 'postgresql' else 'DATETIME'
     for table, fields in (
@@ -41,3 +49,11 @@ def upgrade_assignment_workflow(connection):
         WHERE s.attempt_version > 0
         AND NOT EXISTS (SELECT 1 FROM assignment_attempts a WHERE a.submission_id = s.id)
     """)
+
+
+def upgrade_assignment_deadlines(connection):
+    timestamp = 'TIMESTAMP WITH TIME ZONE' if connection.dialect.name == 'postgresql' else 'DATETIME'
+    existing = {column['name'] for column in inspect(connection).get_columns('academic_work_deliveries')}
+    for field in ('individual_due_at', 'revision_due_at'):
+        if field not in existing:
+            connection.exec_driver_sql(f'ALTER TABLE academic_work_deliveries ADD COLUMN {field} {timestamp}')

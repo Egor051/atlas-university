@@ -21,7 +21,7 @@
   const ruleNames={holiday:'Государственный праздник',off:'Выходной',working:'Учебный день',summer:'Летние каникулы',
     break:'Межсеместровые каникулы',legacy:'Демонстрационный период'};
   const attendanceNames={present:'Присутствовал',absent:'Отсутствовал',excused:'Уважительная причина',late:'Опоздал'};
-  const teachTabs={roster:'Студенты',grades:'Ведомость',attendance:'Посещаемость',works:'Задания',report:'Отчёт и история'};
+  const teachTabs={roster:'Студенты',grades:'Ведомость',attendance:'Посещаемость',works:'Сдача работ',report:'Отчёт и история'};
   const registryTabs={rooms:'Аудитории',groups:'Группы',loads:'Нагрузка',students:'Состав групп'};
   const datasetIds=['schedule','rooms','groups','loads','students','grades','attendance'];
   const columnLabels={
@@ -124,8 +124,8 @@
     return rows.length?`<div class="compact-list">${rows.map(make).join('')}</div>`:empty(heading,description);
   }
 
-  function row(heading,summary='',actions=''){
-    return `<article class="card compact-row op-row"><div class="row-copy"><h3>${heading}</h3>${summary}</div>${actions?`<div class="op-actions">${actions}</div>`:''}</article>`;
+  function row(heading,summary='',actions='',className=''){
+    return `<article class="card compact-row op-row ${className}"><div class="row-copy"><h3>${heading}</h3>${summary}</div>${actions?`<div class="op-actions">${actions}</div>`:''}</article>`;
   }
 
   const p=value=>value?`<p>${esc(value)}</p>`:'';
@@ -152,64 +152,123 @@
       <button class="outline-button" type="submit">Открыть</button></form>`:'';
   }
 
-  const workStates={draft:'Черновик',scheduled:'Запланировано',published:'Опубликовано',archived:'В архиве'};
-  const submissionStates={not_started:'Не начато',in_progress:'В работе',submitted:'Отправлено',resubmitted:'Повторно отправлено',
-    in_review:'На проверке',revision_required:'Требуется доработка',accepted:'Принято',completed:'Завершено',withdrawn:'Отозвано'};
+  const workStates={draft:'Черновик',scheduled:'Запланировано',published:'Опубликовано',closed:'Приём закрыт',archived:'В архиве'};
+  const submissionStates={not_started:'Не сдано',submitted:'Сдано',resubmitted:'Повторно сдано',in_review:'На проверке',
+    revision_required:'Требует доработки',accepted:'Принято',graded:'Оценено',completed:'Проверка завершена',withdrawn:'Отозвано'};
   const workKinds={homework:'Домашняя работа',lab:'Лабораторная работа',practice:'Практическая работа',test:'Контрольная работа',
     independent:'Самостоятельная работа',essay:'Реферат',talk:'Доклад',project:'Проектная работа',term_paper:'Курсовая работа',
     individual:'Индивидуальная работа',group:'Групповая работа',other:'Другой тип'};
   const handInMethods={text:'Текстовый ответ',url:'HTTPS-ссылка',files:'Файлы',complete:'Отметка о выполнении'};
   const acceptedFormats=['pdf','txt','md','csv','png','jpg','jpeg','docx','xlsx','pptx'];
-  const reviewActions={review:'Взять на проверку',revise:'Вернуть на доработку',accept:'Принять работу',complete:'Завершить',comment:'Дать обратную связь'};
+  const reviewActions={review:'Взять на проверку',revise:'Вернуть на доработку',accept:'Принять работу',complete:'Завершить проверку',
+    comment:'Дать обратную связь',grade:'Оценить работу',correct_score:'Скорректировать балл'};
+  const reviewEvents={review:'Взято на проверку',revise:'Возвращено на доработку',accept:'Работа принята',complete:'Проверка завершена',
+    comment:'Обратная связь',grade:'Работа оценена',correct_score:'Балл скорректирован'};
   const awaitingReview=new Set(['submitted','resubmitted','in_review']);
+  const checkedStates=new Set(['accepted','completed']);
   const deadlineLabel=value=>value?c.stamp(value)+' МСК':'—';
+  const submissionState=item=>item?.score!=null?'graded':item?.status==='in_progress'?'not_started':item?.status||'not_started';
+  const workType=work=>work.custom_kind||workKinds[work.kind];
+  const userText=value=>value?`<p class="user-text">${esc(value)}</p>`:'';
+  const fileList=(files,path)=>files?.length?`<ul class="assignment-files">${files.map(file=>
+    `<li>${download(path+'/'+Number(file.id),file.name)}<small>${Math.ceil(file.size/1024)} КБ</small></li>`).join('')}</ul>`:'';
+
+  function reviewHistory(entries,path){
+    return entries.length?`<ul class="op-log work-review-log">${entries.map(entry=>`<li>
+      <b>${esc(reviewEvents[entry.action]||'Обратная связь')}${entry.score==null?'':
+        ` · ${entry.previous_score==null?'':Number(entry.previous_score)+' → '}${Number(entry.score)} баллов`}</b>
+      <small>${esc(entry.author)} · ${esc(deadlineLabel(entry.created_at))}</small>
+      ${userText(entry.comment)}${entry.remarks?`<p class="user-text"><b>Замечания.</b> ${esc(entry.remarks)}</p>`:''}
+      ${entry.extended_until?p('Срок доработки '+deadlineLabel(entry.extended_until)):''}
+      ${fileList(entry.files,path+'/feedback-files')}</li>`).join('')}</ul>`:'';
+  }
+
+  function attemptBody(attempt,path){
+    return userText(attempt.text)+safeReference(attempt.url)+(attempt.completed?p('Отмечено выполнение'):'')+
+      fileList(attempt.files,path+'/files');
+  }
+
+  function attemptLabel(attempt){
+    return `Попытка ${Number(attempt.number)} · ${deadlineLabel(attempt.submitted_at)}${attempt.late?' · сдано с опозданием':''}`;
+  }
+
+  function workReviewRow(item,work,scope){
+    const latest=item.attempts[0], withdrawn=item.status==='withdrawn';
+    const accepted=checkedStates.has(item.status), reviewOpen=['published','closed'].includes(work.state);
+    const path=scope+'/submissions/'+Number(item.id);
+    const older=withdrawn?item.attempts:item.attempts.slice(1);
+    const history=older.length?`<details class="assignment-attempt"><summary>История версий</summary>${older.map(attempt=>
+      `<details class="assignment-attempt"><summary>${esc(attemptLabel(attempt))}</summary>
+      ${attemptBody(attempt,path)}${reviewHistory(attempt.feedback,path)}</details>`).join('')}</details>`:'';
+    let actions='';
+    if(reviewOpen&&awaitingReview.has(item.status)){
+      if(item.status!=='in_review')actions+=button('review-work',reviewActions.review,item.id);
+      if(work.state==='published')actions+=button('revise-work',reviewActions.revise,item.id);
+      actions+=button('accept-work',reviewActions.accept,item.id)+button('feedback',reviewActions.comment,item.id);
+    }
+    if(reviewOpen&&accepted){
+      if(item.score==null)actions+=button('grade-work',reviewActions.grade,item.id);
+      if(item.status==='accepted')actions+=button('complete-work',reviewActions.complete,item.id);
+      actions+=button('feedback',reviewActions.comment,item.id);
+    }
+    if(accepted&&item.score!=null)actions+=button('correct-score',reviewActions.correct_score,item.id);
+    if(item.attempts.length>1)actions+=button('compare-work','Сравнить версии',item.id);
+    const notes=item.feedback.filter(entry=>
+      !item.attempts.some(attempt=>attempt.version===entry.version)||(!withdrawn&&entry.version===latest?.version));
+    const score=item.score==null?'':`${Number(item.score)} из ${work.max_points} баллов`;
+    return row(esc(item.student),p([submissionStates[submissionState(item)],score,item.status==='completed'&&score?'Проверка завершена':'',
+      latest?attemptLabel(latest):''].filter(Boolean).join(' · '))+
+      (!withdrawn&&latest?attemptBody(latest,path):'')+reviewHistory(notes,path)+history,actions,'work-review-row');
+  }
+
+  function workRecipientRow(person,work,item,team){
+    const state=submissionState(item), lateStates=['not_started','withdrawn','revision_required'];
+    const timing=person.deadline_passed&&lateStates.includes(state)&&work.state==='published'?
+      p(person.submission_window==='late'?'Просрочено · поздняя сдача разрешена':'Просрочено · приём закрыт'):'';
+    const dueTitle=person.revision_due_at?'Срок доработки':person.extended_until?'Продлённый срок':
+      person.individual_due_at?'Индивидуальный срок':'Срок сдачи';
+    const allowChange=work.state==='published'&&(!team||person.id===team.id);
+    return row(esc(person.name),p([person.id===work.team_lead_id?'Ответственный':'',submissionStates[state],
+      dueTitle+' '+deadlineLabel(person.due_at)].filter(Boolean).join(' · '))+timing,
+      allowChange?button('individual-due','Индивидуальный срок',person.id)+button('extend-work','Продлить срок',person.id):'');
+  }
+
   function workDetails(data){
-    const {work,detail}=data, base='/app/teaching/'+detail.id, published=work.state==='published';
-    const scope='/api'+base.slice(4)+'/works/'+work.id;
-    const actions=(work.state!=='archived'?button('edit-work','Изменить задание'):'')+
-      (published?button('archive-work','В архив'):'')+link(base+'?tab=works','К заданиям','outline-button');
-    const summary=p([workStates[work.state],work.custom_kind||workKinds[work.kind],work.max_points+' баллов максимум'].join(' · '))+
+    const {work,detail}=data, base='/app/teaching/'+detail.id;
+    const scope='/api/teaching/'+detail.id+'/works/'+work.id;
+    const actions=(['draft','scheduled','published'].includes(work.state)?button('edit-work','Изменить задание'):'')+
+      (work.state==='published'?button('close-work','Закрыть приём'):'')+
+      (['published','closed'].includes(work.state)?button('archive-work','В архив'):'')+link(base+'?tab=works','К сдаче работ','outline-button');
+    const methods=work.methods.map(key=>handInMethods[key]);
+    const required=(work.required_methods||[]).map(key=>handInMethods[key]);
+    const audience=work.subgroup_id?(detail.subgroups||[]).find(group=>group.id===work.subgroup_id)?.code||'Подгруппа':
+      work.recipient_ids?.length?'Отдельные студенты':'Вся группа';
+    const summary=p([workType(work),work.max_points+' баллов максимум',audience].join(' · '))+
       (work.state==='scheduled'?p('Публикация '+deadlineLabel(work.publish_at)):'')+
-      (work.description?p(work.description):'')+`<p class="user-text">${esc(work.instructions)}</p>`+
-      (work.criteria?`<details><summary>Критерии оценивания</summary><p class="user-text">${esc(work.criteria)}</p></details>`:'')+
+      userText(work.description)+userText(work.instructions)+
+      (work.criteria?`<details class="assignment-attempt"><summary>Критерии оценивания</summary>${userText(work.criteria)}</details>`:'')+
+      p('Способы сдачи · '+methods.join(', '))+(required.length?p('Обязательные · '+required.join(', ')):'')+
+      (work.allow_late?p('Поздняя сдача разрешена'):'')+
+      (work.source_files?.length?`<h3 class="work-attachment-heading">Исходные файлы</h3>${fileList(work.source_files,scope+'/source-files')}`:'')+
       work.materials.map(value=>`<div>${safeReference(value,'Открыть материал')}</div>`).join('')+
       (work.course_materials||[]).map(row=>`<div>${link(window.ATLASDisciplines.materialPath(row.id),row.title,'school-card-link')}</div>`).join('');
     const viewers=Object.fromEntries(work.submissions.map(item=>[item.student_id,item]));
     const team=work.team_lead_id&&work.recipients.find(x=>x.id===work.team_lead_id);
-    const recipientRows=list(work.recipients,person=>row(esc(person.name),
-      p((person.id===work.team_lead_id?'Ответственный · ':'')+(submissionStates[(team?viewers[team.id]:viewers[person.id])?.status]||'Не начато')+
-        ' · до '+deadlineLabel(person.due_at)),published&&(!team||person.id===team.id)?button('extend-work','Продлить срок',person.id):''),
+    const recipientRows=list(work.recipients,person=>workRecipientRow(person,work,viewers[team?.id||person.id],team),
       'Получатели появятся после назначения','Укажите студентов в условиях задания.');
-    const filter=q(),filtered=work.submissions.filter(item=>
-      (!filter.status||filter.status===item.status)&&(!filter.student||filter.student===item.student_id)&&
+    const sent=work.submissions.filter(item=>item.attempts.length), filter=q(),filtered=sent.filter(item=>
+      (!filter.status||filter.status===submissionState(item))&&(!filter.student||filter.student===item.student_id)&&
       (!filter.timing||(filter.timing==='late')===!!item.attempts[0]?.late));
-    const filters=work.submissions.length?`<form class="filter-bar op-inline-form" data-op-filter="work-review">
-      ${select('status','Статус проверки',[['','Все статусы'],...Object.entries(submissionStates)],filter.status)}
+    const states=Object.entries(submissionStates).filter(([state])=>state!=='not_started');
+    const filters=sent.length?`<form class="filter-bar op-inline-form" data-op-filter="work-review">
+      ${select('status','Статус проверки',[['','Все статусы'],...states],filter.status)}
       ${select('student','Студент',[['','Все студенты'],...work.recipients.map(x=>[x.id,x.name])],filter.student)}
       ${select('timing','Срок сдачи',[['','Любой срок'],['on-time','Вовремя'],['late','С опозданием']],filter.timing)}
       <button type="submit" class="outline-button">Показать</button></form>`:'';
-    const submissions=list(filtered,item=>{
-      const current=item.attempts[0], body=item.status==='withdrawn'?'':(current?.text?`<p class="user-text">${esc(current.text)}</p>`:'')+
-        safeReference(current?.url)+(current?.completed?p('Отмечено выполнение'):'');
-      const attachments=attempt=>attempt.files.length?`<ul class="assignment-files">${attempt.files.map(file=>
-        `<li>${download(scope+'/submissions/'+item.id+'/files/'+file.id,file.name)}</li>`).join('')}</ul>`:'';
-      const notes=entries=>entries.length?`<ul class="op-log">${entries.map(f=>`<li>${esc(reviewActions[f.action])} · ${esc(f.author)} · ${c.stamp(f.created_at)}
-        ${f.score===null?'':' · '+Number(f.score)+' баллов'}${p(f.comment)}${f.extended_until?p('Срок доработки '+deadlineLabel(f.extended_until)):''}</li>`).join('')}</ul>`:'';
-      const older=item.status==='withdrawn'?item.attempts:item.attempts.slice(1);
-      const history=older.length?`<details class="assignment-attempt"><summary>История версий</summary>${older.map(attempt=>
-        `<details class="assignment-attempt"><summary>Попытка ${attempt.number} · ${deadlineLabel(attempt.submitted_at)}${attempt.late?' · сдано с опозданием':''}</summary>
-         ${attempt.text?`<p class="user-text">${esc(attempt.text)}</p>`:''}${safeReference(attempt.url)}
-         ${attempt.completed?p('Отмечено выполнение'):''}${attachments(attempt)}${notes(attempt.feedback)}</details>`).join('')}</details>`:'';
-      const operations=published?(awaitingReview.has(item.status)?
-        (item.status!=='in_review'?button('review-work',reviewActions.review,item.id):'')+
-        button('revise-work',reviewActions.revise,item.id)+button('accept-work',reviewActions.accept,item.id)+button('feedback',reviewActions.comment,item.id)+
-        '':item.status==='accepted'?button('complete-work',reviewActions.complete,item.id)+button('feedback',reviewActions.comment,item.id):''):'';
-      return row(esc(item.student),p([submissionStates[item.status],current?'Попытка '+current.number+' · '+deadlineLabel(current.submitted_at):'',
-        current?.late?'сдано с опозданием':''].filter(Boolean).join(' · '))+
-        body+(current&&item.status!=='withdrawn'?attachments(current):'')+
-        notes(item.feedback.filter(entry=>!item.attempts.some(attempt=>attempt.version===entry.version)||entry.version===current?.version))+history,operations);
-    },work.submissions.length?'Работ по этому фильтру нет':'Работы ещё не отправлены','После сдачи работа появится здесь.');
-    return title(work.title,'Срок '+deadlineLabel(work.due_at),actions)+section('Условия',summary)+
+    const submissions=list(filtered,item=>workReviewRow(item,work,scope),sent.length?'Работ по этому фильтру нет':'Работы ещё не отправлены',
+      sent.length?'Выберите другие параметры.':'После сдачи работа появится здесь.');
+    const generalDue=work.general_due_at||work.due_at;
+    return title(work.title,workStates[work.state]+' · Общий срок '+deadlineLabel(generalDue),actions)+section('Условия задания',summary)+
       section('Отправленные работы',filters+submissions)+section('Получатели',recipientRows);
   }
 
@@ -227,8 +286,10 @@
     const selected=q().tab||'roster', base='/app/teaching/'+data.id;
     const heading=title(data.discipline,'Группа '+data.group)+tabs('Работа с группой',teachTabs,selected,tab=>url(base,{tab}));
     if(selected==='works'){
-      return heading+section('Задания группы',`<div class="op-actions">${button('new-work','Создать задание')}</div>`+
-        list(data.works.items,x=>row(link(base+'/works/'+x.id,x.title,'school-card-link'),p(workStates[x.state]+' · срок '+deadlineLabel(x.due_at)+' · сдано '+x.submitted)))+
+      return heading+section('Сдача работ',`<div class="op-actions">${button('new-work','Создать задание')}</div>`+
+        list(data.works.items,x=>row(link(base+'/works/'+x.id,x.title,'school-card-link'),
+          p([workStates[x.state],workType(x),'до '+deadlineLabel(x.due_at),'сдано '+x.submitted].join(' · '))),
+          'Пока нет заданий','Выдайте первое задание этой группе.')+
         pageLinks(base,data.works,20));
     }
     if(selected==='report'){
@@ -237,9 +298,10 @@
         <div><dt>Средний балл</dt><dd>${s.average??'—'}</dd></div><div><dt>Сдано работ</dt><dd>${s.submitted}</dd></div>
         ${Object.entries(s.attendance).map(([key,n])=>`<div><dt>${esc(attendanceNames[key]||key)}</dt><dd>${n}</dd></div>`).join('')}</dl>`)+
         section('История операций',data.history.length?`<ol class="op-log">${data.history.map(entry=>{
-          const labels={grade:'Начисление баллов',attendance:'Посещаемость',work_created:'Задание опубликовано',work_edited:'Задание изменено',
+          const labels={grade:'Начисление баллов',attendance:'Посещаемость',work_created:'Задание создано',work_edited:'Задание изменено',
+            work_extension:'Срок сдачи продлён',work_individual_due:'Индивидуальный срок изменён',work_score_corrected:'Балл за работу скорректирован',
             feedback:'Работа проверена',consultation:'Назначена консультация',consultation_completed:'Консультация проведена'};
-          const value=entry.action==='grade'?`${entry.before.score??'—'} → ${entry.after.score??'—'}`:
+          const value=['grade','work_score_corrected'].includes(entry.action)?`${entry.before.score??'—'} → ${entry.after.score??'—'}`:
             entry.action==='attendance'?`${entry.after.day} · ${attendanceNames[entry.after.status]}`:'';
           return `<li><b>${esc(labels[entry.action]||entry.action)}</b>${p([names[entry.after?.student_id],value,entry.after?.reason].filter(Boolean).join(' · '))}<small>${esc(entry.author)} · ${c.stamp(entry.created_at)} МСК</small></li>`;
         }).join('')}</ol>`:p('Операций пока нет.'));
@@ -478,17 +540,17 @@
     return renderers[page](data);
   }
 
-  function modal(name,description,fields,run,done,submitLabel='Сохранить'){
-    c.modal(c.modalHead(name,description)+`<form data-op-form>${fields}
+  function modal(name,description,fields,run,done,submitLabel='Сохранить',wide=false){
+    c.modal(c.modalHead(name,description)+`<form data-op-form${wide?' class="work-form"':''}>${fields}
       <div class="inline-error" role="alert" data-op-error hidden></div><div class="modal-actions">
       <button class="outline-button" type="button" data-action="close-modal">Отмена</button><button class="primary-button" type="submit">${esc(submitLabel)}</button>
-      </div></form>`,{label:name});
+      </div></form>`,{label:name,wide});
     callbacks.set(c.$('.modal [data-op-form]'),{run,done});
   }
 
   async function request(path,method='POST',body){
     const source=body===undefined?undefined:JSON.stringify(body);
-    const deduplicate=method==='POST'&&/^(scheduling\/changes|units\/(?:union|vuc)\/cases|teaching\/(?:consultations|\d+\/(?:points|works(?:\/\d+\/feedback\/\d+)?)))$/.test(path);
+    const deduplicate=method==='POST'&&/^(scheduling\/changes|units\/(?:union|vuc)\/cases|teaching\/(?:consultations|\d+\/(?:points|works(?:\/\d+\/(?:feedback\/\d+|submissions\/\d+\/score-corrections))?)))$/.test(path);
     const prior=retries.get(path);
     const key=deduplicate?(prior?.source===source?prior.key:crypto.randomUUID()):null;
     if(key)retries.set(path,{source,key});
@@ -505,10 +567,72 @@
     return `<fieldset class="unit-checklist assignment-choices"><legend>${esc(label)}</legend>${options.map(([value,text])=>
       `<label class="unit-check"><input type="checkbox" name="${name}" value="${esc(value)}" ${selected.includes(value)?'checked':''}> ${esc(text)}</label>`).join('')}</fieldset>`;
   }
+
+  function showWorkControl(control,show){
+    if(!control)return;
+    control.closest('.field').hidden=!show;
+    control.disabled=!show;
+  }
+
   function toggleWorkFields(form){
-    const custom=form?.elements.custom_kind, publish=form?.elements.publish_at;
-    if(custom)custom.closest('.field').hidden=form.elements.kind.value!=='other';
-    if(publish)publish.closest('.field').hidden=form.elements.state.value!=='scheduled';
+    if(!form)return;
+    const {custom_kind,kind,publish_at,state,audience,subgroup_id,team_lead_id,award_mode}=form.elements;
+    showWorkControl(custom_kind,kind?.value==='other');
+    showWorkControl(publish_at,state?.value==='scheduled');
+    showWorkControl(subgroup_id,audience?.value==='subgroup');
+    const people=c.$('[data-work-recipients]',form);
+    if(people){
+      people.hidden=audience.value!=='students';
+      people.querySelectorAll('input').forEach(control=>control.disabled=people.hidden);
+      const selected=new Set([...people.querySelectorAll(':checked')].map(control=>control.value));
+      const roster=Object.fromEntries((current().detail||current()).students.map(student=>[student.id,student.subgroup_id]));
+      for(const option of team_lead_id.options){
+        option.hidden=option.value!==''&&(
+          audience.value==='students'&&!selected.has(option.value)||
+          audience.value==='subgroup'&&roster[option.value]!==Number(subgroup_id.value));
+        option.disabled=option.hidden;
+      }
+      if(team_lead_id.selectedOptions[0]?.disabled)team_lead_id.value='';
+      showWorkControl(award_mode,!!team_lead_id.value);
+    }
+    const allowed=new Set([...form.querySelectorAll('[name="methods"]:checked')].map(control=>control.value));
+    for(const option of form.querySelectorAll('[name="required_methods"]')){
+      option.disabled=!allowed.has(option.value);
+      option.parentElement.hidden=option.disabled;
+    }
+    const files=c.$('[data-work-file-policy]',form);
+    if(files){
+      files.hidden=!allowed.has('files');
+      files.querySelectorAll('input').forEach(control=>control.disabled=files.hidden);
+    }
+  }
+
+  const workUploadLimit=1024*1024;
+  function fileInput(name,label){
+    const formats=acceptedFormats.map(ext=>'.'+ext).join(',');
+    return field(name,label,`<input id="op-${name}" name="${name}" type="file" multiple accept="${formats}" aria-describedby="hint-${name}">
+      <small class="hint" id="hint-${name}">До трёх файлов, 1 МиБ суммарно.</small>`);
+  }
+
+  async function workUploads(formData,name,existing=[]){
+    const epoch=c.state.sessionEpoch, picked=formData.getAll(name).filter(file=>file.name);
+    const total=picked.reduce((sum,file)=>sum+file.size,existing.reduce((sum,file)=>sum+file.size,0));
+    if(picked.length+existing.length>3||total>workUploadLimit)throw new Error('Можно приложить до трёх файлов размером до 1 МиБ суммарно.');
+    const uploads=[];
+    for(const file of picked){
+      if(!file.size)throw new Error('Файл «'+file.name+'» пуст.');
+      if(file.name.lastIndexOf('.')<1||!acceptedFormats.includes(file.name.split('.').at(-1).toLowerCase())){
+        throw new Error('Формат файла «'+file.name+'» недоступен.');
+      }
+      let bytes;
+      try{bytes=new Uint8Array(await file.arrayBuffer());}
+      catch{throw new Error('Не удалось прочитать файл «'+file.name+'». Выберите его снова.');}
+      if(epoch!==c.state.sessionEpoch)throw Object.assign(new Error('Сеанс изменился.'),{stale:true});
+      let content='';
+      for(let start=0;start<bytes.length;start+=16384)content+=String.fromCharCode(...bytes.subarray(start,start+16384));
+      uploads.push({name:file.name,content:btoa(content)});
+    }
+    return uploads;
   }
   function materialOptions(items,selected){
     const options=new Map([...selected,...items.map(row=>[row.id,row.title])]);
@@ -544,26 +668,42 @@
     const work=data.work, detail=data.detail||data, locked=work?.state==='published';
     const roster=detail.students.map(student=>[student.id,student.name]);
     const currentMethods=work?.methods||['text','url'];
+    const methodOptions=Object.entries(handInMethods).filter(([key])=>key!=='complete'||currentMethods.includes(key));
     const currentDue=moscowLocal(work?.due_at)||c.addDays(c.today(),7)+'T23:59';
     const defaults=[['draft',workStates.draft],['scheduled',workStates.scheduled],['published',workStates.published]];
+    const subgroupOptions=(detail.subgroups||[]).map(group=>[group.id,group.code]);
+    const audiences=[['group','Вся группа'],...(subgroupOptions.length?[['subgroup','Подгруппа']]:[]),['students','Отдельные студенты']];
+    const selectedAudience=work?.subgroup_id?'subgroup':work?.recipient_ids?.length?'students':'group';
     const titleFields=input('title','Название',work?.title,'text','required minlength="4" maxlength="180"')+
       (locked?'':`<div class="op-form-grid">${select('state','Публикация',defaults,work?.state||'published')}
       ${select('kind','Тип работы',Object.entries(workKinds),work?.kind||'homework')}${input('custom_kind','Название другого типа',work?.custom_kind,'text','maxlength="80"')}
       ${input('publish_at','Дата публикации (МСК)',moscowLocal(work?.publish_at),'datetime-local')}</div>`);
     const points=locked?'':input('max_points','Максимальный балл',work?.max_points??100,'number','required min="0" max="1000" step="1"');
-    const audience=locked?'':`<details class="assignment-attempt"><summary>Получатели и групповая сдача</summary>
-      ${choiceGroup('recipient_ids','Получатели (если все пустые, назначается всей группе)',roster,work?.recipient_ids||[])}
+    const audience=locked?'':`<details class="assignment-attempt" open><summary>Получатели</summary>
+      <div class="op-form-grid">${select('audience','Кому выдать задание',audiences,selectedAudience)}
+      ${select('subgroup_id','Подгруппа',[['','Выберите подгруппу'],...subgroupOptions],work?.subgroup_id??'')}</div>
+      <div data-work-recipients>${choiceGroup('recipient_ids','Студенты',roster,work?.recipient_ids||[])}</div>
       ${select('team_lead_id','Ответственный за общую отправку',[['','Индивидуальная сдача'],...roster],work?.team_lead_id??'')}
       ${select('award_mode','Начисление при общей сдаче',[['all','Всем участникам'],['lead','Только ответственному']],work?.award_mode||'all')}
       ${select('class_id','Связанное занятие',[['','Без связи'],...(detail.sessions||[]).map(session=>
         [session.id,c.dateFmt(session.day)+(session.topic?' · '+session.topic:'')])],work?.class_id??'')}</details>`;
     const settings=`<details class="assignment-attempt"><summary>Способы сдачи и попытки</summary>
-      ${choiceGroup('methods','Способы сдачи',Object.entries(handInMethods),currentMethods)}
+      ${choiceGroup('methods','Допустимые способы',methodOptions,currentMethods)}
+      ${choiceGroup('required_methods','Обязательные способы',methodOptions.map(([key,label])=>[key,'Требовать · '+label]),
+        work?.required_methods||[])}
+      <p class="hint">Если обязательных способов нет, достаточно одного из допустимых.</p>
+      <div data-work-file-policy>
       ${choiceGroup('formats','Форматы файлов',acceptedFormats.map(ext=>[ext,ext.toUpperCase()]),work?.formats||acceptedFormats)}
+      <div class="op-form-grid">${input('min_files','Минимум файлов',work?.min_files??1,'number','min="1" max="3" step="1" required')}
+      ${input('max_files','Максимум файлов',work?.max_files??3,'number','min="1" max="3" step="1" required')}</div></div>
       <div class="op-form-grid">${yesNo('allow_resubmission','Разрешить новую отправку после отзыва',work?.allow_resubmission??true)}
       ${yesNo('allow_late','Принимать после дедлайна',work?.allow_late??true)}
       ${input('max_attempts','Лимит попыток',work?.max_attempts??'','number','min="1" max="50" step="1"')}</div></details>`;
-    const selected=new Map((work?.material_ids||[]).map(id=>[id,work.course_materials.find(row=>row.id===id)?.title||'Недоступный материал № '+id]));
+    const selected=new Map((work?.material_ids||[]).map(id=>[id,work.course_materials.find(row=>row.id===id)?.title||'Материал № '+id]));
+    const original=work?.source_files||[];
+    const sourceFiles=`<details class="assignment-attempt"><summary>Исходные файлы${original.length?' · '+original.length:''}</summary>
+      ${original.length?choiceGroup('remove_source_ids','Убрать из задания',original.map(file=>[file.id,file.name]),[]):''}
+      ${fileInput('source_files','Прикрепить исходные файлы')}</details>`;
     const linked=`<details class="assignment-attempt"><summary>Учебные материалы дисциплины</summary>
       <div class="field"><label for="assignment-material-search">Поиск по названию</label>
         <input id="assignment-material-search" type="search" maxlength="100" data-work-material-search></div>
@@ -571,21 +711,59 @@
       <p role="status" data-work-material-status>${options.more?'Уточните название для остальных материалов.':''}</p>
       <div data-work-material-options>${materialOptions(options.items,selected)}</div></details>`;
     return modal(work?'Изменить задание':'Создать задание',detail.discipline+' · '+detail.group,titleFields+
-      `<div class="op-form-grid">${input('due_at','Срок сдачи (МСК)',currentDue,'datetime-local','required')}${points}</div>`+
-      area('description','Описание',work?.description,1500)+area('instructions','Условия задания',work?.instructions,4000)+
-      area('criteria','Критерии оценивания',work?.criteria,2000)+linked+
-      area('materials','Дополнительные материалы (по одной HTTPS-ссылке в строке)',(work?.materials||[]).join('\n'),2550)+audience+settings,
-      (values,formData)=>{
-        const body={...values,due_at:msk(values.due_at),materials:values.materials.split(/\s+/).filter(Boolean),
-          material_ids:formData.getAll('material_ids').map(Number),
-          methods:formData.getAll('methods'),formats:formData.getAll('formats'),max_attempts:values.max_attempts?Number(values.max_attempts):null,
+      `<div class="op-form-grid">${input('due_at','Общий срок сдачи (МСК)',currentDue,'datetime-local','required')}${points}</div>`+
+      area('instructions','Условия задания',work?.instructions,4000)+audience+settings+sourceFiles+
+      `<details class="assignment-attempt"><summary>Описание, критерии и ссылки</summary>${area('description','Описание',work?.description,1500)}
+      ${area('criteria','Критерии оценивания',work?.criteria,2000)}
+      ${area('materials','Дополнительные материалы (по одной HTTPS-ссылке в строке)',(work?.materials||[]).join('\n'),2550)}</details>`+linked,
+      async (values,formData)=>{
+        const methods=formData.getAll('methods');
+        const minFiles=Number(values.min_files??work?.min_files??1), maxFiles=Number(values.max_files??work?.max_files??3);
+        const body={title:values.title,instructions:values.instructions,description:values.description,criteria:values.criteria,
+          materials:values.materials.split(/\s+/).filter(Boolean),material_ids:formData.getAll('material_ids').map(Number),
+          methods,required_methods:formData.getAll('required_methods'),
+          formats:methods.includes('files')?formData.getAll('formats'):work?.formats||acceptedFormats,
+          min_files:minFiles,max_files:maxFiles,max_attempts:values.max_attempts?Number(values.max_attempts):null,
           allow_resubmission:values.allow_resubmission==='true',allow_late:values.allow_late==='true'};
-        if(!locked)Object.assign(body,{publish_at:values.state==='scheduled'&&values.publish_at?msk(values.publish_at):null,
-          max_points:Number(values.max_points),recipient_ids:formData.getAll('recipient_ids').map(Number),
-          team_lead_id:values.team_lead_id?Number(values.team_lead_id):null,class_id:values.class_id?Number(values.class_id):null});
+        if(!work||values.due_at!==moscowLocal(work.due_at))body.due_at=msk(values.due_at);
+        if(!locked){
+          const recipients=formData.getAll('recipient_ids').map(Number), subgroupId=Number(values.subgroup_id)||null;
+          if(values.audience==='students'&&!recipients.length)throw new Error('Выберите хотя бы одного студента.');
+          if(values.audience==='subgroup'&&!subgroupId)throw new Error('Выберите подгруппу.');
+          Object.assign(body,{state:values.state,kind:values.kind,custom_kind:values.custom_kind||'',
+            publish_at:values.state==='scheduled'&&values.publish_at?msk(values.publish_at):null,
+            max_points:Number(values.max_points),recipient_ids:recipients,subgroup_id:subgroupId,
+            team_lead_id:Number(values.team_lead_id)||null,award_mode:values.award_mode||'all',class_id:Number(values.class_id)||null});
+        }
+        if(!methods.length)throw new Error('Укажите хотя бы один способ сдачи.');
+        if(methods.includes('files')&&(!body.formats.length||minFiles>maxFiles))throw new Error('Проверьте допустимые форматы и количество файлов.');
         if(body.material_ids.length>5)throw new Error('К заданию можно приложить до пяти учебных материалов.');
+        const removed=formData.getAll('remove_source_ids').map(Number);
+        const uploads=await workUploads(formData,'source_files',original.filter(file=>!removed.includes(file.id)));
+        if(uploads.length)body.source_files=uploads;
+        if(removed.length)body.remove_source_ids=removed;
         return work?request(base+'/works/'+work.id,'PATCH',{...body,version:work.version}):request(base+'/works','POST',body);
-      });
+      },null,'Сохранить',true);
+  }
+
+  function compareAttempts(scope,item){
+    const options=item.attempts.map(attempt=>[attempt.version,attemptLabel(attempt)]);
+    const heading='Сравнить версии';
+    const choices=select('compare_first','Первая версия',options,item.attempts[1].version)+
+      select('compare_second','Вторая версия',options,item.attempts[0].version);
+    c.modal(c.modalHead(heading,item.student)+`<div class="op-form-grid" data-work-compare>${choices}</div>
+      <div class="work-compare-grid" data-work-compare-body></div>`,{label:heading,wide:true});
+    const panel=c.$('[data-work-compare]');
+    const content=c.$('[data-work-compare-body]');
+    const redraw=()=>{
+      content.innerHTML=[...panel.querySelectorAll('select')].map(control=>{
+        const attempt=item.attempts.find(row=>row.version===Number(control.value));
+        return `<section class="assignment-attempt work-compare-version"><h3>${esc(attemptLabel(attempt))}</h3>
+          ${attemptBody(attempt,scope)}${reviewHistory(attempt.feedback,scope)}</section>`;
+      }).join('');
+    };
+    panel.addEventListener('change',redraw);
+    redraw();
   }
 
   function teacherForm(action,id,data){
@@ -604,24 +782,60 @@
     }
     if(action==='new-work'||action==='edit-work')return openWorkForm(base,data);
     const work=data.work;
-    if(action==='archive-work')return modal('Архивировать задание',work.title,p('История работ сохранится. Сдача и проверка закроются.'),
-      ()=>request(base+'/works/'+work.id,'PATCH',{state:'archived',version:work.version}));
-    if(action==='extend-work'){
-      const person=work.recipients.find(x=>x.id===id);
-      return modal('Продлить срок',person.name+' · действующий срок '+deadlineLabel(person.due_at),
-        input('extended_until','Новый срок (МСК)','','datetime-local','required'),
-        v=>request(base+'/works/'+work.id+'/recipients/'+id,'PATCH',{version:work.version,extended_until:msk(v.extended_until)}));
+    if(action==='close-work'||action==='archive-work'){
+      const closing=action==='close-work';
+      return modal(closing?'Закрыть приём':'Архивировать задание',work.title,
+        p(closing?'Студенты больше не смогут отправлять версии. Уже сданные работы можно будет проверить.':
+          'Сдача и проверка закроются. Отправленные версии и результаты будут доступны в истории.'),
+        ()=>request(base+'/works/'+work.id,'PATCH',{state:closing?'closed':'archived',version:work.version}));
     }
-    if(action==='feedback'||['review-work','revise-work','accept-work','complete-work'].includes(action)){
+    if(action==='extend-work'||action==='individual-due'){
+      const person=work.recipients.find(x=>x.id===id);
+      const endpoint=base+'/works/'+work.id+'/recipients/'+id;
+      const groupNote=work.team_lead_id?p('Срок применяется ко всем участникам общей работы.'):'';
+      if(action==='individual-due'){
+        const fields=input('individual_due_at','Персональный срок (МСК)',moscowLocal(person.individual_due_at),'datetime-local')+
+          p('Общий срок '+deadlineLabel(person.general_due_at||work.due_at))+
+          p('Очистите поле для возврата к общему сроку. Сохранение сбрасывает продление первой сдачи.')+
+          (person.revision_due_at?p('Срок доработки '+deadlineLabel(person.revision_due_at)+' действует отдельно.'):'')+groupNote;
+        return modal('Индивидуальный срок',person.name,fields,
+          v=>request(endpoint,'PATCH',{version:work.version,individual_due_at:v.individual_due_at?msk(v.individual_due_at):null}));
+      }
+      return modal('Продлить срок',person.name+' · действующий срок '+deadlineLabel(person.due_at),
+        input('extended_until',person.revision_due_at?'Новый срок доработки (МСК)':'Новый срок (МСК)','','datetime-local','required')+groupNote,
+        v=>request(endpoint,'PATCH',{version:work.version,extended_until:msk(v.extended_until)}));
+    }
+    if(action==='compare-work'||action==='correct-score'){
+      const item=work.submissions.find(row=>row.id===id);
+      const scope=base+'/works/'+work.id+'/submissions/'+id;
+      if(action==='compare-work')return compareAttempts('/api/'+scope,item);
+      return modal(reviewActions.correct_score,item.student+' · текущий балл '+Number(item.score),
+        input('score','Исправленный балл',item.score,'number','required min="0" max="'+Number(work.max_points)+'" step="1"')+
+        input('reason','Причина корректировки','','text','required minlength="3" maxlength="300"')+
+        p('В истории сохранятся прежний балл, новый балл и причина.'),
+        v=>request(scope+'/score-corrections','POST',{score:Number(v.score),reason:v.reason.trim(),version:item.version,
+          submitted_version:item.attempt_version}));
+    }
+    if(action==='feedback'||['review-work','revise-work','accept-work','complete-work','grade-work'].includes(action)){
       const item=work.submissions.find(x=>x.id===id);
       const step=action==='feedback'?'comment':action.replace('-work','');
-      const fields=(['accept','comment'].includes(step)?input('score','Балл за работу (необязательно)','','number',
-        'min="0" max="'+Number(work.max_points)+'" step="1"'):'')+area('comment',step==='revise'?'Замечания к работе':'Комментарий студенту','',2000)+
-        (step==='revise'?input('extended_until','Срок доработки (МСК)','','datetime-local'):'');
-      return modal(step==='comment'?'Обратная связь':reviewActions[step],item.student+' · версия '+item.attempt_version,fields,
-        v=>request(base+'/works/'+work.id+'/feedback/'+id,'POST',{action:step,submitted_version:item.attempt_version,
-        version:item.version,score:v.score?Number(v.score):null,comment:v.comment,
-        extended_until:v.extended_until?msk(v.extended_until):null}));
+      const score=step==='accept'||step==='grade'?input('score',step==='accept'?'Балл за работу (необязательно)':'Балл за работу','',
+        'number',`min="0" max="${Number(work.max_points)}" step="1"${step==='grade'?' required':''}`):'';
+      const revision=step==='revise'?input('extended_until','Срок доработки (МСК)','','datetime-local'):'';
+      const hasFeedback=['revise','accept','comment','grade'].includes(step);
+      const noteFields=hasFeedback?area('comment','Комментарий студенту','',2000)+area('remarks','Замечания к работе','',2000)+
+        fileInput('files','Файлы с исправлениями'):'';
+      const fields=score+revision+noteFields;
+      return modal(step==='comment'?'Обратная связь':reviewActions[step],item.student+' · попытка '+item.attempts[0].number,fields,
+        async (v,formData)=>{
+          const comment=v.comment?.trim()||'', remarks=v.remarks?.trim()||'';
+          if(step==='revise'&&Math.max(comment.length,remarks.length)<3)throw new Error('Опишите, что нужно исправить.');
+          const files=hasFeedback?await workUploads(formData,'files'):[];
+          if(step==='comment'&&Math.max(comment.length,remarks.length)<3&&!files.length)throw new Error('Введите комментарий, замечания или приложите файл.');
+          return request(base+'/works/'+work.id+'/feedback/'+id,'POST',{action:step,submitted_version:item.attempt_version,
+            version:item.version,score:v.score?Number(v.score):null,comment,remarks,files,
+            extended_until:v.extended_until?msk(v.extended_until):null});
+        },null,'Сохранить',hasFeedback);
     }
     if(action==='consultation'){
       const date=c.addDays(c.today(),2);
@@ -641,8 +855,11 @@
     try{
       const result=await c.api(`${base}/points/${id}`);
       if(epoch!==c.state.sessionEpoch||loadId!==c.state.loadingId||modalId!==c.state.modalId)return;
+      const corrections=(result.corrections||[]).map(entry=>`<li><b>Корректировка · ${Number(entry.previous_points)} → ${Number(entry.corrected_points)}</b>
+        ${entry.created_at?`<time datetime="${esc(entry.created_at)}">${esc(deadlineLabel(entry.created_at))}</time>`:''}${userText(entry.reason)}</li>`);
       c.modal(c.modalHead('История баллов',student.name)+
-        (result.items.length?`<ol class="academic-history">${result.items.map(window.ATLASAcademics.showAward).join('')}</ol>`:p('Начислений пока нет.')),
+        (result.items.length||corrections.length?`<ol class="academic-history">${corrections.join('')}${result.items.map(window.ATLASAcademics.showAward).join('')}</ol>`:
+          p('Начислений пока нет.')),
         {label:'История баллов'});
     }catch(error){if(!error.stale&&epoch===c.state.sessionEpoch&&loadId===c.state.loadingId)c.toast(error.message);}
   }
@@ -725,7 +942,8 @@
   async function submitModal(form){
     const handler=callbacks.get(form);
     if(!handler||c.state.pending)return;
-    const epoch=c.state.sessionEpoch, formData=new FormData(form), values=Object.fromEntries(formData), controls=[...form.elements], error=c.$('[data-op-error]',form);
+    const epoch=c.state.sessionEpoch, formData=new FormData(form), values=Object.fromEntries(formData),
+      controls=[...form.elements].filter(control=>!control.disabled), error=c.$('[data-op-error]',form);
     c.state.pending++;controls.forEach(control=>control.disabled=true);error.hidden=true;
     let result;
     try{result=await handler.run(values,formData);}
@@ -858,8 +1076,16 @@
         }
       }
       if(el.closest('[data-op-map]'))c.$('[data-op-action="apply-table"]')?.setAttribute('disabled','');
-      const form=el.closest('[data-op-form]');if(form){form.dataset.dirty='true';if(['kind','state'].includes(el.name))toggleWorkFields(form);}
+      const form=el.closest('[data-op-form]');
+      if(form){
+        form.dataset.dirty='true';
+        if(form.classList.contains('work-form'))toggleWorkFields(form);
+      }
     });
+    document.addEventListener('invalid',event=>{
+      if(!event.target.closest('.work-form'))return;
+      for(let panel=event.target.closest('details');panel;panel=panel.parentElement.closest('details'))panel.open=true;
+    },true);
     document.addEventListener('input',event=>{const form=event.target.closest('[data-op-form]');if(form)form.dataset.dirty='true';});
   }
 

@@ -120,7 +120,8 @@ def test_positive_awards_replay_and_aggregate(roles):
                                                     version=own['attendance']['version']), headers=HEAD))
     summary = next(row for row in body(student.get(endpoint))['items'] if row['subject'] == subject)
     assert summary['earned_points'] == current + 4 and summary['missed'] >= 1
-    assert summary['awards'][0]['points'] == 4 and sum(entry['points'] for entry in summary['awards']) == summary['earned_points']
+    assert summary['awards'][0]['points'] == 4
+    assert sum(entry['points'] for entry in summary['awards'] + summary['corrections']) == summary['earned_points']
     assert body(other.get(endpoint)) == other_before
 
 

@@ -282,7 +282,7 @@
       ${data.progress?`<p>${Number(data.progress.credits)} зачётных единиц</p>`:''}`;
     const groups=data.loads.length?section('Учебные группы',`<ul class="school-list">${data.loads.map(row=>
       `<li>${link('/app/teaching/'+row.id,row.group,'school-card-link')}<div class="school-actions">
-        ${link('/app/teaching/'+row.id+'?tab=works','Задания')}${link('/app/teaching/'+row.id+'?tab=attendance','Посещаемость')}</div></li>`).join('')}</ul>`):'';
+        ${link('/app/teaching/'+row.id+'?tab=works','Сдача работ')}${link('/app/teaching/'+row.id+'?tab=attendance','Посещаемость')}</div></li>`).join('')}</ul>`):'';
     return `<div class="school-detail-grid"><div class="school-stack">${section('Основная информация',basic)}${data.progress?.modules.length?modules(data.progress):''}</div>
       <div class="school-stack">${section('Преподаватели',teachers)}${groups}</div></div>`;
   }

@@ -119,7 +119,6 @@
   let reminderCheckedAt=0, badgePoll;
   let staffSearchId=0;
   const searchDelay=160;
-  const deadlineWrites=new Map();
   const moscowParts = () => Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).map(p => [p.type,p.value]));
   const today = () => {const p=moscowParts();return `${p.year}-${p.month}-${p.day}`;};
   const asDate = value => new Date(`${String(value).slice(0,10)}T12:00:00`);
@@ -815,7 +814,7 @@
     };
     draw('');$('#search-input').addEventListener('input',e=>draw(e.target.value.trim()));
   }
-  function clearSession({expired=false}={}){deadlineWrites.clear();improvements.reset(expired);campus.reset();extensions.forEach(ext=>ext.reset?.());clearInterval(pollTimer);state.sessionEpoch++;state.loadingId++;state.modalId++;state.pending=0;removeDraft();removeDraft('certificate');draftMemory.clear();draftStorageAvailable=true;state.user=null;state.data={};state.unread=0;state.staffQuery='';state.requestOffset=state.noticeOffset=state.staffOffset=0;state.requestFilter=state.noticeFilter='all';state.requestView='mine';state.serviceQuery='';state.staffFilter='active';state.staffKind='request';$('.skip-link')?.removeAttribute('inert');document.body.classList.remove('modal-open');}
+  function clearSession({expired=false}={}){improvements.reset(expired);campus.reset();extensions.forEach(ext=>ext.reset?.());clearInterval(pollTimer);state.sessionEpoch++;state.loadingId++;state.modalId++;state.pending=0;removeDraft();removeDraft('certificate');draftMemory.clear();draftStorageAvailable=true;state.user=null;state.data={};state.unread=0;state.staffQuery='';state.requestOffset=state.noticeOffset=state.staffOffset=0;state.requestFilter=state.noticeFilter='all';state.requestView='mine';state.serviceQuery='';state.staffFilter='active';state.staffKind='request';$('.skip-link')?.removeAttribute('inert');document.body.classList.remove('modal-open');}
   const demoAccounts=[
     {login:'alina.demo',password:'AtlasDemo!2026-A',full_name:'Алина Ветрова',initials:'АВ',accent:'purple',description:'2 курс · ИТ-24-03 · занятия и справки'},
     {login:'mark.demo',password:'AtlasDemo!2026-M',full_name:'Марк Северин',initials:'МС',accent:'orange',description:'3 курс · ПИ-23-02 · материалы и задания'},
@@ -1046,31 +1045,6 @@
     if(action==='read-notification'){el.disabled=true;try{await markRead(el.dataset.id);await updatePage({quiet:true});$('.filter-tabs button[aria-pressed="true"]')?.focus({preventScroll:true});}catch(error){if(!error.stale){el.disabled=false;toast(error.message);}}return;}
     if(action==='open-notice'){await openNotice(el.dataset.id);}
   });
-  document.addEventListener('change',async e=>{
-    const input=e.target.closest('[data-deadline]');
-    if(!input)return;
-    const id=Number(input.dataset.deadline),done=input.checked;
-    if(deadlineWrites.has(id)){input.checked=deadlineWrites.get(id).done;return;}
-    const epoch=state.sessionEpoch,uid=state.user?.id,write={done};
-    const current=()=>epoch===state.sessionEpoch&&uid===state.user?.id&&deadlineWrites.get(id)===write;
-    deadlineWrites.set(id,write);input.disabled=true;
-    let saved=!done;
-    try{
-      await api(`deadlines/${id}/toggle`,{method:'POST',body:JSON.stringify({is_done:done})});
-      if(!current())return;
-      saved=done;
-      const work=state.data.assignments?.items?.find(x=>(x.deadline_id||x.id)===id);
-      if(work)work.is_done=done;
-      toast(done?'Отметка выполнения сохранена.':'Отметка выполнения снята.');
-    }catch(error){if(current()&&!error.stale)toast(error.message);}
-    finally{
-      if(current()){
-        const mark=$(`[data-deadline="${id}"]`);
-        if(mark){mark.checked=saved;mark.disabled=false;}
-        deadlineWrites.delete(id);
-      }
-    }
-  });
   document.addEventListener('input',e=>{
     const input=e.target;
     if(!(input instanceof HTMLInputElement)||input.id!=='staff-search')return;
@@ -1119,15 +1093,15 @@
   });
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){revalidateIdentity();pollBadges();}});
   document.addEventListener('input',e=>{
-    const form=e.target.closest('.modal form[data-c-form]');if(form&&form.dataset.cForm!=='personal-search')form.dataset.dirty='true';
+    const form=e.target.closest('.modal form[data-c-form]');if(form&&!['personal-search','assignment'].includes(form.dataset.cForm))form.dataset.dirty='true';
     if(e.target.id==='service-search'){const value=e.target.value;const pos=e.target.selectionStart;state.serviceQuery=value;drawPage();const input=$('#service-search');input.focus({preventScroll:true});input.setSelectionRange(pos,pos);}
   });
-  document.addEventListener('change',e=>{const form=e.target.closest('.modal form[data-c-form]');if(form)form.dataset.dirty='true';});
+  document.addEventListener('change',e=>{const form=e.target.closest('.modal form[data-c-form]');if(form&&form.dataset.cForm!=='assignment')form.dataset.dirty='true';});
   window.addEventListener('beforeunload',e=>{if($('.modal form[data-dirty="true"]')){e.preventDefault();e.returnValue='';}});
   window.addEventListener('online',()=>toast('Подключение восстановлено. Можно обновить раздел.'));
-  window.addEventListener('offline',()=>toast('Нет сети. Показаны уже загруженные данные; для сохранения нужен сервер.'));
+  window.addEventListener('offline',()=>toast('Нет сети. Для отправки требуется подключение.'));
   async function boot(){try{state.config=await api('config');}catch{/* Fail closed: do not advertise demo credentials if config is unavailable. */}try{state.user=await api('me');await campus.prepare();if(!state.user)return;await enterRoute();startPolling();}catch{showLogin();}}
-  const context={state,api,searchDelay,pendingDeadline:id=>deadlineWrites.get(id),$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,isoDate,monday,refreshUnread,newRequestModal,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
+  const context={state,api,searchDelay,$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,isoDate,monday,refreshUnread,newRequestModal,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
   improvements.init(context);campus.init(context);window.ATLASAcademics.init(context);window.ATLASSchedule.bind(context);extensions.forEach(ext=>ext.init(context));
   boot();
 })();

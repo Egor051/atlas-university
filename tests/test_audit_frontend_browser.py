@@ -150,31 +150,6 @@ def test_history_paging_preserves_unsent_clarification(campus_page):
     expect(history).to_contain_text('History audit event 000');expect(page.locator('#followup-message')).to_have_value(text)
     history.get_by_role('button',name='Позже',exact=True).click();expect(history).to_contain_text('History audit event 119')
 
-def test_deadline_refresh_keeps_write_locked_until_response_settles(frontend_page):
-    page,base=frontend_page;enter(page,base);visit(page,base,'assignments')
-    button=page.locator('[data-c-action="assignment"]').first
-    rid=button.get_attribute('data-id')
-    button.click()
-    mark=page.locator(f'[data-deadline="{rid}"]')
-    before=mark.is_checked();held=[];posts=[]
-    def hold(route):
-        posts.append(route.request.post_data_json)
-        actual=route.fetch();assert actual.status==200;held.append((route,actual))
-    page.route(f'**/api/deadlines/{rid}/toggle',hold)
-    mark.set_checked(not before);wait_for_held_response(page,held)
-    page.locator('.modal .close-btn').click()
-    page.locator('#refresh-current').click()
-    page.locator(f'[data-c-action="assignment"][data-id="{rid}"]').click()
-    replacement=page.locator(f'[data-deadline="{rid}"]');expect(replacement).to_be_disabled();expect(replacement).to_be_checked(checked=not before)
-    # Even a programmatic change cannot create a second overlapping write.
-    replacement.evaluate('(node)=>{node.checked=!node.checked;node.dispatchEvent(new Event("change",{bubbles:true}));}')
-    assert len(posts)==1
-    route,actual=held[0];route.fulfill(response=actual);page.unroute(f'**/api/deadlines/{rid}/toggle')
-    expect(replacement).to_be_enabled();replacement.set_checked(before)
-    expect(page.locator(f'[data-deadline="{rid}"]')).to_be_enabled()
-    stored=page.request.get(base+'/api/deadlines').json();assert next(x for x in stored if str(x['id'])==rid)['is_done'] is before
-    expect(page.locator(f'[data-deadline="{rid}"]')).to_be_checked(checked=before)
-
 def test_last_filtered_ticket_reloads_previous_page_after_close(campus_page):
     page,base,db=campus_page;uid=page.request.get(base+'/api/me').json()['id'];marker='PaginationAudit '+uuid.uuid4().hex
     with closing(sqlite3.connect(db)) as connection,connection:

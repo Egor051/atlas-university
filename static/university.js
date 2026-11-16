@@ -145,7 +145,7 @@
     const groups=data.groups.map(row=>{
       const base='/app/teaching/'+Number(row.id);
       return `<li><strong>${appLink(base,row.discipline+' · '+row.group,'school-card-link')}</strong>
-        <div class="school-actions">${appLink(base,'Студенты')}${appLink(base+'?tab=works','Задания')}
+        <div class="school-actions">${appLink(base,'Студенты')}${appLink(base+'?tab=works','Сдача работ')}
           ${appLink(base+'?tab=grades','Ведомость')}${appLink(base+'?tab=attendance','Посещаемость')}
           ${appLink(disciplines.coursePath(row.discipline_id),'Материалы дисциплины')}</div></li>`;
     });

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const pages = [
-    {id:'assignments',label:'Сдача работ',icon:'send',group:'study',hint:'Задания, ответ, ссылка на проект и повторная сдача'},
+    {id:'assignments',label:'Сдача работ',icon:'send',group:'study',hint:'Задания преподавателей, сроки сдачи и результаты проверки'},
     {id:'exams',label:'Сессия и зачёты',icon:'graduation',group:'study',hint:'Экзамены, зачёты, допуски и результаты'},
     {id:'consultations',label:'Консультации',icon:'user',group:'services',hint:'Записаться к преподавателю и отменить запись'},
     {id:'messages',label:'Вопросы в учебный офис',icon:'send',group:'services',hint:'Переписка, вопрос деканату, ответ и история'},
@@ -15,11 +15,13 @@
     {id:'staffmessages',label:'Вопросы студентов',icon:'send',staff:true,hint:'Ответить на вопрос и закрыть обращение'},
   ];
   let c;
-  const local = {query:{},filter:{assignments:'pending'},offset:{},scope:{},context:{},ticketOffsets:{},pendingKeys:{},catalog:'documents'};
+  const local = {query:{},filter:{},offset:{},scope:{},context:{},ticketOffsets:{},pendingKeys:{},catalog:'documents'};
+  const workDrafts=new Map();
+  let workDraftDatabase;
+  const emptyWorkDraft=()=>({text:'',url:'',completed:false,files:[],retry:null});
   let serviceSearchTimer;
   const esc = v => c.esc(v);
   const icon = n => c.icon(n);
-  const moscowTime=value=>new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Moscow',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(value));
   const moscowDay = value => {const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(value)).map(p=>[p.type,p.value]));return `${parts.year}-${parts.month}-${parts.day}`;};
   const items = d => Array.isArray(d)?d:d?.items||[];
   const current = () => c.state.data[c.state.page];
@@ -114,32 +116,63 @@
   }
 
 
-  const workStatuses={not_started:'Не начато',in_progress:'В работе',submitted:'Отправлено',in_review:'На проверке',
-    revision_required:'Требуется доработка',resubmitted:'Повторно отправлено',accepted:'Принято',completed:'Завершено',withdrawn:'Отозвано'};
+  const workStatuses={not_started:'Не сдано',in_progress:'Не сдано',submitted:'Сдано',in_review:'На проверке',
+    revision_required:'Требуется доработка',resubmitted:'Повторно сдано',accepted:'Принято',completed:'Проверка завершена',
+    withdrawn:'Отозвано',graded:'Оценено'};
   const workKinds={homework:'Домашняя работа',lab:'Лабораторная работа',practice:'Практическая работа',test:'Контрольная работа',
     independent:'Самостоятельная работа',essay:'Реферат',talk:'Доклад',project:'Проектная работа',term_paper:'Курсовая работа',
     individual:'Индивидуальная работа',group:'Групповая работа'};
-  const pendingWork=x=>x.state!=='archived'&&['not_started','in_progress','withdrawn','revision_required'].includes(x.status);
+  const workFilters=[['all','Все'],['pending','Не сданы'],['revision','На доработке'],['submitted','Отправлены'],['reviewed','Проверены']];
+  const pendingWork=x=>['not_started','in_progress','withdrawn','revision_required'].includes(x.status);
+  const reviewedWork=x=>['accepted','completed','graded'].includes(x.status);
+  const workGrade=x=>typeof x.score==='number';
+  const workIsLate=x=>pendingWork(x)&&(x.deadline_passed??x.overdue);
+  const workDeadlineText=x=>x.due_at?c.stamp(x.due_at)+' МСК':c.dateFmt(x.due_date);
+  const workDeadlineLabel=x=>x.status==='revision_required'&&x.revision_due_at?'Доработать до':'Сдать до';
+  const workKind=x=>x.custom_kind||workKinds[x.kind];
+  const workFilterMatches=(x,mode)=>({
+    all:true,
+    pending:pendingWork(x)&&x.status!=='revision_required',
+    revision:x.status==='revision_required',
+    submitted:['submitted','resubmitted','in_review'].includes(x.status),
+    reviewed:reviewedWork(x),
+  })[mode];
+  function workBadges(x){
+    const status=workGrade(x)&&reviewedWork(x)?'graded':x.status;
+    const closed=x.state==='archived'?'В архиве':x.state==='closed'||(workIsLate(x)&&x.submission_window==='closed')?'Приём закрыт':'';
+    return pill(workStatuses[status]||'Выдано',status==='revision_required'?'warning':reviewedWork(x)?'success':'')+
+      (workIsLate(x)?pill('Просрочено','warning'):'')+(closed?pill(closed):'');
+  }
+  function workCard(x){
+    const meta=[workKind(x),x.teacher].filter(Boolean).join(' · ');
+    const grade=workGrade(x)?` · ${Number(x.score)}${x.max_points!=null?' из '+Number(x.max_points):''} баллов`:'';
+    return `<article class="card compact-row assignment-row" data-campus-record-id="${Number(x.id)}"><div class="row-copy">
+      <h3>${esc(x.title)}</h3>${meta?`<p>${esc(meta)}</p>`:''}
+      <p>${workDeadlineLabel(x)} <time datetime="${esc(x.due_at||x.due_date)}">${esc(workDeadlineText(x))}</time>${grade}</p>
+      </div><div class="row-end"><div class="work-badges">${workBadges(x)}</div>
+      ${action('assignment',x.can_submit?'Сдать работу':'Открыть работу',x.id)}</div></article>`;
+  }
   function assignments(d){
-    const mode=local.filter.assignments||'pending',all=items(d),sent=all.filter(x=>!pendingWork(x)&&x.state!=='archived').length;
-    const rows=filtered(d,'assignments').filter(x=>mode==='submitted'?(!pendingWork(x)&&x.state!=='archived'):mode==='pending'?pendingWork(x):true)
-      .sort((a,b)=>a.due_date.localeCompare(b.due_date));
-    const cards=rows.map(x=>{
-      const actionable=pendingWork(x), label=x.state==='archived'?'В архиве':x.status==='not_started'?(x.overdue?'Просрочено':c.relative(x.due_date)):workStatuses[x.status];
-      const tone=x.overdue||x.status==='revision_required'?'warning':!actionable&&x.state!=='archived'?'success':'';
-      const type=x.custom_kind||workKinds[x.kind];
-      return `<article class="card compact-row assignment-row" data-campus-record-id="${Number(x.id)}"><div class="row-copy">
-        <h2>${esc(x.title)}</h2><p>${esc(x.subject)} · до ${c.dateFmt(x.due_date)}${x.due_at?' · '+moscowTime(x.due_at)+' МСК':''}</p>
-        ${type?`<small>${esc(type)}</small>`:''}</div><div class="row-end">${pill(label||'Открыть',tone)}
-        ${action('assignment',actionable&&x.can_submit?'Сдать работу':'Открыть работу',x.id)}</div></article>`;
-    }).join('');
+    const mode=local.filter.assignments||'all',all=items(d),query=local.query.assignments||'';
+    const matches=all.filter(x=>match({title:x.title,subject:x.subject,teacher:x.teacher,kind:workKind(x)},query))
+      .sort((a,b)=>(a.due_at||a.due_date).localeCompare(b.due_at||b.due_date));
+    const next=matches.filter(x=>x.state==='published'&&pendingWork(x)&&!workIsLate(x)).slice(0,3);
+    const upcoming=mode==='all'&&!query&&next.length?`<section class="card work-upcoming"><h2>Ближайшие сроки</h2><ul>${next.map(x=>
+      `<li><time datetime="${esc(x.due_at||x.due_date)}">${esc(workDeadlineText(x))}</time>
+        <a data-app-link href="/app/assignments?id=${Number(x.id)}">${esc(x.title)}</a></li>`).join('')}</ul></section>`:'';
+    const grouped=new Map();
+    for(const x of matches.filter(x=>workFilterMatches(x,mode))){
+      if(!grouped.has(x.subject))grouped.set(x.subject,[]);
+      grouped.get(x.subject).push(x);
+    }
+    const cards=[...grouped].map(([subject,rows])=>`<section class="work-group"><h2>${esc(subject)}</h2>
+      <div class="compact-list">${rows.map(workCard).join('')}</div></section>`).join('');
     const pages=d.offset||d.more?`<nav class="campus-pagination" aria-label="Страницы заданий"><span role="status">${d.offset+1}–${d.offset+all.length}</span><div>
       ${action('service-page','Назад','','data-page-key="assignments" data-offset="'+Math.max(0,d.offset-200)+'" '+(d.offset?'':'disabled'))}
       ${action('service-page','Далее','','data-page-key="assignments" data-offset="'+(d.offset+200)+'" '+(d.more?'':'disabled'))}</div></nav>`:'';
-    return title('assignments','Откройте задание, прочитайте инструкцию и отправьте работу.')+
-      stats([[all.length,pages?'заданий на странице':'всего заданий'],[sent,'отправлено'],[all.filter(x=>x.state!=='archived'&&x.overdue).length,'просрочено']])+
-      contextNotice('assignments')+toolbar('assignments',[['pending','К сдаче'],['submitted','Отправлены'],['all','Все']])+
-      `<div class="compact-list" data-c-list>${cards||c.empty('checkCircle','Работ по этому фильтру нет','Выберите другой фильтр, чтобы посмотреть остальные задания.')}</div>`+pages;
+    return title('assignments','')+upcoming+contextNotice('assignments')+toolbar('assignments',workFilters)+
+      `<div class="work-groups" data-c-list>${cards||c.empty('checkCircle','Работ по этому фильтру нет',
+        all.length?'Измените поиск или выберите другой фильтр.':'Здесь появятся задания преподавателей.')}</div>`+pages;
   }
   function exams(d){
     const rows=filtered(d,'exams');
@@ -216,69 +249,365 @@
     c.modal(c.modalHead(heading,'Загружаем…')+'<p role="status">Загружаем данные…</p>',{wide:true,label:heading});const modalId=c.state.modalId;
     try{const html=await loader(modalId);if(modalId===c.state.modalId)c.modal(html,{wide:true,label:heading});}catch(error){if(!error.stale&&modalId===c.state.modalId)c.modal(c.modalHead(heading,'Не удалось открыть')+`<p role="alert">${esc(error.message)}</p>`,{label:heading});}
   }
-  function workAttachments(id,files){
-    return files.length?`<ul class="assignment-files">${files.map(file=>`<li><a download href="/api/learning/assignments/${Number(id)}/files/${Number(file.id)}">${esc(file.name)}</a><small>${Math.ceil(file.size/1024)} КБ</small></li>`).join('')}</ul>`:'';
+  function workAttachments(id,files=[],location='files'){
+    return files.length?`<ul class="assignment-files">${files.map(file=>`<li><a download href="/api/learning/assignments/${Number(id)}/${location}/${Number(file.id)}">${esc(file.name)}</a><small>${Math.ceil(file.size/1024)} КБ</small></li>`).join('')}</ul>`:'';
   }
-  function workNote(entry){
-    return `<li><b>${esc(entry.author)} · версия ${Number(entry.version)}${entry.score===null?'':' · '+Number(entry.score)+' баллов'}</b>
-      <small>${c.stamp(entry.created_at)} МСК</small>${entry.comment?paragraph(entry.comment):''}</li>`;
+  const reviewLabels={accept:'Принято',revise:'Возвращено на доработку',complete:'Проверка завершена',review:'Взято на проверку',
+    grade:'Опубликована оценка',correct_score:'Оценка исправлена',comment:'Комментарий'};
+  const workParagraph=text=>text?paragraph(text):'';
+  function workNote(id,entry){
+    const title=[reviewLabels[entry.action]||'Отзыв',entry.author,`версия ${Number(entry.version)}`].join(' · ');
+    return `<li><b>${esc(title)}${entry.score==null?'':' · '+Number(entry.score)+' баллов'}</b>
+      <small>${c.stamp(entry.created_at)} МСК</small>${workParagraph(entry.comment)}${workParagraph(entry.remarks)}
+      ${workAttachments(id,entry.files,'feedback-files')}</li>`;
+  }
+  function workDetails(x,revision){
+    const feedback=x.feedback.filter(entry=>entry!==revision);
+    const deadlines=[
+      ['Общий срок',x.general_due_at],['Индивидуальный срок',x.individual_due_at],
+      ['Продление',x.extended_until],['Срок доработки',x.revision_due_at],
+    ].filter(([,value])=>value);
+    const timeline=deadlines.length>1?`<dl class="work-deadlines">${deadlines.map(([label,value])=>
+      `<dt>${label}</dt><dd><time datetime="${esc(value)}">${c.stamp(value)} МСК</time></dd>`).join('')}</dl>`:'';
+    const instructions=workParagraph(x.description)+paragraph(x.instructions)+
+      (x.criteria?`<h3>Критерии оценивания</h3>${paragraph(x.criteria)}`:'')+timeline+
+      (x.source_files?.length?`<h3>Файлы задания</h3>${workAttachments(x.id,x.source_files,'source-files')}`:'')+
+      (x.course_materials?.length?`<h3>Материалы дисциплины</h3>${x.course_materials.map(row=>
+        `<p><a class="school-card-link" data-app-link href="${esc(row.href)}">${esc(row.title)}</a></p>`).join('')}`:'')+
+      (x.materials.length?`<h3>Дополнительные материалы</h3>${x.materials.map((href,i)=>
+        `<p>${external(href,'Материал '+(i+1))}</p>`).join('')}`:'');
+    const versions=x.attempts.length?fold('История версий',x.attempts.map(attempt=>`<details class="assignment-attempt">
+      <summary>Попытка ${Number(attempt.number)} · ${c.stamp(attempt.submitted_at)} МСК${attempt.late?' · сдано с опозданием':''}</summary>
+      ${workParagraph(attempt.text)}${external(attempt.url,'Открыть работу')}${attempt.completed?paragraph('Отмечено выполнение'):''}
+      ${workAttachments(x.id,attempt.files)}${attempt.feedback.length?`<p>${attempt.feedback.map(entry=>
+        esc(reviewLabels[entry.action]||'Отзыв')).join(' · ')}</p>`:''}</details>`).join('')):'';
+    return (revision?`<section class="work-revision"><h3>Что доработать</h3>${workParagraph(revision.comment)}
+      ${workParagraph(revision.remarks)}${workAttachments(x.id,revision.files,'feedback-files')}</section>`:'')+
+      fold('Условие задания',instructions)+(feedback.length?fold('Обратная связь преподавателя',
+        `<ol class="op-log">${feedback.map(entry=>workNote(x.id,entry)).join('')}</ol>`):'')+versions;
+  }
+  function workOverview(x){
+    const meta=[x.subject,x.teacher,workKind(x)].filter(Boolean).join(' · ');
+    const score=workGrade(x)?`${Number(x.score)}${x.max_points==null?'':' из '+Number(x.max_points)} баллов`:'';
+    const late=x.submission_window==='late'||(x.submission_window==null&&x.allow_late);
+    const maxAttempts=x.max_attempts||50;
+    const outOfAttempts=x.attempts_used>=maxAttempts||(!x.allow_resubmission&&x.status==='withdrawn');
+    return `<div class="work-overview"><p>${esc(meta)}</p>
+      <p><b>${workDeadlineLabel(x)}</b> <time datetime="${esc(x.due_at||x.due_date)}">${esc(workDeadlineText(x))}</time></p>
+      <div class="work-badges">${workBadges(x)}${score?pill(score,'success'):x.max_points!=null?pill('До '+Number(x.max_points)+' баллов'):''}</div>
+      ${workIsLate(x)&&late?`<p>Поздняя сдача разрешена.</p>`:''}
+      ${pendingWork(x)&&!x.can_submit&&x.submission_window!=='closed'&&!x.is_team?
+        `<p>${outOfAttempts?'Доступные попытки исчерпаны.':'Отправка недоступна для этой записи.'}</p>`:''}
+      ${x.is_team?`<p>${x.team_lead?'Ответственный за общую отправку — '+esc(x.team_lead):'Ответственный за отправку недоступен.'}</p>`:''}
+      </div>`;
+  }
+  function draftDatabase(){
+    if(!workDraftDatabase)workDraftDatabase=new Promise((resolve,reject)=>{
+      const opening=indexedDB.open('atlas-work-drafts',1);
+      opening.onupgradeneeded=()=>opening.result.createObjectStore('drafts');
+      opening.onsuccess=()=>resolve(opening.result);
+      opening.onerror=()=>reject(opening.error);
+      opening.onblocked=()=>reject(new Error('Хранилище черновиков занято.'));
+    });
+    return workDraftDatabase;
+  }
+  async function draftRecord(key,value,previousRevision){
+    const db=await draftDatabase();
+    return new Promise((resolve,reject)=>{
+      const transaction=db.transaction('drafts',value===undefined?'readonly':'readwrite');
+      const store=transaction.objectStore('drafts');
+      const compare=previousRevision!==undefined;
+      let replaced=false;
+      const request=value===undefined||compare?store.get(key):store.put(value,key);
+      if(compare)request.onsuccess=()=>{
+        if(request.result?.revision!==previousRevision)return;
+        store.put(value,key);
+        replaced=true;
+      };
+      transaction.oncomplete=()=>resolve(compare?replaced:request.result);
+      transaction.onabort=()=>reject(transaction.error||new Error('Не удалось открыть черновик.'));
+    });
+  }
+  async function clearWorkDraft(key,previous){
+    const empty={...emptyWorkDraft(),revision:crypto.randomUUID(),cleared:true};
+    try{
+      const replaced=await draftRecord(key,empty,previous.revision);
+      if(workDrafts.get(key)===previous)workDrafts.delete(key);
+      return replaced?empty:await draftRecord(key);
+    }catch(error){
+      if(!workDrafts.has(key)||workDrafts.get(key)===previous)workDrafts.set(key,empty);
+      throw error;
+    }
+  }
+  async function isSubmittedDraft(work,draft){
+    if(!Number.isInteger(draft?.retry?.version))return false;
+    const sent=work.attempts.find(attempt=>attempt.version===draft.retry.version+1);
+    if(!sent||sent.text!==draft.text.trim()||sent.url!==draft.url.trim()||sent.completed!==draft.completed||
+      sent.files.length!==draft.files.length)return false;
+    try{
+      const matches=await Promise.all(sent.files.map(async ({id,name,size},index)=>{
+        const file=draft.files[index];
+        if(name!==file.name.trim()||size!==file.size)return false;
+        const {blob}=await c.api(`learning/assignments/${Number(work.id)}/files/${Number(id)}`,{responseType:'blob',quietAuth:true});
+        const local=new Uint8Array(await file.arrayBuffer()),remote=new Uint8Array(await blob.arrayBuffer());
+        return local.length===remote.length&&local.every((byte,i)=>byte===remote[i]);
+      }));
+      return matches.every(Boolean);
+    }catch{return false;}
+  }
+  async function restoreWorkDraft(key,work,current){
+    const initial=emptyWorkDraft();
+    if(work.status==='withdrawn'){initial.text=work.submission?.text||'';initial.url=work.submission?.url||'';}
+    let localDraft=workDrafts.get(key)||await draftRecord(key).catch(()=>null);
+    if(!current())return null;
+    if(await isSubmittedDraft(work,localDraft)){
+      if(!current())return null;
+      localDraft=await clearWorkDraft(key,localDraft).catch(()=>emptyWorkDraft());
+    }
+    if(localDraft?.cleared)return {data:initial,restored:false};
+    if(localDraft)return {data:localDraft,restored:!!(localDraft.text||localDraft.url||localDraft.completed||localDraft.files.length)};
+    if(!work.can_submit)return null;
+    // Work created before this form used the account's text-only draft endpoint.
+    const previous=await c.api('drafts/assignment:'+Number(work.id),{quietAuth:true}).catch(()=>null);
+    if(!current())return null;
+    const previousStamp=previous?.updated_at;
+    const updated=previousStamp&&Date.parse(/(?:Z|[+-]\d{2}:\d{2})$/.test(previousStamp)?previousStamp:previousStamp+'Z');
+    if(!updated||(work.submission?.submitted_at&&updated<=Date.parse(work.submission.submitted_at)))
+      return {data:initial,restored:false};
+    const {text,url,completed,_submission}=previous.values;
+    let retry=null;
+    try{const entry=JSON.parse(_submission);if(/^[a-f0-9]{64}$/.test(entry?.fingerprint)&&typeof entry.key==='string')retry=entry;}
+    catch{/* Old drafts can contain text without an idempotency receipt. */}
+    return {data:{text:text??initial.text,url:url??initial.url,completed:completed==='true',files:[],retry},restored:true,migrated:true};
+  }
+  function workFormFields(x,draft){
+    const methods=x.methods,required=x.required_methods||[];
+    const must=name=>required.includes(name);
+    const hint=name=>must(name)&&methods.length>1?'Обязательно для этого задания.':'';
+    const min=x.min_files||1,max=x.max_files||3;
+    const fileCount=max===1?'Один файл':min===max?`${max} файла`:`От ${min} до ${max} файлов`;
+    const files=methods.includes('files')?`<div class="field"><label class="work-file-picker" for="campus-assignment-files">
+      <span>Файлы работы${must('files')?' (обязательно)':''}</span>
+      <span class="outline-button" aria-hidden="true">${max===1?'Выбрать файл':'Выбрать файлы'}</span>
+      <input id="campus-assignment-files" name="files" type="file" ${max>1?'multiple':''}
+        accept="${esc(x.formats.map(ext=>'.'+ext).join(','))}" aria-describedby="work-file-rules"></label>
+      <span class="hint" id="work-file-rules">${fileCount}, до 1 МиБ суммарно. ${esc(x.formats.join(', '))}.</span>
+      <ul class="assignment-files work-draft-files" data-work-files aria-label="Выбранные файлы" hidden></ul></div>`:'';
+    const completed=methods.includes('complete')?`<label class="campus-module-check"><input name="completed" type="checkbox"
+      ${draft.completed?'checked':''} ${must('complete')?'required':''}> Подтверждаю выполнение работы для проверки</label>`:'';
+    return (methods.includes('text')?field('text','Текст ответа',draft.text,{rows:4,minlength:10,maxlength:8000,required:must('text'),hint:hint('text')}):'')+
+      (methods.includes('url')?field('url','HTTPS-ссылка на работу',draft.url,{type:'url',maxlength:500,required:must('url'),hint:hint('url')}):'')+files+completed;
+  }
+  function listDraftFiles(form){
+    const list=c.$('[data-work-files]',form);
+    if(!list)return;
+    const files=form._workDraft.data.files;
+    list.hidden=files.length===0;
+    list.innerHTML=files.map((file,index)=>`<li><span>${esc(file.name)} <small>${Math.ceil(file.size/1024)} КБ</small></span>
+      <button class="outline-button" type="button" data-work-remove="${index}" aria-label="Убрать файл ${esc(file.name)}">Убрать</button></li>`).join('');
+  }
+  function showWorkError(form,message,focus=false){
+    const alert=c.$('[data-c-error]',form);
+    alert.hidden=!message;
+    alert.textContent=message;
+    if(message&&focus)alert.focus();
+  }
+  function saveWorkDraft(form,{announce=true}={}){
+    const meta=form._workDraft;
+    if(!meta.current())return Promise.resolve(false);
+    const {key}=meta;
+    const data={...meta.data,revision:crypto.randomUUID()};
+    meta.data=data;
+    if(announce)form.dataset.dirty='true';
+    workDrafts.set(key,data);
+    return draftRecord(key,data).then(()=>{
+      if(workDrafts.get(key)===data)workDrafts.delete(key);
+      if(meta.current()&&meta.data===data){
+        form.dataset.dirty='false';
+        if(announce)c.$('[data-work-draft]',form).textContent='Черновик сохранён в этом браузере.';
+      }
+      return true;
+    }).catch(()=>{
+      if(meta.current()&&meta.data===data)c.$('[data-work-draft]',form).textContent='Хранилище недоступно. Черновик пока в памяти этой вкладки.';
+      return false;
+    });
+  }
+  function workValues(form){
+    return {text:form.elements.text?.value||'',url:form.elements.url?.value||'',completed:!!form.elements.completed?.checked};
+  }
+  function validateWorkFiles(files,x){
+    const max=x.max_files||3;
+    if(files.length>max)return `Для этой работы доступно до ${max} файлов.`;
+    if(files.some(file=>!file.size)||files.reduce((total,file)=>total+file.size,0)>1024*1024)
+      return 'Выберите непустые файлы размером до 1 МиБ суммарно.';
+    const bad=files.find(file=>{
+      const name=file.name.trim(),dot=name.lastIndexOf('.');
+      return name.length>180||dot<1||!x.formats.includes(name.slice(dot+1).toLowerCase());
+    });
+    return bad?`Файл «${bad.name}» не подходит. Используйте один из форматов ${x.formats.join(', ')}.`:'';
+  }
+  function bindWorkForm(form,x,key,draft,current){
+    form._workDraft={key,work:x,data:draft.data,current};
+    if(!form.elements.files)form._workDraft.data={...draft.data,files:[]};
+    listDraftFiles(form);
+    if(draft.migrated)saveWorkDraft(form,{announce:false});
+    for(const event of ['input','change'])form.addEventListener(event,e=>{
+      if(e.target.type==='file'||!e.target.name||!current())return;
+      form._workDraft.data={...form._workDraft.data,...workValues(form)};
+      showWorkError(form,'');
+      if(e.target.hasAttribute('aria-invalid'))c.showFieldErrors({},form);
+      saveWorkDraft(form);
+    });
+    form.elements.files?.addEventListener('change',e=>{
+      const input=e.target,selected=Array.from(input.files||[]);
+      if(!selected.length||!current())return;
+      const files=(x.max_files===1?[]:form._workDraft.data.files).concat(selected);
+      const error=validateWorkFiles(files,x);
+      input.value='';
+      showWorkError(form,error);
+      if(error){input.focus();return;}
+      form._workDraft.data={...form._workDraft.data,files};
+      listDraftFiles(form);
+      saveWorkDraft(form);
+    });
+    form.addEventListener('click',e=>{
+      const remove=e.target.closest('[data-work-remove]');
+      if(!remove||!current())return;
+      const files=form._workDraft.data.files.filter((_,i)=>i!==Number(remove.dataset.workRemove));
+      form._workDraft.data={...form._workDraft.data,files};
+      form.dataset.dirty='true';
+      listDraftFiles(form);
+      form.elements.files?.focus({preventScroll:true});
+      showWorkError(form,'');
+      saveWorkDraft(form);
+    });
   }
   async function assignmentModal(id){
-    const epoch=c.state.sessionEpoch,page=c.state.page,modalId=c.state.modalId;
+    const {sessionEpoch:epoch,page,user}=c.state;
+    const ownSession=()=>epoch===c.state.sessionEpoch&&user?.id===c.state.user?.id&&page===c.state.page;
+    c.modal(c.modalHead('Задание','')+'<p role="status">Загружаем задание…</p>',{label:'Задание',wide:true});
+    const loadingId=c.state.modalId;
+    const loading=()=>ownSession()&&loadingId===c.state.modalId;
     try{
       const x=await c.api('learning/assignments/'+Number(id));
-      if(epoch!==c.state.sessionEpoch||page!==c.state.page||modalId!==c.state.modalId)return;
-      const expiring=Date.parse(x.due_at)-Date.now();
-      const dueLabel=x.due_at?c.stamp(x.due_at)+' МСК':c.dateFmt(x.due_date);
-      const actions=x.can_withdraw?action('withdraw','Отозвать работу',x.id):'';
-      const revise=x.feedback.find(f=>f.action==='revise');
-      const visibleFeedback=x.feedback.filter(f=>f.comment||f.score!==null);
-      const feedback=visibleFeedback.length?fold('Обратная связь преподавателя',
-        `<ol class="op-log">${visibleFeedback.map(workNote).join('')}</ol>`):'';
-      const versions=x.attempts.length?fold('История версий',x.attempts.map(attempt=>`<details class="assignment-attempt">
-        <summary>Попытка ${Number(attempt.number)} · ${c.stamp(attempt.submitted_at)} МСК${attempt.late?' · сдано с опозданием':''}</summary>
-        ${attempt.text?paragraph(attempt.text):''}${external(attempt.url,'Открыть работу')}${attempt.completed?paragraph('Отмечено выполнение'):''}
-        ${workAttachments(x.id,attempt.files)}${attempt.feedback.length?`<p>${attempt.feedback.map(entry=>esc(entry.action==='accept'?'Принято':entry.action==='revise'?'Возвращено на доработку':entry.action==='complete'?'Завершено':entry.action==='review'?'Взято на проверку':'Есть комментарий')).join(' · ')}</p>`:''}</details>`).join('')):'';
-      const start=x.can_submit&&x.status==='not_started'?action('assignment-start','Отметить начало работы',x.id):'';
-      const deadlineId=Number(x.deadline_id||x.id),pending=c.pendingDeadline(deadlineId);
-      const content=`<p class="campus-muted">${esc(x.subject)} · до ${esc(dueLabel)}</p>
-        <p>${pill(x.state==='archived'?'В архиве':workStatuses[x.status],x.overdue?'warning':'')}
-        ${x.max_points!==null?pill('Максимум '+x.max_points+' баллов'):''}
-        ${x.overdue?pill(x.allow_late?'Просрочено · поздняя сдача открыта':'Срок сдачи истёк','warning'):expiring>=0&&expiring<86400000?pill('Срок истекает сегодня','warning'):''}</p>
-        ${x.description?paragraph(x.description):''}${paragraph(x.instructions)}
-        ${x.criteria?fold('Критерии оценивания',paragraph(x.criteria)):''}
-        ${x.course_materials?.length?fold('Материалы дисциплины',x.course_materials.map(row=>
-          `<p><a class="school-card-link" data-app-link href="${esc(row.href)}">${esc(row.title)}</a></p>`).join('')):''}
-        ${x.materials.length?fold('Дополнительные материалы',x.materials.map((href,i)=>external(href,'Материал '+(i+1))).join('')):''}
-        ${x.is_team?paragraph(x.team_lead?'Ответственный за общую отправку: '+x.team_lead:'Ответственный за отправку недоступен'):''}
-        ${x.status==='revision_required'&&revise?info('Нужно исправить: '+revise.comment):''}
-        <div class="campus-task-state"><p><label><input type="checkbox" data-deadline="${deadlineId}" ${(pending?.done??x.is_done)?'checked':''} ${pending?'disabled':''} /> Я выполнил(а) это задание</label></p>
-        <div class="campus-button-row">${contextLink('courses','Материалы по предмету',{subject:x.subject})}${contextLink('consultations','Подготовиться на консультации',{subject:x.subject})}</div></div>`;
+      if(!loading())return;
+      const revision=x.status==='revision_required'?x.feedback.find(f=>f.action==='revise'):null;
+      const details=workDetails(x,revision);
+      const overview=workOverview(x);
+      const key=user.id+':'+Number(id);
+      const draft=await restoreWorkDraft(key,x,loading);
+      if(!loading())return;
       if(!x.can_submit){
-        c.modal(c.modalHead('Сдать работу',x.title)+content+actions+feedback+versions,{label:'Сдать работу',wide:true});
+        const actions=x.can_withdraw?`<div class="work-detail-actions">${action('withdraw','Отозвать работу',x.id)}</div>`:'';
+        c.modal(c.modalHead(x.title,'')+overview+actions+details,{label:x.title,wide:true});
         return;
       }
-      const methods=x.methods, files=methods.includes('files')?`<div class="field"><label for="campus-assignment-files">Файлы работы</label>
-        <input id="campus-assignment-files" name="files" type="file" multiple accept="${esc(x.formats.map(ext=>'.'+ext).join(','))}">
-        <span class="hint">До трёх файлов, 1 МиБ суммарно. Выбранные файлы сохраняются при отправке.</span></div>`:'';
-      const completed=methods.includes('complete')?'<label class="campus-module-check"><input name="completed" type="checkbox"> Работа выполнена</label>':'';
-      const inputs=`<input type="hidden" name="version" value="${Number(x.submission?.version||0)}">`+
-        (methods.includes('text')?field('text','Текст ответа',x.status==='withdrawn'?x.submission.text:'',{rows:4,minlength:10,maxlength:8000}):'')+
-        (methods.includes('url')?field('url','HTTPS-ссылка на работу',x.status==='withdrawn'?x.submission.url:'',{type:'url',maxlength:500}):'')+files+completed;
       const label=x.attempts.length?'Отправить новую версию':'Отправить работу';
-      formModal('assignment','Сдать работу',x.title,start+inputs,{id:x.id,submit:label,wide:true,before:content,after:feedback+versions});
-    }catch(error){if(!error.stale&&epoch===c.state.sessionEpoch&&page===c.state.page)c.toast(error.message);}
+      const status=draft.restored?'Восстановлен черновик.':'Черновик сохраняется в этом браузере.';
+      c.modal(c.modalHead('Сдать работу',x.title)+overview+`<form class="work-response" data-c-form="assignment" data-id="${Number(x.id)}">
+        ${workFormFields(x,draft.data)}
+        <div class="inline-error" data-c-error role="alert" tabindex="-1" hidden></div>
+        <p class="draft-save-state" data-work-draft role="status">${status}</p>
+        <div class="modal-actions"><button class="muted-button" type="button" data-action="close-modal">Закрыть</button>
+        <button class="primary-button" type="submit">${icon('send')}${label}</button></div></form>${details}`,{label:'Сдать работу',wide:true});
+      const modalId=c.state.modalId,form=c.$('.modal [data-c-form="assignment"]');
+      bindWorkForm(form,x,key,draft,()=>ownSession()&&modalId===c.state.modalId&&form.isConnected);
+    }catch(error){
+      if(!error.stale&&loading())c.modal(c.modalHead('Не удалось открыть задание','')+
+        `<p role="alert">${esc(error.message)}</p>${action('assignment','Повторить',id)}`,{label:'Задание'});
+    }
   }
-  async function encodeWorkFiles(input){
-    const files=Array.from(input?.files||[]);
-    if(files.length>3||files.reduce((total,file)=>total+file.size,0)>1024*1024||files.some(file=>!file.size))
-      throw new Error('Можно приложить до трёх непустых файлов размером не более 1 МиБ суммарно.');
+  async function encodeWorkFiles(files){
     return Promise.all(files.map(async file=>{
-      const bytes=new Uint8Array(await file.arrayBuffer());
+      let bytes;
+      try{bytes=new Uint8Array(await file.arrayBuffer());}catch{throw new Error(`Не удалось прочитать файл «${file.name}». Выберите файл заново.`);}
       let binary='';
       for(let offset=0;offset<bytes.length;offset+=8192)binary+=String.fromCharCode(...bytes.subarray(offset,offset+8192));
       return {name:file.name,content:btoa(binary)};
     }));
+  }
+  function validateWorkResponse(x,values,files){
+    const provided={text:values.text,url:values.url,complete:values.completed,files:files.length};
+    if(!Object.values(provided).some(Boolean))return {message:'Добавьте ответ одним из разрешённых способов.'};
+    const required=(x.required_methods||[]).find(method=>!provided[method]);
+    if(required)return {message:{text:'Введите текст ответа.',url:'Укажите HTTPS-ссылку на работу.',
+      complete:'Отметьте выполнение работы.',files:'Приложите файлы работы.'}[required]};
+    if(values.text&&values.text.length<10)return {field:'text',message:'Введите не меньше десяти символов в тексте ответа.'};
+    if(values.url&&!external(values.url))return {field:'url',message:'Укажите полную HTTPS-ссылку без имени пользователя и пароля.'};
+    if(files.length&&files.length<(x.min_files||1))return {message:`Приложите не меньше ${x.min_files} файлов.`};
+    const fileError=validateWorkFiles(files,x);
+    return fileError?{message:fileError}:null;
+  }
+  async function submitWork(form){
+    const meta=form._workDraft;
+    if(!meta?.current()||c.state.pending)return;
+    const values=workValues(form);
+    values.text=values.text.trim();
+    values.url=values.url.trim();
+    const files=meta.data.files;
+    const invalid=validateWorkResponse(meta.work,values,files);
+    if(invalid){
+      const fields=invalid.field?[{field:invalid.field,msg:invalid.message}]:[];
+      showWorkError(form,invalid.field?'':invalid.message,!invalid.field);
+      c.showFieldErrors({fields},form);
+      return;
+    }
+    c.showFieldErrors({},form);
+    const controls=Array.from(form.elements).filter(el=>!el.disabled);
+    const button=form.querySelector('button[type=submit]');
+    const label=button.innerHTML;
+    const epoch=c.state.sessionEpoch,page=c.state.page;
+    let sending=false,released=false;
+    let invalidControl;
+    const release=()=>{
+      if(!released&&epoch===c.state.sessionEpoch)c.state.pending=Math.max(0,c.state.pending-1);
+      released=true;
+    };
+    c.state.pending++;
+    controls.forEach(control=>control.disabled=true);
+    button.textContent='Подготавливаем…';
+    showWorkError(form,'');
+    try{
+      const attachments=await encodeWorkFiles(files);
+      if(!meta.current())return;
+      const body={text:values.text,url:values.url,version:meta.work.submission?.version||0,completed:values.completed,files:attachments};
+      const serialized=JSON.stringify(body);
+      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(serialized));
+      if(!meta.current())return;
+      const fingerprint=Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('');
+      const key=meta.data.retry?.fingerprint===fingerprint?meta.data.retry.key:crypto.randomUUID();
+      const retry={fingerprint,key,version:body.version};
+      meta.data={...meta.data,...values,retry};
+      await saveWorkDraft(form);
+      if(!meta.current())return;
+      button.textContent='Отправляем…';
+      sending=true;
+      await c.api(`learning/assignments/${Number(meta.work.id)}/submit`,{method:'POST',body:serialized,
+        headers:{'Idempotency-Key':retry.key}});
+      if(!meta.current())return;
+      const cleared=await clearWorkDraft(meta.key,meta.data).then(()=>true,()=>false);
+      if(!meta.current())return;
+      form.dataset.dirty='false';
+      release();
+      c.closeModal();
+      if(page===c.state.page)await c.updatePage({quiet:true});
+      if(epoch!==c.state.sessionEpoch||page!==c.state.page)return;
+      c.refreshUnread();
+      c.toast(cleared?'Версия работы отправлена.':'Работа отправлена. Удалить черновик из браузера пока не удалось.');
+    }catch(error){
+      if(!error.stale&&meta.current()){
+        showWorkError(form,error.message,true);
+        invalidControl=c.showFieldErrors(error,form);
+      }
+    }finally{
+      release();
+      if(meta.current()){
+        controls.forEach(control=>control.disabled=false);
+        button.innerHTML=label;
+        if(sending)button.textContent='Повторить отправку';
+        invalidControl?.focus();
+      }
+    }
   }
   async function ticketModal(id){
     const staff=c.state.user.role==='staff';const prefix=staff?'staff':'services';
@@ -301,11 +630,6 @@
     if(name==='ticket-messages-page'){local.ticketOffsets[id]=Math.max(0,Number(el.dataset.offset)||0);return ticketModal(id);}
     if(name==='clear-context'){resetRouteContext(el.dataset.contextPage);c.replaceRouteContext();return c.updatePage();}
     if(name==='assignment')return assignmentModal(id);
-    if(name==='assignment-start'){
-      const result=await mutate(`learning/assignments/${id}/start`,{version:0},'Работа отмечена как начатая.',el);
-      if(result&&c.state.page==='assignments')return assignmentModal(id);
-      return;
-    }
     if(name==='ticket-new')return formModal('ticket','Задать вопрос','Ответ сотрудника появится в этом диалоге',field('topic','Тема','academic',{choices:ticketTopics})+field('title','Короткий заголовок',local.context.messages?.subject?'Консультация: '+local.context.messages.subject:'',{required:true,minlength:5,maxlength:180})+field('message','Вопрос',local.context.messages?.subject?'Подскажите, пожалуйста, как подготовиться по дисциплине «'+local.context.messages.subject+'» и выбрать время консультации.':'',{rows:6,minlength:10,maxlength:4000,required:true}),{submit:'Отправить вопрос',wide:true});
     if(name==='ticket-open')return ticketModal(id);
     if(name==='staff-slot')return staffSlotModal();
@@ -315,6 +639,7 @@
   }
   async function submit(form){
     const name=form.dataset.cForm;if(c.state.pending)return;
+    if(name==='assignment')return submitWork(form);
     const epoch=c.state.sessionEpoch,uid=c.state.user?.id,page=c.state.page,modalId=c.state.modalId;
     const currentForm=()=>epoch===c.state.sessionEpoch&&uid===c.state.user?.id&&form.isConnected&&(name==='preferences'||modalId===c.state.modalId);
     let released=false;const release=()=>{if(released)return;released=true;if(epoch===c.state.sessionEpoch&&uid===c.state.user?.id)c.state.pending=Math.max(0,c.state.pending-1);};
@@ -323,12 +648,6 @@
       await c.prepareFormSubmission(form);if(!currentForm())return;
       const values=Object.fromEntries(controls.filter(x=>x.name&&!(['checkbox','radio'].includes(x.type)&&!x.checked)).map(x=>[x.name,x.value]));
       const id=Number(form.dataset.id);let path,body,success='Сохранено';
-    if(name==='assignment'){
-      path=`learning/assignments/${id}/submit`;
-      const files=await encodeWorkFiles(form.elements.files);if(!currentForm())return;
-      body={text:(values.text||'').trim(),url:(values.url||'').trim(),version:Number(values.version),completed:values.completed==='on',files};
-      success='Версия работы отправлена.';
-    }
     if(name==='ticket'){path='services/tickets';body={topic:values.topic,title:values.title.trim(),message:values.message.trim()};success='Вопрос сохранён. Следите за ответом в диалоге.';}
     if(name==='ticket-reply'){path=`${c.state.user.role==='staff'?'staff':'services'}/tickets/${id}/messages`;body={message:values.message.trim()};success='Сообщение отправлено.';}
     if(name==='preferences'){
@@ -373,7 +692,7 @@
       if(e.target.dataset.cQuery){const page=e.target.dataset.cQuery;resetRouteContext(page);c.replaceRouteContext();local.query[page]=e.target.value;if(servicePages.has(page)){local.offset[page]=0;c.state.loadingId++;clearTimeout(serviceSearchTimer);const position=e.target.selectionStart;const epoch=c.state.sessionEpoch;serviceSearchTimer=setTimeout(()=>{if(page===c.state.page&&epoch===c.state.sessionEpoch)refreshService(position).catch(error=>{if(!error.stale)c.toast(error.message);});},c.searchDelay);}else refreshPreservingInput();}
     });
   }
-  function reset(){clearTimeout(serviceSearchTimer);local.query={};local.filter={assignments:'pending'};local.offset={};local.scope={};local.context={};local.ticketOffsets={};local.pendingKeys={};local.catalog='documents';document.body.classList.remove('compact-campus');}
+  function reset(){clearTimeout(serviceSearchTimer);local.query={};local.filter={};local.offset={};local.scope={};local.context={};local.ticketOffsets={};local.pendingKeys={};local.catalog='documents';workDrafts.clear();document.body.classList.remove('compact-campus');}
   const catalogOptions=[['documents','Справки'],['academic','Учёба'],['finance','Финансы'],['campus','Кампус'],['other','Другое'],['all','Все услуги']];
   window.ATLASCampus={pages,has:page=>Object.hasOwn(renders,page),init,prepare,prepareRoute,openContext,clearFilters,resetRouteContext,load,render:(page,d)=>renders[page](d),afterRender,reset,catalogFilter:()=>`<div class="campus-catalog-head"><h2>Каталог услуг</h2><div class="filter-tabs" aria-label="Категория услуги">${catalogOptions.map(([key,label])=>`<button data-catalog-category="${key}" aria-pressed="${key===local.catalog}">${label}</button>`).join('')}</div></div>`,catalogTypes:types=>local.catalog==='all'?types:types.filter(t=>(t.category||'documents')===local.catalog)};
 })();

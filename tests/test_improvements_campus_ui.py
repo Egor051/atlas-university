@@ -48,7 +48,7 @@ def moscow_day(value):
 
 
 @pytest.mark.parametrize('width', [360, 390])
-def test_legacy_plan_opens_exact_work_and_personal_mark_does_not_submit(campus_page, width):
+def test_legacy_plan_opens_only_the_submission_form(campus_page, width):
     page, base, _ = campus_page
     page.set_viewport_size({'width': width, 'height': 800})
     work = page.request.get(base + '/api/learning/assignments').json()['items'][0]
@@ -58,11 +58,10 @@ def test_legacy_plan_opens_exact_work_and_personal_mark_does_not_submit(campus_p
     form = page.locator(f'form[data-c-form="assignment"][data-id="{work["id"]}"]')
     expect(form).to_be_visible()
     expect(page.get_by_role('dialog')).to_contain_text(work['title'])
-    marker = page.get_by_role('dialog').locator(f'[data-deadline="{work["id"]}"]')
-    marker.set_checked(not work['is_done'])
-    expect(marker).to_be_enabled()
+    expect(page.locator('.campus-task-state,[data-deadline],[data-c-action="assignment-start"]')).to_have_count(0)
+    expect(page.get_by_role('dialog').get_by_role('button', name='Отправить работу')).to_be_visible()
     saved = page.request.get(base + f'/api/learning/assignments/{work["id"]}').json()
-    assert saved['is_done'] is not work['is_done']
+    assert saved['is_done'] is work['is_done']
     assert saved['submission'] == work['submission']
     assert page.request.get(base + '/api/grades').json() == grades_before
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')

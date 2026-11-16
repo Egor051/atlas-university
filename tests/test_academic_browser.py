@@ -78,7 +78,7 @@ def test_teacher_reads_student_submission_and_returns_feedback(frontend_page):
     teacher.set_viewport_size({'width':390,'height':900})
     enter(teacher,base,3,'/app/teaching')
     teacher.get_by_role('link',name='Алгоритмы и структуры данных').click()
-    teacher.get_by_role('link',name='Задания',exact=True).click()
+    teacher.get_by_role('link',name='Сдача работ',exact=True).click()
     teacher.get_by_role('button',name='Создать задание').press('Enter')
     title='Учебная проверка связности'
     teacher.get_by_label('Название',exact=True).fill(title)
@@ -94,8 +94,7 @@ def test_teacher_reads_student_submission_and_returns_feedback(frontend_page):
         assignment=student.locator('.assignment-row').filter(has_text=title)
         assignment.get_by_role('button',name='Сдать работу').click()
         form=student.locator('[data-c-form="assignment"]')
-        expect(form).to_have_attribute('data-draft-bound','true')
-        form.evaluate('form => form._atlasDraft.restore')
+        expect(form).to_be_visible()
         answer='Все вершины графа доступны из вершины А.'
         form.get_by_label('Текст ответа',exact=True).fill(answer)
         assignment_id=assignment.get_attribute('data-campus-record-id')
@@ -105,7 +104,6 @@ def test_teacher_reads_student_submission_and_returns_feedback(frontend_page):
         teacher.goto(work_url)
         expect(teacher.get_by_text(answer,exact=True)).to_be_visible()
         teacher.get_by_role('button',name='Дать обратную связь').press('Enter')
-        teacher.get_by_label('Балл за работу (необязательно)',exact=True).fill('94')
         reply='Добавьте пример графа из двух компонент.'
         teacher.get_by_label('Комментарий студенту').fill(reply)
         save(teacher)
@@ -114,11 +112,11 @@ def test_teacher_reads_student_submission_and_returns_feedback(frontend_page):
         student.goto(base+'/app/notifications')
         notice=student.locator('.notification-full').filter(has_text='Преподаватель проверил работу')
         notice.get_by_role('button',name='Открыть').click()
-        expect(student.get_by_role('dialog',name='Сдать работу')).to_be_visible()
+        expect(student.get_by_role('dialog',name=title)).to_be_visible()
         assert student.url.endswith('/app/assignments?id='+assignment_id)
         student.get_by_text('Обратная связь преподавателя',exact=True).click()
         expect(student.get_by_text(reply,exact=True)).to_be_visible()
-        expect(student.get_by_text('Михаил Орлов · версия 1 · 94 баллов',exact=True)).to_be_visible()
+        expect(student.get_by_text('Комментарий · Михаил Орлов · версия 1',exact=True)).to_be_visible()
         assert teacher.evaluate('document.documentElement.scrollWidth <= innerWidth')
         assert student.evaluate('document.documentElement.scrollWidth <= innerWidth')
     finally:

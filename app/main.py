@@ -71,8 +71,9 @@ class BodyLimitMiddleware:
     async def __call__(self, scope, receive, send):
         if scope['type'] != 'http':
             return await self.app(scope, receive, send)
-        assignment_upload = scope['method'] == 'POST' and re.fullmatch(
-            r'/api/learning/assignments/[0-9]+/submit/?', scope['path'])
+        assignment_upload = (scope['method'] == 'POST' and re.fullmatch(
+            r'/api/(?:learning/assignments/[0-9]+/submit|teaching/[0-9]+/works(?:/[0-9]+/feedback/[0-9]+)?)/?', scope['path'])
+            or scope['method'] == 'PATCH' and re.fullmatch(r'/api/teaching/[0-9]+/works/[0-9]+/?', scope['path']))
         material_upload = (scope['method'] == 'POST' and re.fullmatch(
             r'/api/(?:materials|direct/dialogs(?:/[0-9]+/messages)?)/?', scope['path'])
                            or scope['method'] == 'PATCH' and re.fullmatch(r'/api/materials/[0-9]+/?', scope['path']))
@@ -713,14 +714,17 @@ def read_all_notifications(user:User=Depends(require_user),db:Session=Depends(ge
 
 @app.get('/api/dashboard')
 def dashboard(user:User=Depends(require_student),db:Session=Depends(get_db)):
-    from .assignment_workflow import visible_deadline
+    from .assignment_workflow import ACTIONABLE, student_assignment_results
     from .schedule_views import student_days
     now = datetime.now(CAMPUS_TZ)
     today = now.date()
     monday=today-timedelta(days=today.weekday())
     days = student_days(db, user, monday, monday + timedelta(days=13), markers=False)
-    incoming = db.scalars(select(Deadline).where(Deadline.student_id == user.id, Deadline.is_done.is_(False),
-                         visible_deadline(now.astimezone(timezone.utc))).order_by(Deadline.due_date, Deadline.id).limit(3)).all()
+    work = student_assignment_results(db, user.id, min_date=today, limit=None)
+    incoming = sorted((row for row in work if row['state'] == 'published' and row['status'] in ACTIONABLE
+                       and not row['deadline_passed'] and (row['can_submit'] or row['team_lead'])
+                       and (row['discipline_id'] is not None or not row['is_done'])),
+                      key=lambda row: (row['due_at'], row['id']))[:3]
     grade_data=grades(user,db)
     recent=db.scalars(select(Notification).where(Notification.student_id==user.id).order_by(Notification.created_at.desc()).limit(3)).all()
     open_requests=db.scalar(select(func.count()).select_from(DocumentRequest).where(DocumentRequest.student_id==user.id,DocumentRequest.status.not_in(['ready', 'rejected'])))
@@ -730,7 +734,8 @@ def dashboard(user:User=Depends(require_student),db:Session=Depends(get_db)):
                         (lesson['end_date'], lesson['end']) > (str(today), now.strftime('%H:%M'))), None)
     return {'profile':public_user(user),'today':[lesson for lesson in active if lesson['date'] == str(today)],
             'week_classes':sum(lesson['is_lesson'] and lesson['date'] <= days[6]['date'] for lesson in active),'grades':grade_data,
-            'deadlines':[deadline_payload(d) for d in incoming],
+            'deadlines':[{key: row[key] for key in ('id', 'subject', 'title', 'due_date', 'due_at', 'is_done')}
+                         for row in incoming],
             'notifications':[notification_payload(n) for n in recent],
             'open_requests':open_requests,'unread_count':unread,
             'next_lesson': next_lesson, 'timezone': 'Europe/Moscow', 'server_now': now.isoformat()}

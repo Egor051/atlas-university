@@ -200,6 +200,8 @@ class WorkDelivery(Base):
     deadline_id: Mapped[int] = mapped_column(ForeignKey('deadlines.id'), primary_key=True)
     work_id: Mapped[int] = mapped_column(ForeignKey('academic_group_work.id'), index=True)
     extended_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    individual_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revision_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     active: Mapped[bool] = mapped_column(default=True, server_default='true')
 
 
@@ -212,6 +214,8 @@ class WorkFeedback(Base):
     author_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     score: Mapped[int | None]
     comment: Mapped[str] = mapped_column(Text)
+    remarks: Mapped[str] = mapped_column(Text, default='', server_default='')
+    previous_score: Mapped[int | None]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     action: Mapped[str] = mapped_column(String(20), default='comment', server_default='comment')
     extended_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

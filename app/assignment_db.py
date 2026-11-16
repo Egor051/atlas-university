@@ -1,4 +1,4 @@
-"""Append-only copies of submitted work and its private attachments."""
+"""Versions of submitted work and private assignment attachments."""
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, LargeBinary, String, Text, UniqueConstraint
@@ -26,6 +26,25 @@ class SubmissionAttachment(Base):
     __tablename__ = 'assignment_attachments'
     id: Mapped[int] = mapped_column(primary_key=True)
     attempt_id: Mapped[int] = mapped_column(ForeignKey('assignment_attempts.id'), index=True)
+    name: Mapped[str] = mapped_column(String(180))
+    size: Mapped[int]
+    content: Mapped[bytes] = mapped_column(LargeBinary)
+
+
+class WorkSourceFile(Base):
+    __tablename__ = 'academic_work_source_files'
+    __table_args__ = {'sqlite_autoincrement': True}
+    id: Mapped[int] = mapped_column(primary_key=True)
+    work_id: Mapped[int] = mapped_column(ForeignKey('academic_group_work.id'), index=True)
+    name: Mapped[str] = mapped_column(String(180))
+    size: Mapped[int]
+    content: Mapped[bytes] = mapped_column(LargeBinary)
+
+
+class WorkFeedbackFile(Base):
+    __tablename__ = 'academic_work_feedback_files'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    feedback_id: Mapped[int] = mapped_column(ForeignKey('academic_work_feedback.id'), index=True)
     name: Mapped[str] = mapped_column(String(180))
     size: Mapped[int]
     content: Mapped[bytes] = mapped_column(LargeBinary)

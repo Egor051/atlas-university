@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import select
 
-from .academic_points import PointAward, award_data
+from .academic_points import AssignmentPointCorrection, PointAward, award_data, correction_data
 from .db import CAMPUS_TZ, Grade, Lesson, campus_today
 from .learning_db import Attendance
 from .schedule_calendar import KIND, LESSON_KINDS
@@ -127,6 +127,10 @@ def student_progress(db, student, date_iso):
     awards = defaultdict(list)
     for row in db.scalars(select(PointAward).where(PointAward.student_id == student.id).order_by(PointAward.id.desc())):
         awards[row.grade_id].append(award_data(row, date_iso))
+    corrections = defaultdict(list)
+    for row in db.scalars(select(AssignmentPointCorrection).where(AssignmentPointCorrection.student_id == student.id)
+                          .order_by(AssignmentPointCorrection.id.desc())):
+        corrections[row.grade_id].append(correction_data(row, date_iso))
     by_subject = {}
     for grade in grades:
         by_subject.setdefault(grade.subject, grade)
@@ -138,8 +142,9 @@ def student_progress(db, student, date_iso):
         work = [{**assignment, 'semester': semester_for(as_utc(datetime.fromisoformat(assignment['due_at']))
                  .astimezone(CAMPUS_TZ).date()) if assignment.get('due_at') else ''} for assignment in work_by_subject[subject]]
         history = awards[grade.id] if grade else []
+        adjustments = corrections[grade.id] if grade else []
         linked_awards = defaultdict(list)
-        for award in history:
+        for award in history + adjustments:
             if award['class_id']:
                 linked_awards[award['class_id']].append(award)
         admission = assessment_status(grade, now)
@@ -160,5 +165,5 @@ def student_progress(db, student, date_iso):
                           classes=[{**lesson, 'day': date_iso(lesson['day']), 'status_label': ATTENDANCE_LABELS.get(lesson['status'], 'Нет отметки'),
                                     'points': sum(award['points'] for award in linked_awards[lesson['class_id']]),
                                     'work': [assignment for assignment in work if lesson['class_id'] and assignment.get('class_id') == lesson['class_id']]}
-                                   for lesson in lessons], work=work, awards=history))
+                                   for lesson in lessons], work=work, awards=history, corrections=adjustments))
     return {'items': items}

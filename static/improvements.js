@@ -3,10 +3,10 @@
   'use strict';
   let c,recovery=null,lifecycle=0;
   const pendingDrafts=new Map(),timers=new Map(),queues=new Map(),revisions=new Map();
-  const safeForms=new Set(['request','certificate-order','note','task','assignment','portfolio','ticket','ticket-reply','flashcard','staff-slot','staff-event','announcement','request-followup','focus']);
+  const safeForms=new Set(['request','certificate-order','note','task','portfolio','ticket','ticket-reply','flashcard','staff-slot','staff-event','announcement','request-followup','focus']);
   const accountKey=(uid,key)=>uid+':'+key;
   const stale=()=>Object.assign(new Error('Сеанс или форма изменились. Откройте форму заново.'),{stale:true});
-  function keyFor(form){const name=form.id==='request-form'?(form.dataset.requestKind==='certificate'?'certificate-order':'request'):form.id==='request-followup'?'request-followup':form.dataset.cForm;if(!name||name==='personal-search')return null;return (safeForms.has(name)?name:'submission:'+name)+(form.dataset.id&&Number(form.dataset.id)?':'+Number(form.dataset.id):'')+(form.dataset.recordToken?':'+form.dataset.recordToken:'');}
+  function keyFor(form){const name=form.id==='request-form'?(form.dataset.requestKind==='certificate'?'certificate-order':'request'):form.id==='request-followup'?'request-followup':form.dataset.cForm;if(!name||name==='personal-search'||name==='assignment')return null;return (safeForms.has(name)?name:'submission:'+name)+(form.dataset.id&&Number(form.dataset.id)?':'+Number(form.dataset.id):'')+(form.dataset.recordToken?':'+form.dataset.recordToken:'');}
   function owner(form){if(!form._atlasDraft){if(!c.state.user)throw stale();form._atlasDraft={uid:c.state.user.id,epoch:c.state.sessionEpoch,lifecycle,key:keyFor(form),instance:crypto.randomUUID(),restore:null,loaded:false,remoteSubmission:null};}return form._atlasDraft;}
   function assertOwner(meta){if(meta.uid!==c.state.user?.id||meta.epoch!==c.state.sessionEpoch||meta.lifecycle!==lifecycle)throw stale();}
   function queue(key,run){const task=(queues.get(key)||Promise.resolve()).catch(()=>{}).then(run);queues.set(key,task);task.finally(()=>{if(queues.get(key)===task)queues.delete(key);}).catch(()=>{});return task;}

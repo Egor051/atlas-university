@@ -241,16 +241,31 @@ with SessionLocal() as db:
             teacher = Client(report['origin'], context)
             teacher.call('/api/login', {'login': 'orlov.demo', 'password': 'AtlasTeach!2026-M'})
             load = teacher.call('/api/teaching')['items'][0]
-            works = f'/api/teaching/{load["id"]}/works'
+            load_path = f'/api/teaching/{load["id"]}'
+            works = load_path + '/works'
             assignment_title = 'Приёмка учебной работы по HTTPS'
+            student_id = a.call('/api/me')['id']
+            source_bytes = b'Assignment handout\n' * 4200
+            feedback_bytes = b'Example correction\n' * 4000
             work = teacher.call(works, {
                 'title': assignment_title, 'instructions': 'Приложите описание алгоритма и результаты проверки.',
                 'due_at': (datetime.now(timezone.utc) + timedelta(days=5)).isoformat(),
                 'methods': ['text', 'files'], 'formats': ['txt'], 'max_points': 10,
+                'recipient_ids': [student_id],
+                'source_files': [{'name': 'условие.txt', 'content': b64encode(source_bytes).decode('ascii')}],
             }, expected=201)
             visible = a.call('/api/learning/assignments')['items']
             assigned = next(row for row in visible if row['title'] == assignment_title)
             deadline_path = f'/api/learning/assignments/{assigned["id"]}'
+            work_path = f'{works}/{work["id"]}'
+            source_file = f'/source-files/{work["source_files"][0]["id"]}'
+            assert a.call(deadline_path + source_file) == teacher.call(work_path + source_file) == source_bytes
+            b.call(deadline_path + source_file, expected=404)
+            individual_due = datetime.now(timezone(timedelta(hours=3))) + timedelta(days=2)
+            teacher.call(f'{work_path}/recipients/{student_id}',
+                         {'version': work['version'], 'individual_due_at': individual_due.isoformat()},
+                         method='PATCH')
+            assert a.call(deadline_path)['due_at'] == individual_due.astimezone(timezone.utc).isoformat()
             sample_bytes = b'One checked handoff\n' * 4000
             sent = a.call(deadline_path + '/submit', {
                 'text': 'Первый вариант с результатами проверки.',
@@ -259,9 +274,18 @@ with SessionLocal() as db:
             attachment = deadline_path + f'/files/{sent["attempts"][0]["files"][0]["id"]}'
             assert a.call(attachment) == sample_bytes
             b.call(attachment, expected=404)
-            review = f'{works}/{work["id"]}/feedback/{sent["submission"]["id"]}'
-            teacher.call(review, {'action': 'revise', 'submitted_version': sent['submission']['attempt_version'],
-                                  'comment': 'Добавьте проверку на пустом графе.'}, expected=201)
+            submission_id = sent['submission']['id']
+            review = f'{work_path}/feedback/{submission_id}'
+            revised = teacher.call(review, {
+                'action': 'revise', 'submitted_version': sent['submission']['attempt_version'],
+                'comment': 'Добавьте проверку на пустом графе.',
+                'remarks': 'Проверьте дублирующиеся рёбра.',
+                'files': [{'name': 'замечания.txt', 'content': b64encode(feedback_bytes).decode('ascii')}],
+            }, expected=201)
+            feedback_file = f'/feedback-files/{revised["files"][0]["id"]}'
+            assert a.call(deadline_path + feedback_file) == feedback_bytes
+            assert teacher.call(f'{work_path}/submissions/{submission_id}' + feedback_file) == feedback_bytes
+            b.call(deadline_path + feedback_file, expected=404)
             fixed = a.call(deadline_path + '/submit', {'text': 'Добавлена проверка на пустом графе.'})
             assert len(fixed['attempts']) == 2
             before = next(row['score'] for row in a.call('/api/grades')['items']
@@ -273,7 +297,35 @@ with SessionLocal() as db:
             after = next(row['score'] for row in a.call('/api/grades')['items']
                          if row['subject'] == load['discipline'])
             assert after == before + 7
-            report['checks'].append('HTTPS PostgreSQL work upload over 64 KB, private download, revision and one positive award')
+            scored = a.call(deadline_path)
+            correction_path = f'{work_path}/submissions/{submission_id}/score-corrections'
+            correction = {'submitted_version': scored['submission']['attempt_version'],
+                          'version': scored['submission']['version'], 'score': 6,
+                          'reason': 'Повторная сверка оценки с критериями.'}
+            correction_key = {'Idempotency-Key': uuid.uuid4().hex}
+            corrected = teacher.call(correction_path, correction, expected=201, headers=correction_key)
+            assert corrected['previous_score'] == 7 and corrected['score'] == 6
+            assert teacher.call(correction_path, correction, headers=correction_key) == corrected
+            assert next(row['score'] for row in a.call('/api/grades')['items']
+                        if row['subject'] == load['discipline']) == before + 6
+            history = teacher.call(f'{load_path}/points/{student_id}')
+            awards = [row for row in history['items']
+                      if row['source_kind'] == 'assignment' and row['source_id'] == str(work['id'])]
+            corrections = [row for row in history['corrections'] if row['source_id'] == str(work['id'])]
+            assert [row['points'] for row in awards] == [7]
+            assert [(row['previous_points'], row['corrected_points']) for row in corrections] == [(7, 6)]
+            reviewed = a.call(deadline_path)
+            assert {note['action']: note['score'] for note in reviewed['feedback']}['accept'] == 7
+            assert [note['score'] for note in reviewed['feedback'] if note['action'] == 'correct_score'] == [6]
+            assert a.call(attachment) == sample_bytes and a.call(deadline_path + feedback_file) == feedback_bytes
+            report['assignment_workflow'] = {
+                'uploads': {'source_bytes': len(source_bytes), 'submission_bytes': len(sample_bytes),
+                            'feedback_bytes': len(feedback_bytes)},
+                'attempts': len(reviewed['attempts']), 'original_score': 7, 'corrected_score': 6,
+                'correction_count': len(corrections), 'private_downloads': True,
+            }
+            report['checks'].append('HTTPS PostgreSQL source, result and feedback files over 64 KiB, private downloads, '
+                                    'individual Moscow deadline, revision, one positive award and audited correction replay')
             # Fill only synthetic sessions in this newly created test database.
             # Distinct addresses are injected solely by Caddyfile.test's local
             # trusted-proxy route, so the account cap is tested across IP locks.
@@ -331,7 +383,9 @@ with SessionLocal() as db:
             note=a.call('/api/learning/notes',{'title':'Проверка PostgreSQL','subject':'Вымышленная дисциплина','body':'Сохраняемый текст только для изолированной приёмки.'},expected=201)
             b.call(f'/api/learning/notes/{note["id"]}',expected=404)
             assignments=a.call('/api/learning/assignments')['items']
-            a.call(f'/api/learning/assignments/{assignments[0]["id"]}/submit',{'text':'Демонстрационное решение с объяснением результата.','url':'https://atlas.example/fictional-work'})
+            pending = next(row for row in assignments if row['can_submit'] and {'text', 'url'} <= set(row['methods']))
+            a.call(f'/api/learning/assignments/{pending["id"]}/submit',
+                   {'text':'Демонстрационное решение с объяснением результата.','url':'https://atlas.example/fictional-work'})
             courses=a.call('/api/learning/courses')['items'];course=courses[0];module=course['modules'][0]
             a.call(f'/api/learning/courses/{course["id"]}/modules/{module["id"]}',{'is_done':True})
             ticket=a.call('/api/services/tickets',{'topic':'other','title':'Проверка PostgreSQL переписки','message':'Вымышленное сообщение для проверки переноса и восстановления.'},expected=201,headers={'Idempotency-Key':str(uuid.uuid4())})

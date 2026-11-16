@@ -342,6 +342,14 @@ def migrate_database():
             from .material_migration import upgrade_materials
             upgrade_materials(connection)
             connection.execute(SchemaMigration.__table__.insert().values(version='0019_discipline_materials', applied_at=utc_now()))
+        if '0020_assignment_deadlines' not in versions:
+            from .assignment_migration import upgrade_assignment_deadlines
+            upgrade_assignment_deadlines(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0020_assignment_deadlines', applied_at=utc_now()))
+        if '0021_assignment_feedback' not in versions:
+            from .assignment_migration import upgrade_assignment_feedback
+            upgrade_assignment_feedback(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0021_assignment_feedback', applied_at=utc_now()))
 
 
 def seed_demo(session=None):

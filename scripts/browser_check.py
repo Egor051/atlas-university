@@ -178,19 +178,22 @@ def run():
                 assert 'Инженерия ПО' not in calendar
                 passed('Day/week navigation, keyboard focus, real private ICS download')
 
-                work = a.request.get(base+'/api/learning/assignments').json()['items'][0]
+                work = next(row for row in a.request.get(base+'/api/learning/assignments').json()['items']
+                            if row['can_submit'] and 'text' in row['methods'])
                 visit(page, base, f'assignments?id={work["id"]}')
-                checkbox = page.locator(f'[data-deadline="{work["id"]}"]')
-                desired = not work['is_done']
-                checkbox.set_checked(desired)
-                expect(checkbox).to_be_enabled()
+                form = page.locator('form[data-c-form="assignment"]')
+                answer = form.get_by_label('Текст ответа', exact=True)
+                draft = 'Макет результата для проверки восстановления черновика.'
+                answer.fill(draft)
+                expect(form.locator('[data-work-draft]')).to_contain_text('Черновик сохранён')
                 page.reload(wait_until='networkidle')
                 ready(page)
-                expect(checkbox).to_be_checked(checked=desired)
-                screenshot(page, 'mobile-assignment-mark')
-                checkbox.set_checked(work['is_done'])
-                expect(checkbox).to_be_enabled()
-                passed('The mark in the assignment persists after reload and can be undone')
+                expect(answer).to_have_value(draft)
+                expect(page.locator('.campus-task-state,[data-deadline],[data-c-action="assignment-start"]')).to_have_count(0)
+                screenshot(page, 'mobile-assignment-draft')
+                saved_work = a.request.get(base+f'/api/learning/assignments/{work["id"]}').json()
+                assert saved_work['submission'] == work['submission']
+                passed('An assignment draft survives reload without submitting the work')
 
                 visit(page, base, 'certificates')
                 page.locator('[data-request-view="services"]').first.click()

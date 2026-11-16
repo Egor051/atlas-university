@@ -1,14 +1,11 @@
 {$DOMAIN} {
 	encode zstd gzip
-	@submission_upload {
-		method POST
-		path_regexp ^/api/learning/assignments/[0-9]+/submit/?$
-	}
+	@assignment_upload path_regexp ^/api/(?:learning/assignments/[0-9]+/submit|teaching/[0-9]+/works(?:/[0-9]+(?:/feedback/[0-9]+)?)?)/?$
 	@regular_request not {
-		path_regexp ^/api/(?:learning/assignments/[0-9]+/submit|materials(?:/[0-9]+)?|direct/dialogs(?:/[0-9]+/messages)?)/?$
+		path_regexp ^/api/(?:learning/assignments/[0-9]+/submit|teaching/[0-9]+/works(?:/[0-9]+(?:/feedback/[0-9]+)?)?|materials(?:/[0-9]+)?|direct/dialogs(?:/[0-9]+/messages)?)/?$
 	}
 	@material_upload path_regexp ^/api/(?:materials(?:/[0-9]+)?|direct/dialogs(?:/[0-9]+/messages)?)/?$
-	request_body @submission_upload {
+	request_body @assignment_upload {
 		max_size 2097152
 	}
 	request_body @material_upload {

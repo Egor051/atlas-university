@@ -8,13 +8,17 @@ from pydantic import Field, ValidationError, field_validator
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
-from .academic_points import PointAward, award_data, award_points, grade_record as student_grade
+from .academic_points import (AssignmentPointCorrection, PointAward, award_data, award_points,
+                              correct_assignment_points, correction_data, grade_record as student_grade)
 from .db import CAMPUS_TZ, Deadline, Grade, User, campus_today, utc_now
-from .assignment_inputs import ExtendBody, FeedbackBody, WorkBody, WorkEdit
-from .assignment_workflow import (DEFAULT_POLICY, SUBMITTED, assignment_notice, assignment_recipients,
-                                  attachment_response, attempt_count, attempt_details, base_due,
+from .assignment_files import (download_feedback_file, download_source_file, replace_source_files,
+                               save_feedback_files, source_files)
+from .assignment_grades import official_score_query, score_from_history
+from .assignment_inputs import ExtendBody, FeedbackBody, ScoreCorrectionBody, WorkBody, WorkEdit
+from .assignment_workflow import (DEFAULT_POLICY, FORMATS, MAX_UPLOAD_BYTES, SUBMITTED, assignment_notice, assignment_recipients,
+                                  attachment_payload, attachment_response, attempt_count, attempt_details, base_due, deadline_fields,
                                   deliver_work, effective_due, effective_state, feedback_data, iso,
-                                  submission_data, validate_due, work_data, work_policy)
+                                  submission_data, sync_due_date, validate_due, work_data, work_policy)
 from .learning_db import AssignmentSubmission, Attendance
 from .main import StrictBody, date_iso, get_db, require_roles, require_same_origin
 from .services import begin_idempotent, commit_idempotent
@@ -24,7 +28,7 @@ from .university_db import Discipline, Teacher, TeachingAssignment, TeachingMate
 from .work_materials import eligible_materials, set_work_materials
 from .workspace import (check_member, event_payload, load_payload, load_query, lock_workspace, notify,
                         owned_load, recorded, roster)
-from .workspace_db import (Classroom, GroupMember, GroupWork, OperationEvent, ScheduledClass, TeacherConsultation,
+from .workspace_db import (AcademicSubgroup, Classroom, GroupMember, GroupWork, OperationEvent, ScheduledClass, TeacherConsultation,
                            AcademicGroup, TeachingLoad, WorkDelivery, WorkFeedback, WorkMaterial)
 
 teacher_only = require_roles('teacher')
@@ -189,7 +193,7 @@ def workbench(user=Depends(teacher_only), db: Session = Depends(get_db)):
                                                  GroupMember.group_id == TeachingLoad.group_id))
                          .where(TeachingLoad.id.in_([group['id'] for group in groups]), WorkDelivery.active.is_(True),
                                 AssignmentSubmission.status.in_(('submitted', 'resubmitted', 'in_review')),
-                                or_(GroupWork.state == 'published', and_(GroupWork.state == 'scheduled',
+                                or_(GroupWork.state.in_(('published', 'closed')), and_(GroupWork.state == 'scheduled',
                                                                          GroupWork.publish_at <= utc_now())))
                          .group_by(GroupWork.id, GroupWork.title, TeachingLoad.id, Discipline.title, AcademicGroup.code)
                          .order_by(func.max(AssignmentSubmission.updated_at).desc(), GroupWork.id.desc()).limit(20))
@@ -210,6 +214,10 @@ def details(load_id: int, day: date | None = None, class_id: int | None = Query(
     people = roster(db, load.group_id)
     attendance_ids = class_participants(db, meeting) if meeting else {person.id for person in people}
     ids = [person.id for person in people]
+    subgroup_by_student = dict(db.execute(select(GroupMember.student_id, GroupMember.subgroup_id)
+                                         .where(GroupMember.group_id == load.group_id)).all())
+    subgroups = db.execute(select(AcademicSubgroup.id, AcademicSubgroup.code).where(
+        AcademicSubgroup.group_id == load.group_id).order_by(AcademicSubgroup.code, AcademicSubgroup.id)).all()
     grades, attendance = {}, {}
     for row in db.scalars(select(Grade).where(Grade.student_id.in_(ids), Grade.subject == load.discipline.title).order_by(Grade.id)):
         grades.setdefault(row.student_id, row)
@@ -236,7 +244,8 @@ def details(load_id: int, day: date | None = None, class_id: int | None = Query(
             'sessions': [dict(id=row.id, day=class_day(row).isoformat(), kind=KIND.get(row.kind, row.kind),
                               starts_at=date_iso(row.starts_at), topic=row.note, started=as_utc(row.starts_at) <= now)
                          for row in sessions],
-            'students': [dict(id=p.id, name=p.full_name, number=p.student_number,
+            'subgroups': [dict(id=key, code=code) for key, code in subgroups],
+            'students': [dict(id=p.id, name=p.full_name, number=p.student_number, subgroup_id=subgroup_by_student.get(p.id),
                               grade=grade_data(grades.get(p.id)), attendance=attendance_data(attendance.get(p.id)),
                               class_participant=p.id in attendance_ids,
                               attendance_counts=attendance_by_student.get(p.id, {})) for p in people],
@@ -283,7 +292,10 @@ def point_history(load_id: int, student_id: int, user=Depends(teacher_only), db:
     grade = grade_record(db, load, student_id)
     rows = db.scalars(select(PointAward).where(PointAward.student_id == student_id,
                       PointAward.grade_id == grade.id).order_by(PointAward.id.desc())) if grade else ()
-    return {'items': [award_data(row, date_iso) for row in rows]}
+    corrections = db.scalars(select(AssignmentPointCorrection).where(AssignmentPointCorrection.student_id == student_id,
+                              AssignmentPointCorrection.grade_id == grade.id).order_by(AssignmentPointCorrection.id.desc())) if grade else ()
+    return {'items': [award_data(row, date_iso) for row in rows],
+            'corrections': [correction_data(row, date_iso) for row in corrections]}
 
 
 @router.put('/{load_id:int}/attendance', dependencies=write)
@@ -311,10 +323,17 @@ def works(load_id: int, offset: int = Query(0, ge=0, le=2147483647),
 
 
 def target_students(db, load, body):
-    members = {person.id for person in roster(db, load.group_id)}
+    scope = [GroupMember.group_id == load.group_id]
+    if body.subgroup_id is not None:
+        if db.scalar(select(AcademicSubgroup.id).where(
+            AcademicSubgroup.id == body.subgroup_id, AcademicSubgroup.group_id == load.group_id
+        )) is None:
+            raise HTTPException(404, 'Подгруппа не найдена в данной учебной группе')
+        scope.append(GroupMember.subgroup_id == body.subgroup_id)
+    members = set(db.scalars(select(GroupMember.student_id).join(User).where(*scope, User.role == 'student')))
     selected = set(body.recipient_ids) or members
-    if not selected:
-        raise HTTPException(409, 'Добавьте студентов в группу перед публикацией задания')
+    if not selected and body.state != 'draft':
+        raise HTTPException(409, 'В выбранной группе или подгруппе нет студентов')
     if not selected.issubset(members) or (body.team_lead_id is not None and body.team_lead_id not in selected):
         raise HTTPException(404, 'Студент не найден среди получателей в этой группе')
     if body.class_id is not None:
@@ -327,7 +346,7 @@ def target_students(db, load, body):
 def save_work_fields(row, body, *, prev_due=None):
     now = utc_now()
     due_at = body.due_at or base_due(body.due or campus_today())
-    if body.state not in ('draft', 'archived') and (prev_due is None or as_utc(prev_due) != due_at):
+    if body.state not in ('draft', 'closed', 'archived') and (prev_due is None or as_utc(prev_due) != due_at):
         validate_due(due_at, now=now)
     if body.state == 'scheduled':
         if not now < body.publish_at < due_at:
@@ -338,29 +357,35 @@ def save_work_fields(row, body, *, prev_due=None):
     row.due_at, row.due = due_at, due_at.astimezone(CAMPUS_TZ).date()
     row.state = body.state
     row.publish_at = (body.publish_at if body.state == 'scheduled' else published_at
-                      if body.state in ('published', 'archived') else None)
+                      if body.state in ('published', 'closed', 'archived') else None)
     row.policy_json = json.dumps({name: getattr(body, name) for name in DEFAULT_POLICY}, ensure_ascii=False)
 
 
-def update_deliveries(db, load, row, selected, before):
+def update_deliveries(db, load, row, selected, before, after, *, was_scheduled):
     prior = {deadline.student_id: (deadline, delivery) for deadline, delivery in db.execute(
         select(Deadline, WorkDelivery).join(WorkDelivery).where(WorkDelivery.work_id == row.id))}
     if row.state in ('published', 'scheduled'):
         for student_id in sorted(selected - prior.keys()):
             deliver_work(db, load, row, student_id)
+    changed = any(value != before.get(field) for field, value in after.items() if field not in ('version', 'publish_at'))
     for student_id, (deadline, delivery) in prior.items():
         was_active = delivery.active
         delivery.active = student_id in selected and row.state != 'draft'
         if not delivery.active:
             continue
         deadline.title = row.title
-        deadline.due_date = effective_due(deadline, delivery, row).astimezone(CAMPUS_TZ).date()
+        sync_due_date(deadline, delivery, row)
         if row.state == 'published' and (before['state'] in ('draft', 'scheduled') or not was_active):
             assignment_notice(db, deadline, 'Опубликовано учебное задание', row.title,
                               event_key=f'work-publish:{row.id}:{deadline.id}')
-        elif row.state in ('published', 'archived') and before['state'] == 'published':
-            assignment_notice(db, deadline, 'Задание перенесено в архив' if row.state == 'archived' else 'Условия задания изменились',
-                              row.title, event_key=f'work-edit:{row.id}:{deadline.id}:{row.version}')
+            continue
+        if was_scheduled and before['state'] == 'published':
+            assignment_notice(db, deadline, 'Опубликовано учебное задание', row.title,
+                              event_key=f'work-publish:{row.id}:{deadline.id}')
+        if changed and before['state'] in ('published', 'closed'):
+            title = {'closed': 'Приём работ завершён', 'archived': 'Задание перенесено в архив'}.get(
+                row.state, 'Условия задания изменились')
+            assignment_notice(db, deadline, title, row.title, event_key=f'work-edit:{row.id}:{deadline.id}:{row.version}')
 
 
 @router.post('/{load_id:int}/works', status_code=201, dependencies=write)
@@ -372,19 +397,21 @@ def new_work(load_id: int, body: WorkBody, request: Request, response: Response,
                                        body.model_dump(exclude_unset=True))
     if replay is not None:
         return replay
-    if body.state == 'archived':
+    if body.state in ('closed', 'archived'):
         raise HTTPException(422, 'Сначала создайте задание')
     selected = target_students(db, load, body) if (
-        body.state != 'draft' or body.recipient_ids or body.team_lead_id or body.class_id) else set()
+        body.state != 'draft' or body.subgroup_id or body.recipient_ids or body.team_lead_id or body.class_id) else set()
     row = GroupWork(load_id=load.id, author_id=user.id, created_at=utc_now())
     save_work_fields(row, body)
     db.add(row)
     db.flush()
     set_work_materials(db, load, row.id, body.material_ids)
+    uploads = attachment_payload(body.source_files, FORMATS)
+    files = replace_source_files(db, row.id, uploads, [], max_bytes=MAX_UPLOAD_BYTES) if uploads else []
     if row.state != 'draft':
         for student_id in sorted(selected):
             deliver_work(db, load, row, student_id)
-    result = {**work_data(row), 'material_ids': sorted(set(body.material_ids))}
+    result = {**work_data(row), 'material_ids': sorted(set(body.material_ids)), 'source_files': files}
     recorded(db, user, 'teaching', load.id, 'work_created', after=result)
     return commit_idempotent(db, receipt, result)
 
@@ -405,35 +432,44 @@ def edit_work(load_id: int, work_id: int, body: WorkEdit, user=Depends(teacher_o
         raise HTTPException(409, 'Задание изменено. Обновите раздел.')
     prior_ids = list(db.scalars(select(WorkMaterial.material_id).where(WorkMaterial.work_id == row.id)
                                 .order_by(WorkMaterial.material_id)))
-    before = {**work_data(row), 'material_ids': prior_ids}
-    patch = body.model_dump(exclude_unset=True, exclude={'version'})
+    before = {**work_data(row), 'material_ids': prior_ids, 'source_files': source_files(db, row.id)}
+    patch = body.model_dump(exclude_unset=True, exclude={'version', 'remove_source_ids'})
     if 'due' in patch and 'due_at' not in patch:
         patch['due_at'] = None
-    stored = {key: before[key] for key in WorkBody.model_fields}
+    stored = {key: before[key] for key in WorkBody.model_fields if key != 'source_files'}
     try:
         updated = WorkBody.model_validate({**stored, **patch})
     except (ValueError, ValidationError) as error:
         message = error.errors()[0]['msg'] if isinstance(error, ValidationError) else str(error)
         raise HTTPException(422, message) from None
-    if before['state'] == 'archived' or (updated.state == 'archived' and before['state'] != 'published'):
-        raise HTTPException(409, 'Архивировать можно только опубликованное задание')
+    if before['state'] == 'archived' or (before['state'] == 'closed' and
+        (updated.state != 'archived' or patch.keys() != {'state'} or body.remove_source_ids)
+    ):
+        raise HTTPException(409, 'Завершённое задание можно перенести в архив')
+    if updated.state in ('closed', 'archived') and before['state'] not in ('published', 'closed'):
+        raise HTTPException(409, 'Завершить или архивировать можно только опубликованное задание')
     if before['state'] == 'published':
-        protected = {'recipient_ids', 'team_lead_id', 'award_mode', 'class_id', 'kind', 'max_points'}
-        if updated.state not in ('published', 'archived') or any(
+        protected = {'subgroup_id', 'recipient_ids', 'team_lead_id', 'award_mode', 'class_id', 'kind', 'max_points'}
+        if updated.state not in ('published', 'closed', 'archived') or any(
             getattr(updated, key) != before[key] for key in protected
         ):
             raise HTTPException(409, 'У опубликованной работы можно изменить сроки, текст и способы сдачи')
     current_recipients = assignment_recipients(db, load, row, current_members=False)
     selected = ({deadline.student_id for deadline, _, _ in current_recipients}
-                if before['state'] == 'published' else
+                if before['state'] in ('published', 'closed') else
                 target_students(db, load, updated) if (
-                    updated.state != 'draft' or updated.recipient_ids or updated.team_lead_id or updated.class_id) else set())
+                    updated.state != 'draft' or updated.subgroup_id or updated.recipient_ids or updated.team_lead_id or updated.class_id) else set())
+    was_scheduled = row.state == 'scheduled'
     save_work_fields(row, updated, prev_due=row.due_at or base_due(row.due))
     if 'material_ids' in patch:
         set_work_materials(db, load, row.id, updated.material_ids)
+    files = before['source_files']
+    if updated.source_files or body.remove_source_ids:
+        uploads = attachment_payload(updated.source_files, FORMATS)
+        files = replace_source_files(db, row.id, uploads, body.remove_source_ids, max_bytes=MAX_UPLOAD_BYTES)
     row.version += 1
-    update_deliveries(db, load, row, selected, before)
-    result = {**work_data(row), 'material_ids': sorted(set(updated.material_ids))}
+    result = {**work_data(row), 'material_ids': sorted(set(updated.material_ids)), 'source_files': files}
+    update_deliveries(db, load, row, selected, before, result, was_scheduled=was_scheduled)
     recorded(db, user, 'teaching', load.id, 'work_edited', before, result)
     db.commit()
     return result
@@ -445,7 +481,7 @@ def submissions_query(load, work_id):
             .join(GroupMember, GroupMember.student_id == AssignmentSubmission.student_id)
             .join(User, User.id == GroupMember.student_id)
             .where(WorkDelivery.work_id == work_id, WorkDelivery.active.is_(True), GroupMember.group_id == load.group_id,
-                   User.role == 'student'))
+                   AssignmentSubmission.attempt_version > 0, User.role == 'student'))
 
 
 @router.get('/{load_id:int}/works/{work_id}')
@@ -457,16 +493,19 @@ def work_detail(load_id: int, work_id: int, user=Depends(teacher_only), db: Sess
     for row, name in db.execute(submissions_query(load, work_id).order_by(AssignmentSubmission.id)):
         notes, attempts = attempt_details(db, row.id)
         submissions.append({**submission_data(row), 'student': name, 'student_id': row.student_id,
-                            'deadline_id': row.deadline_id, 'feedback': notes, 'attempts': attempts})
+                            'deadline_id': row.deadline_id, 'score': score_from_history(notes),
+                            'feedback': notes, 'attempts': attempts})
     linked = db.execute(select(TeachingMaterial.id, TeachingMaterial.title, TeachingMaterial.access)
                         .join(WorkMaterial).join(TeachingAssignment).where(WorkMaterial.work_id == work.id,
                                                                           *eligible_materials(load)))
     material_cards = [dict(id=key, title=title, access=access) for key, title, access in linked]
     material_ids = list(db.scalars(select(WorkMaterial.material_id).where(WorkMaterial.work_id == work.id)
                                    .order_by(WorkMaterial.material_id)))
-    return {**work_data(work), 'submissions': submissions, 'material_ids': material_ids, 'course_materials': material_cards,
+    now = utc_now()
+    return {**work_data(work), 'submissions': submissions, 'material_ids': material_ids,
+            'course_materials': material_cards, 'source_files': source_files(db, work.id),
             'recipients': [
-        dict(id=deadline.student_id, deadline_id=deadline.id, name=name, due_at=iso(effective_due(deadline, delivery, work)))
+        dict(id=deadline.student_id, deadline_id=deadline.id, name=name, **deadline_fields(deadline, delivery, work, now=now))
         for deadline, delivery, name in recipients
     ], 'classes': [
         dict(id=row.id, day=as_utc(row.starts_at).astimezone(CAMPUS_TZ).isoformat(), topic=row.note)
@@ -497,12 +536,30 @@ def teacher_attachment(load_id: int, work_id: int, submission_id: int, attachmen
     return attachment_response(db, submission_id, attachment_id)
 
 
+@router.get('/{load_id:int}/works/{work_id}/source-files/{file_id}')
+def teacher_source_file(load_id: int, work_id: int, file_id: int, user=Depends(teacher_only),
+                        db: Session = Depends(get_db)):
+    load = owned_load(db, user, load_id)
+    return download_source_file(db, owned_work(db, load, work_id).id, file_id)
+
+
+@router.get('/{load_id:int}/works/{work_id}/submissions/{submission_id}/feedback-files/{file_id}')
+def teacher_feedback_file(load_id: int, work_id: int, submission_id: int, file_id: int, user=Depends(teacher_only),
+                          db: Session = Depends(get_db)):
+    load = owned_load(db, user, load_id)
+    owned_work(db, load, work_id)
+    if db.execute(submissions_query(load, work_id).where(AssignmentSubmission.id == submission_id)).one_or_none() is None:
+        raise HTTPException(404, 'Вложение не найдено')
+    return download_feedback_file(db, submission_id, file_id)
+
+
 def extend_deadline(deadline, delivery, work, until):
-    validate_due(until)
     if until <= effective_due(deadline, delivery, work):
         raise HTTPException(422, 'Новый срок должен быть позже действующего')
-    delivery.extended_until = until
-    deadline.due_date = until.astimezone(CAMPUS_TZ).date()
+    if delivery.revision_due_at:
+        delivery.revision_due_at = until
+    else:
+        delivery.extended_until = until
 
 
 @router.patch('/{load_id:int}/works/{work_id}/recipients/{student_id}', dependencies=write)
@@ -517,14 +574,36 @@ def assign_extension(load_id: int, work_id: int, student_id: int, body: ExtendBo
     policy = work_policy(work)
     if not any(deadline.student_id == student_id for deadline, _, _ in recipients):
         raise HTTPException(404, 'Получатель не найден')
+    until = body.extended_until or body.individual_due_at
+    now = utc_now()
+    if until is not None:
+        validate_due(until, now=now)
+    before = {}
+    after = {}
     for deadline, delivery, _ in recipients:
-        if deadline.student_id == student_id or policy['team_lead_id']:
+        if deadline.student_id != student_id and not policy['team_lead_id']:
+            continue
+        old = deadline_fields(deadline, delivery, work, now=now)
+        if body.extended_until:
             extend_deadline(deadline, delivery, work, body.extended_until)
-            assignment_notice(db, deadline, 'Срок сдачи продлён', work.title)
+        else:
+            delivery.individual_due_at = body.individual_due_at
+            delivery.extended_until = None
+        current = deadline_fields(deadline, delivery, work, now=now)
+        if old == current:
+            continue
+        sync_due_date(deadline, delivery, work)
+        before[deadline.student_id] = old
+        after[deadline.student_id] = current
+        title = 'Срок сдачи продлён' if body.extended_until else 'Индивидуальный срок сдачи изменён'
+        date_label = effective_due(deadline, delivery, work).astimezone(CAMPUS_TZ).strftime('%d.%m.%Y, %H:%M МСК')
+        assignment_notice(db, deadline, title, f'{work.title} · до {date_label}',
+                          event_key=f'work-due:{work.id}:{deadline.id}:{work.version + 1}')
+    if not after:
+        return work_data(work)
     work.version += 1
-    recorded(db, user, 'teaching', load.id, 'work_extension', after={
-        'student_id': student_id, 'work_id': work_id, 'due_at': iso(body.extended_until),
-    })
+    recorded(db, user, 'teaching', load.id, 'work_extension' if body.extended_until else 'work_individual_due',
+             {'work_id': work.id, 'recipients': before}, {'work_id': work.id, 'recipients': after})
     db.commit()
     return work_data(work)
 
@@ -533,44 +612,58 @@ REVIEW_TRANSITIONS = {
     'review': (('submitted', 'resubmitted'), 'in_review'),
     'revise': (('submitted', 'resubmitted', 'in_review'), 'revision_required'),
     'accept': (('submitted', 'resubmitted', 'in_review'), 'accepted'),
+    'grade': (('accepted', 'completed'), None),
     'complete': (('accepted',), 'completed'),
-    'comment': (('submitted', 'resubmitted', 'in_review', 'accepted', 'completed'), None),
+    'comment': (('submitted', 'resubmitted', 'in_review', 'revision_required', 'accepted', 'completed'), None),
 }
+
+
+def review_submission(db, load, work, submission_id):
+    found = db.execute(submissions_query(load, work.id).where(AssignmentSubmission.id == submission_id)
+                       .with_for_update(of=AssignmentSubmission)).one_or_none()
+    if found is None:
+        raise HTTPException(404, 'Работа студента не найдена')
+    return found[0]
+
+
+def review_recipients(db, load, work, submission, policy):
+    recipients = [record for record in assignment_recipients(db, load, work)
+                  if policy['team_lead_id'] or record[0].student_id == submission.student_id]
+    if not recipients:
+        raise HTTPException(404, 'Получатель не найден')
+    return recipients
 
 
 @router.post('/{load_id:int}/works/{work_id}/feedback/{submission_id}', status_code=201, dependencies=write)
 def feedback(load_id: int, work_id: int, submission_id: int, body: FeedbackBody, request: Request, response: Response,
              user=Depends(teacher_only), db: Session = Depends(get_db)):
-    from .academic_points import award_points
-
     lock_workspace(db, user.id)
     load = owned_load(db, user, load_id)
     work = owned_work(db, load, work_id)
-    found = db.execute(submissions_query(load, work_id).where(AssignmentSubmission.id == submission_id)
-                       .with_for_update(of=AssignmentSubmission)).one_or_none()
-    if found is None:
-        raise HTTPException(404, 'Работа студента не найдена')
-    row = found[0]
+    row = review_submission(db, load, work, submission_id)
     receipt, replay = begin_idempotent(db, request, response, user, f'feedback:{submission_id}',
                                        body.model_dump(exclude_unset=True))
     if replay is not None:
         return replay
     allowed, next_status = REVIEW_TRANSITIONS[body.action]
-    if (effective_state(work) != 'published' or row.attempt_version != body.submitted_version or row.status not in allowed
+    state = effective_state(work)
+    if (state not in ('published', 'closed') or (state == 'closed' and body.action == 'revise')
+        or row.attempt_version != body.submitted_version or row.status not in allowed
         or (body.version is not None and row.version != body.version)):
         raise HTTPException(409, 'Состояние работы изменилось. Откройте её снова')
     policy = work_policy(work)
     if body.score is not None and body.score > policy['max_points']:
         raise HTTPException(422, 'Балл превышает максимум задания')
+    if body.action == 'grade' and db.scalar(official_score_query(row.id)) is not None:
+        raise HTTPException(409, 'Оценка уже выставлена. Для её изменения выберите корректировку')
     if body.action == 'revise' and attempt_count(db, row.id) >= (policy['max_attempts'] or 50):
         raise HTTPException(409, 'Лимит попыток исчерпан. Увеличьте его в условиях задания')
-    recipients = [record for record in assignment_recipients(db, load, work)
-                  if policy['team_lead_id'] or record[0].student_id == row.student_id]
-    if not recipients:
-        raise HTTPException(404, 'Получатель не найден')
+    recipients = review_recipients(db, load, work, row, policy)
     if body.extended_until:
+        validate_due(body.extended_until)
         for deadline, delivery, _ in recipients:
-            extend_deadline(deadline, delivery, work, body.extended_until)
+            delivery.revision_due_at = body.extended_until
+            sync_due_date(deadline, delivery, work)
         work.version += 1
     elif body.action == 'revise' and not policy['allow_late'] and any(
         effective_due(deadline, delivery, work) <= utc_now() for deadline, delivery, _ in recipients
@@ -579,29 +672,77 @@ def feedback(load_id: int, work_id: int, submission_id: int, body: FeedbackBody,
     before_status = row.status
     if next_status:
         row.status = next_status
+    if next_status or body.action == 'grade':
         row.version += 1
         row.updated_at = utc_now()
     entry = WorkFeedback(submission_id=row.id, author_id=user.id, created_at=utc_now(),
-                         **body.model_dump(exclude={'version'}))
+                         **body.model_dump(exclude={'version', 'files'}))
     db.add(entry)
     db.flush()
+    files = save_feedback_files(db, entry.id, attachment_payload(body.files, FORMATS))
     titles = {'review': 'Работа на проверке', 'revise': 'Работа возвращена на доработку',
-              'accept': 'Работа принята', 'complete': 'Работа завершена', 'comment': 'Преподаватель проверил работу'}
-    for deadline, _, _ in recipients:
-        assignment_notice(db, deadline, titles[body.action], work.title, event_key=f'work-review:{entry.id}:{deadline.id}')
-        if body.extended_until:
-            assignment_notice(db, deadline, 'Срок доработки продлён', work.title,
-                              event_key=f'work-review-due:{entry.id}:{deadline.id}')
-        if body.action == 'accept' and body.score and (policy['award_mode'] == 'all' or deadline.student_id == row.student_id):
-            award_points(db, student_id=deadline.student_id, discipline_id=load.discipline_id, points=body.score,
-                         source_kind='assignment', source_id=work.id, actor_id=user.id, class_id=policy['class_id'],
-                         reason=work.title)
-            assignment_notice(db, deadline, 'Начислены баллы за работу', f'{work.title} · +{body.score}',
-                              event_key=f'work-points:{work.id}:{deadline.id}')
+              'accept': 'Работа принята', 'grade': 'Опубликована оценка за работу',
+              'complete': 'Работа завершена', 'comment': 'Преподаватель проверил работу'}
+    for deadline, delivery, _ in recipients:
+        title = titles[body.action]
+        notice_body = work.title
+        if body.action == 'revise':
+            date_label = effective_due(deadline, delivery, work).astimezone(CAMPUS_TZ).strftime('%d.%m.%Y, %H:%M МСК')
+            notice_body = f'{work.title} · до {date_label}'
+        if body.action in ('accept', 'grade') and body.score is not None:
+            notice_body = f'{work.title} · {body.score} из {policy["max_points"]}'
+            if body.score > 0 and (policy['award_mode'] == 'all' or deadline.student_id == row.student_id):
+                award_points(db, student_id=deadline.student_id, discipline_id=load.discipline_id, points=body.score,
+                             source_kind='assignment', source_id=work.id, actor_id=user.id, class_id=policy['class_id'],
+                             reason=work.title)
+                title = 'Начислены баллы за работу'
+        assignment_notice(db, deadline, title, notice_body, event_key=f'work-review:{entry.id}:{deadline.id}')
     recorded(db, user, 'teaching', load.id, 'feedback', {'status': before_status}, {
         'work_id': work.id, 'submission_id': row.id, 'student_id': row.student_id,
         'version': row.version, 'status': row.status, 'review_id': entry.id, 'score': body.score,
+        'files': files,
     })
+    return commit_idempotent(db, receipt, feedback_data(entry, user.full_name, files))
+
+
+@router.post('/{load_id:int}/works/{work_id}/submissions/{submission_id}/score-corrections', status_code=201, dependencies=write)
+def correct_score(load_id: int, work_id: int, submission_id: int, body: ScoreCorrectionBody, request: Request,
+                  response: Response, user=Depends(teacher_only), db: Session = Depends(get_db)):
+    lock_workspace(db, user.id)
+    load = owned_load(db, user, load_id)
+    work = owned_work(db, load, work_id)
+    row = review_submission(db, load, work, submission_id)
+    receipt, replay = begin_idempotent(db, request, response, user, f'work-score-correction:{row.id}', body.model_dump())
+    if replay is not None:
+        return replay
+    if (row.status not in ('accepted', 'completed') or row.version != body.version
+        or row.attempt_version != body.submitted_version):
+        raise HTTPException(409, 'Состояние работы изменилось. Откройте её снова')
+    policy = work_policy(work)
+    previous_score = db.scalar(official_score_query(row.id))
+    if previous_score is None:
+        raise HTTPException(409, 'У работы ещё нет опубликованной оценки')
+    if body.score == previous_score or body.score > policy['max_points']:
+        raise HTTPException(422, 'Укажите новый балл в пределах максимума задания')
+    recipients = review_recipients(db, load, work, row, policy)
+    row.version += 1
+    row.updated_at = utc_now()
+    entry = WorkFeedback(submission_id=row.id, author_id=user.id, created_at=row.updated_at,
+                         submitted_version=row.attempt_version, action='correct_score', score=body.score,
+                         previous_score=previous_score, comment=body.reason)
+    db.add(entry)
+    db.flush()
+    for deadline, _, _ in recipients:
+        if policy['award_mode'] == 'all' or deadline.student_id == row.student_id:
+            correct_assignment_points(db, student_id=deadline.student_id, discipline_id=load.discipline_id,
+                                      work_id=work.id, feedback_id=entry.id, points=body.score, actor_id=user.id,
+                                      reason=body.reason, class_id=policy['class_id'])
+        assignment_notice(db, deadline, 'Оценка за работу скорректирована', f'{work.title} · {previous_score} → {body.score}',
+                          event_key=f'work-review:{entry.id}:{deadline.id}')
+    recorded(db, user, 'teaching', load.id, 'work_score_corrected',
+             {'work_id': work.id, 'submission_id': row.id, 'score': previous_score},
+             {'work_id': work.id, 'submission_id': row.id, 'score': body.score, 'reason': body.reason,
+              'review_id': entry.id, 'version': row.version})
     return commit_idempotent(db, receipt, feedback_data(entry, user.full_name))
 
 

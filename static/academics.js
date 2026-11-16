@@ -7,10 +7,11 @@
     ['attendance_percent', 'Посещаемость'], ['max_points', 'Максимум'],
     ['result', 'Результат'], ['assessment', 'Аттестация'],
   ];
-  const workStatuses = {not_started:'Не начато', in_progress:'В работе', draft:'В работе', submitted:'Отправлено',
+  const workStatuses = {not_started:'Не сдано', in_progress:'Не сдано', draft:'Не сдано', submitted:'Сдано',
     in_review:'На проверке', revision_required:'Требуется доработка', withdrawn:'Отозвано',
-    resubmitted:'Повторно отправлено', accepted:'Принято', completed:'Завершено'};
-  const awardLabels = {opening:'Баланс при переносе', teacher:'Начисление преподавателем', assignment:'Проверенная работа'};
+    resubmitted:'Повторно сдано', accepted:'Принято', completed:'Завершено'};
+  const awardLabels = {opening:'Баланс при переносе', teacher:'Начисление преподавателем', assignment:'Проверенная работа',
+    assignment_correction:'Корректировка оценки'};
   const collator = new Intl.Collator('ru', {numeric:true, sensitivity:'base'});
   const cellValue = (row, key) => key==='assessment'?row.assessment.label:key==='semesters'?row.semesters.join(', '):row[key];
   function showCell(row,key){
@@ -20,11 +21,12 @@
   }
   const sentence = value => value ? `<p class="user-text">${c.esc(value)}</p>` : '';
   const assignmentLink = item => `<a href="/app/assignments?id=${Number(item.id)}" data-route="assignments" data-record-id="${Number(item.id)}">${c.esc(item.title)}</a>`;
-  const awarded = points => points > 0 ? `+${Number(points)}` : '—';
+  const awarded = points => points > 0 ? `+${Number(points)}` : points < 0 ? `${Number(points)}` : '—';
 
   function showWork(item){
-    return `<li><details class="academic-work"><summary>${c.esc(item.title)} <span>${c.esc(workStatuses[item.status]||item.status||'Не начато')}</span></summary>
-      <div>${item.due_at?`<p>Срок сдачи · ${c.dateFmt(item.due_at.slice(0,10))}</p>`:''}
+    const status=item.graded?'Оценено':workStatuses[item.status]||'Не сдано';
+    return `<li><details class="academic-work"><summary>${c.esc(item.title)} <span>${c.esc(status)}</span></summary>
+      <div>${item.due_at?`<p>Срок сдачи · ${c.stamp(item.due_at)} МСК</p>`:''}
       ${item.score!=null?`<p>Баллы за работу · <b>${Number(item.score)}</b>${item.max_points!=null?' из '+Number(item.max_points):''}</p>`:''}
       ${sentence(item.feedback)}${assignmentLink(item)}</div></details></li>`;
   }
@@ -42,9 +44,11 @@
     return `<section class="${cls}"><h3>${title}</h3>${items.length?`<ul>${items.map(render).join('')}</ul>`:`<p>${empty}</p>`}</section>`;
   }
   function details(row){
+    const history=[...row.awards,...(row.corrections||[])].sort((a,b)=>
+      (b.created_at||'').localeCompare(a.created_at||'')||b.id-a.id);
     return subsection('Занятия',row.classes,showClass,'academic-classes','Записей о занятиях пока нет.')+
       subsection('Работы и проверка',row.work,showWork,'academic-works','Заданий пока нет.')+
-      subsection('История баллов',row.awards,showAward,'academic-awards','Начислений пока нет.');
+      subsection('История баллов',history,showAward,'academic-awards','Начислений пока нет.');
   }
   function tableRows(rows){
     return rows.map((row, i) => `<tr ${row.id?`data-record-id="${Number(row.id)}"`:''}>

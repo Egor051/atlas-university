@@ -45,14 +45,14 @@ def test_request_survives_expired_cookie_and_same_user_reauthentication(frontend
     expect(page.locator('.request-track')).to_be_visible()
     assert page.request.get(base+'/api/drafts/certificate-order').json()['values']=={}
 
-def test_long_assignment_draft_has_compact_key_and_survives_reload(frontend_page):
+def test_long_assignment_draft_survives_reload(frontend_page):
     page,base=frontend_page;enter(page,base);visit(page,base,'assignments')
     page.locator('[data-c-action="assignment"]').first.click()
     form=page.locator('form[data-c-form="assignment"]');expect(form).to_be_visible()
     assignment_id=form.get_attribute('data-id')
     text='Вымышленный ответ: '+'а'*7500
     form.locator('[name="text"]').fill(text)
-    expect(form.locator('[data-personal-draft]')).to_contain_text('Черновик сохранён',timeout=10000)
+    expect(form.locator('[data-work-draft]')).to_contain_text('Черновик сохранён',timeout=10000)
     page.reload(wait_until='networkidle')
     page.locator(f'[data-c-action="assignment"][data-id="{assignment_id}"]').first.click()
     expect(page.locator('form[data-c-form="assignment"] [name="text"]')).to_have_value(text)
@@ -68,13 +68,11 @@ def test_ticket_draft_cannot_appear_for_another_account(frontend_page):
     visit(page,base,'messages');page.locator('[data-c-action="ticket-new"]').click()
     expect(page.locator('[data-c-form="ticket"] [name="message"]')).not_to_have_value(text)
 
-def test_server_validation_points_to_field_without_losing_input(frontend_page):
+def test_assignment_validation_points_to_field_without_losing_input(frontend_page):
     page,base=frontend_page;enter(page,base);visit(page,base,'assignments')
     page.locator('[data-c-action="assignment"]').first.click()
     form=page.locator('[data-c-form="assignment"]')
-    # The prior scenario leaves a saved draft; finish restoring it before typing.
-    expect(form).to_have_attribute('data-draft-bound','true')
-    form.evaluate('form => form._atlasDraft.restore')
+    expect(form).to_be_visible()
     form.locator('[name="text"]').fill('Вымышленный ответ для проверки ошибки ссылки.')
     form.locator('[name="url"]').fill('http://example.test/work')
     form.locator('button[type=submit]').click()

@@ -1,5 +1,7 @@
 """Exercise revision, attachments and accumulation through the real cabinet."""
 import os
+from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
 import pytest
 from playwright.sync_api import expect
@@ -21,7 +23,7 @@ def test_assignment_revision_and_final_credit_in_browser(frontend_page):
     enter(teacher, base, 3, '/app/teaching')
     subject = 'Алгоритмы и структуры данных'
     teacher.get_by_role('link', name=subject).click()
-    teacher.get_by_role('link', name='Задания', exact=True).click()
+    teacher.get_by_role('link', name='Сдача работ', exact=True).click()
     teacher.get_by_role('button', name='Создать задание').press('Enter')
     title = 'Обход графа и крайние случаи'
     teacher.get_by_label('Название', exact=True).fill(title)
@@ -43,7 +45,6 @@ def test_assignment_revision_and_final_credit_in_browser(frontend_page):
         row.get_by_role('button', name='Сдать работу').click()
         form = student.locator('form[data-c-form="assignment"]')
         expect(form).to_be_visible()
-        form.evaluate('form => form._atlasDraft.restore')
         form.get_by_label('Текст ответа', exact=True).fill('Первая версия показывает обход связного графа.')
         form.get_by_label('Файлы работы').set_input_files(
             {'name': 'граф.txt', 'mimeType': 'text/plain', 'buffer': b'Graph result ' * 3000})
@@ -61,9 +62,7 @@ def test_assignment_revision_and_final_credit_in_browser(frontend_page):
         save(teacher)
 
         student.goto(assignment_url)
-        expect(student.get_by_role('dialog').get_by_text('Нужно исправить: Добавьте несвязный граф и опишите результат.',
-                                                        exact=True)).to_be_visible()
-        form.evaluate('form => form._atlasDraft.restore')
+        expect(student.get_by_role('dialog').get_by_text('Добавьте несвязный граф и опишите результат.', exact=True)).to_be_visible()
         form.get_by_label('Текст ответа', exact=True).fill('Новая версия включает разбор двух несвязных компонент.')
         form.get_by_role('button', name='Отправить новую версию').click()
         expect(student.get_by_role('dialog')).to_have_count(0)
@@ -85,7 +84,7 @@ def test_assignment_revision_and_final_credit_in_browser(frontend_page):
         assert score() == original + 7
 
         student.goto(assignment_url)
-        expect(student.get_by_role('dialog').locator('.campus-pill').filter(has_text='Принято')).to_be_visible()
+        expect(student.get_by_role('dialog').locator('.campus-pill').filter(has_text='Оценено')).to_be_visible()
         student.get_by_text('Обратная связь преподавателя', exact=True).click()
         expect(student.get_by_text('Результат проверен, обе компоненты разобраны.', exact=True)).to_be_visible()
         student.get_by_text('История версий', exact=True).click()
@@ -97,3 +96,79 @@ def test_assignment_revision_and_final_credit_in_browser(frontend_page):
         assert student.evaluate('document.documentElement.scrollWidth <= innerWidth')
     finally:
         student_context.close()
+
+
+@pytest.mark.parametrize('committed_before_loss', [False, True])
+def test_file_only_draft_and_safe_retry_after_network_loss(frontend_page, committed_before_loss):
+    student, base = frontend_page
+    student.set_viewport_size({'width': 360, 'height': 900})
+    enter(student, base, 0, '/app/assignments')
+    with student.context.browser.new_context() as context:
+        teacher = context.new_page()
+        enter(teacher, base, 3, '/app/teaching')
+        load = teacher.request.get(base + '/api/teaching').json()['items'][0]
+        identity = student.request.get(base + '/api/me').json()['id']
+        title = 'Файловая работа ' + uuid4().hex[:6]
+        created = teacher.request.post(base + f'/api/teaching/{load["id"]}/works', headers={'X-Requested-With': 'ATLAS'},
+            data={'title': title, 'instructions': 'Отправьте два файла с результатами проверки.',
+                  'due_at': (datetime.now(timezone.utc) + timedelta(days=1)).isoformat(), 'recipient_ids': [identity],
+                  'methods': ['files'], 'required_methods': ['files'], 'formats': ['txt'], 'min_files': 2, 'max_files': 2})
+        assert created.status == 201, created.text()
+    student.reload()
+    row = student.locator('.assignment-row').filter(has_text=title)
+    expect(row).to_be_visible()
+    deadline_id = row.get_attribute('data-campus-record-id')
+    page_url = base + f'/app/assignments?id={deadline_id}'
+    api_url = base + f'/api/learning/assignments/{deadline_id}'
+    student.goto(page_url)
+    form = student.locator('form[data-c-form="assignment"]')
+    expect(form).to_be_visible()
+    expect(form.get_by_label('Текст ответа', exact=True)).to_have_count(0)
+    button = form.get_by_role('button', name='Отправить работу', exact=True)
+    error = form.locator('[data-c-error]')
+    button.click()
+    expect(error).to_be_visible()
+    upload = form.get_by_label('Файлы работы')
+    upload.set_input_files({'name': 'чертёж.exe', 'mimeType': 'application/octet-stream', 'buffer': b'plain test bytes'})
+    expect(error).to_contain_text('формат')
+    upload.set_input_files([
+        {'name': 'решение.txt', 'mimeType': 'text/plain', 'buffer': b'edge case'},
+        {'name': 'проверка.txt', 'mimeType': 'text/plain', 'buffer': b'valid result'},
+    ])
+    expect(form.locator('[data-work-draft]')).to_contain_text('Черновик сохранён')
+    student.reload()
+    expect(form.locator('[data-work-draft]')).to_contain_text('Восстановлен черновик')
+    expect(form.locator('[data-work-files] li')).to_have_count(2)
+    keys = []
+
+    def drop_first(route):
+        keys.append(route.request.headers.get('idempotency-key'))
+        if len(keys) > 1:
+            route.continue_()
+            return
+        if committed_before_loss:
+            assert route.fetch().status == 200
+        route.abort('failed')
+
+    student.route(api_url + '/submit', drop_first)
+    button.evaluate('(button) => { button.click(); button.click(); }')
+    retry = form.get_by_role('button', name='Повторить отправку', exact=True)
+    expect(retry).to_be_enabled()
+    assert len(keys) == 1 and keys[0]
+    expect(error).to_be_visible()
+    expect(form.locator('[data-work-files] li')).to_have_count(2)
+    if not committed_before_loss:
+        assert student.request.get(api_url).json()['attempts'] == []
+        student.reload()
+        expect(form.locator('[data-work-draft]')).to_contain_text('Восстановлен черновик')
+        expect(form.locator('[data-work-files] li')).to_have_count(2)
+        button.click()
+    else:
+        retry.click()
+    expect(student.get_by_role('dialog')).to_have_count(0)
+    assert keys == [keys[0], keys[0]]
+    attempts = student.request.get(api_url).json()['attempts']
+    assert len(attempts) == 1 and len(attempts[0]['files']) == 2
+    student.reload()
+    expect(student.get_by_role('dialog')).to_contain_text('Сдано')
+    expect(form).to_have_count(0)

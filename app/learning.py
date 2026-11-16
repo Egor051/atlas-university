@@ -15,11 +15,13 @@ from .services import begin_idempotent, commit_idempotent
 from .storage_guards import (lock_owner, update_personal, delete_personal,
                              require_record_token, identity_conditions)
 from .assignment_db import SubmissionAttempt, SubmissionAttachment
-from .assignment_workflow import (ACTIONABLE, SUBMITTED, assignment_payload, attachment_payload,
-                                  attachment_response, attempt_count, effective_due, effective_state,
-                                  student_assignment, student_assignment_results, submission_for,
-                                  work_policy)
-from .workspace import lock_workspace, notify, recorded
+from .assignment_files import download_feedback_file, download_source_file
+from .assignment_workflow import (ACTIONABLE, SUBMITTED, assignment_notice, assignment_payload,
+                                  assignment_recipients, attachment_payload, attachment_response,
+                                  attempt_count, effective_due, effective_state, student_assignment,
+                                  student_assignment_results, submission_for, work_notice, work_policy)
+from .workspace import check_member, load_query, lock_workspace, recorded
+from .workspace_db import GroupMember, TeachingLoad
 
 
 def create_router():
@@ -81,7 +83,10 @@ def create_router():
     def assignment_detail_payload(db, record):
         deadline, delivery, work = record
         submission, owner_id, lead_name = submission_for(db, deadline, delivery, work)
-        return assignment_payload(db, deadline, delivery, work, submission, owner_id, lead_name, include_history=True)
+        load = db.scalar(load_query().where(TeachingLoad.id == work.load_id)) if work else None
+        member = db.get(GroupMember, deadline.student_id) if work else None
+        return assignment_payload(db, deadline, delivery, work, submission, owner_id, lead_name,
+                                  include_history=True, load=load, member_group_id=member.group_id if member else None)
 
     @router.get('/assignments')
     def assignments(offset: int = Query(0, ge=0, le=2147483647), start: date | None = None, end: date | None = None,
@@ -109,19 +114,32 @@ def create_router():
         submission, _, _ = submission_for(db, *record)
         return attachment_response(db, submission.id if submission else None, attachment_id)
 
-    def active_submission(db, user, deadline_id):
+    @router.get('/assignments/{deadline_id}/source-files/{file_id}')
+    def student_source_file(deadline_id: int, file_id: int, user: User = Depends(require_student),
+                            db: Session = Depends(get_db)):
+        _, _, work = student_assignment(db, user.id, deadline_id)
+        return download_source_file(db, work.id if work else None, file_id)
+
+    @router.get('/assignments/{deadline_id}/feedback-files/{file_id}')
+    def student_feedback_file(deadline_id: int, file_id: int, user: User = Depends(require_student),
+                              db: Session = Depends(get_db)):
+        record = student_assignment(db, user.id, deadline_id)
+        submission, _, _ = submission_for(db, *record)
+        return download_feedback_file(db, submission.id if submission else None, file_id)
+
+    def owned_submission(db, user, deadline_id):
         record = student_assignment(db, user.id, deadline_id)
         deadline, delivery, work = record
-        if effective_state(work) != 'published':
-            raise HTTPException(409, 'Задание закрыто для изменений')
         if work:
-            from .workspace import check_member
-            from .workspace_db import TeachingLoad
             check_member(db, db.get(TeachingLoad, work.load_id), user.id)
         row, owner_id, lead_name = submission_for(db, *record)
         if user.id != owner_id or (work_policy(work)['team_lead_id'] and lead_name is None):
             raise HTTPException(403, 'Работу команды отправляет ответственный')
         return record, row
+
+    def check_intake(work):
+        if effective_state(work) != 'published':
+            raise HTTPException(409, 'Приём работ закрыт')
 
     def check_submission_version(row, version):
         if version is not None and version != (row.version if row else 0):
@@ -134,7 +152,8 @@ def create_router():
     def start_assignment(deadline_id: int, body: SubmissionRevision, user: User = Depends(require_student),
                          db: Session = Depends(get_db)):
         lock_workspace(db, user.id)
-        record, row = active_submission(db, user, deadline_id)
+        record, row = owned_submission(db, user, deadline_id)
+        check_intake(record.GroupWork)
         if row is not None and row.status == 'in_progress':
             return assignment_detail_payload(db, record)
         check_submission_version(row, body.version)
@@ -155,15 +174,14 @@ def create_router():
     @router.post('/assignments/{deadline_id}/submit', dependencies=protected)
     def submit_assignment(deadline_id: int, body: SubmissionBody, request: Request, response: Response,
                           user: User = Depends(require_student), db: Session = Depends(get_db)):
-        from .workspace_db import TeachingLoad
-
         lock_workspace(db, user.id)
-        record, row = active_submission(db, user, deadline_id)
+        record, row = owned_submission(db, user, deadline_id)
         deadline, delivery, work = record
         receipt, replay = begin_idempotent(db, request, response, user, f'assignment-submit:{deadline_id}',
                                            body.model_dump(exclude_unset=True))
         if replay is not None:
             return replay
+        check_intake(work)
         check_submission_version(row, body.version)
         policy = work_policy(work)
         status = row.status if row else 'not_started'
@@ -182,6 +200,10 @@ def create_router():
                     ('complete', body.completed)) if value}
         if not provided or not provided.issubset(policy['methods']):
             raise HTTPException(422, 'Приложите результат одним из разрешённых способов')
+        if not set(policy['required_methods']).issubset(provided):
+            raise HTTPException(422, 'Заполните все обязательные поля для сдачи')
+        if body.files and not policy['min_files'] <= len(body.files) <= policy['max_files']:
+            raise HTTPException(422, f"Количество файлов должно быть от {policy['min_files']} до {policy['max_files']}")
         files = attachment_payload(body.files, policy['formats'])
         if row is None:
             row = AssignmentSubmission(student_id=user.id, deadline_id=deadline.id, version=0)
@@ -198,10 +220,16 @@ def create_router():
         db.flush()
         db.add_all(SubmissionAttachment(attempt_id=attempt.id, name=name, size=len(content), content=content)
                    for name, content in files)
+        recipients = [deadline]
         if work:
             load = db.get(TeachingLoad, work.load_id)
-            notify(db, load.assignment.teacher.user_id, 'Работа отправлена на проверку', deadline.title,
-                   f'/app/teaching/{load.id}/works/{work.id}')
+            work_notice(db, load.assignment.teacher.user_id, 'Работа отправлена на проверку', deadline.title,
+                        f'/app/teaching/{load.id}/works/{work.id}', event_key=f'work-submit-teacher:{attempt.id}')
+            if policy['team_lead_id']:
+                recipients = [item for item, _, _ in assignment_recipients(db, load, work)]
+        for recipient in recipients:
+            assignment_notice(db, recipient, 'Работа успешно отправлена', deadline.title,
+                              event_key=f'work-submit-student:{attempt.id}:{recipient.id}')
         recorded(db, user, 'assignments', deadline.id, 'submitted', after={
             'attempt_id': attempt.id, 'version': row.version, 'late': late,
         })
@@ -211,10 +239,11 @@ def create_router():
     def withdraw_assignment(deadline_id: int, request: Request, response: Response, user: User = Depends(require_student),
                             db: Session = Depends(get_db)):
         lock_workspace(db, user.id)
-        record, row = active_submission(db, user, deadline_id)
+        record, row = owned_submission(db, user, deadline_id)
         receipt, replay = begin_idempotent(db, request, response, user, f'assignment-withdraw:{deadline_id}', {})
         if replay is not None:
             return replay
+        check_intake(record.GroupWork)
         if row is None or row.status not in ('submitted', 'resubmitted'):
             raise HTTPException(409, 'Отозвать можно только работу, которую ещё не начали проверять')
         row.status = 'withdrawn'
