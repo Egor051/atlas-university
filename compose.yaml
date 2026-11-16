@@ -24,6 +24,7 @@ services:
       COOKIE_SECURE: "true"
       PUBLIC_ORIGIN: https://${DOMAIN:?set_domain}
       ALLOWED_HOSTS: ${DOMAIN:?set_domain}
+      ATLAS_CERTIFICATE_KEY: ${ATLAS_CERTIFICATE_KEY:-}
       TZ: Europe/Moscow
     networks:
       proxy: {}

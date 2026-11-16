@@ -1,15 +1,53 @@
 """The operations are exercised through the real cabinet and file picker."""
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta, timezone
+from io import BytesIO
 import os
 import re
+from secrets import token_urlsafe
+from uuid import uuid4
 
 import pytest
+from PIL import Image
 from playwright.sync_api import expect
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
 
-from test_frontend_contracts import frontend_browser, frontend_page, frontend_server
+from app.db import CAMPUS_TZ, User, campus_today
+from app.university_db import Discipline, Teacher, TeachingAssignment
+from app.workspace_db import AcademicTerm, Classroom, GroupMember, ScheduledClass, TeachingLoad
+from test_frontend_contracts import frontend_browser, frontend_page, isolated_frontend_server
 from test_university_browser import enter
 
 pytestmark=pytest.mark.skipif(os.environ.get('ATLAS_RUN_BROWSER_TESTS')!='1',reason='Opt-in isolated Chromium')
+
+
+@pytest.fixture(scope='module')
+def frontend_server():
+    with isolated_frontend_server({'ATLAS_CERTIFICATE_KEY':token_urlsafe(32)}) as (base,database):
+        engine = create_engine('sqlite:///' + database.as_posix())
+        with Session(engine) as db, db.begin():
+            student = db.scalar(select(User.id).where(User.login=='alina.demo'))
+            member = db.get(GroupMember,student)
+            teacher,load = db.execute(select(Teacher.id,TeachingLoad.id).select_from(TeachingLoad)
+                .join(TeachingAssignment,TeachingAssignment.id==TeachingLoad.assignment_id)
+                .join(Teacher).join(User).join(Discipline,Discipline.id==TeachingLoad.discipline_id)
+                .where(User.login=='orlov.demo',TeachingLoad.group_id==member.group_id)).one()
+            substitute = db.scalar(select(Teacher.id).join(User).where(User.login=='ryabinina.demo'))
+            room = db.scalar(select(Classroom.id).where(Classroom.code=='А-301'))
+            today = campus_today()
+            first, last = today-timedelta(days=40),today+timedelta(days=30)
+            db.add(AcademicTerm(academic_year=today.year,number=1,group_id=member.group_id,starts_on=first,
+                ends_on=last,weekdays='0123456',periods=[{'kind':'teaching','start':str(first),'end':str(last)}],
+                source='Изолированный браузерный тест'))
+            for offset, title, kind, actual_teacher in [(3,'Учебная лекция для журнала','lecture',teacher),
+                    (8,'Лабораторная работа для справки','lab',teacher),
+                    (22,'Практическое занятие для справки','practice',teacher),
+                    (1,'Практика с заменой преподавателя','practice',substitute)]:
+                start = datetime.combine(today-timedelta(days=offset),time(7),CAMPUS_TZ).astimezone(timezone.utc)
+                db.add(ScheduledClass(load_id=load,group_id=member.group_id,teacher_id=actual_teacher,room_id=room,
+                    starts_at=start,ends_at=start+timedelta(hours=1),kind=kind,title=title,note=title,series=uuid4().hex))
+        engine.dispose()
+        yield base
 
 
 def save(page):
@@ -27,13 +65,24 @@ def test_teacher_marks_and_attendance_in_browser(frontend_page):
     total=int(re.search(r'Накопленные баллы: (\d+)',before).group(1))+3
     teacher.get_by_role('button',name='Начислить баллы').click()
     teacher.get_by_label('Сколько баллов добавить').fill('3')
+    teacher.get_by_label('Максимум за работу (необязательно)').fill('5')
+    teacher.get_by_label('Вид деятельности').select_option('project')
+    teacher.get_by_label('Название работы или занятия (необязательно)').fill('Учебный проект')
     teacher.get_by_label('Основание начисления').fill('Проверен граф.')
     save(teacher)
     expect(teacher.locator('.op-row')).to_contain_text(f'Накопленные баллы: {total}')
     teacher.get_by_role('button',name='История баллов').click()
     expect(teacher.get_by_role('dialog')).to_contain_text('Проверен граф.')
-    teacher.get_by_role('button',name='Закрыть диалог').click()
+    teacher.get_by_role('button',name='Скорректировать начисление').first.click()
+    teacher.get_by_label('Исправленные баллы').fill('2')
+    teacher.get_by_label('Причина корректировки').fill('Уточнение по критерию.')
+    save(teacher)
+    expect(teacher.locator('.op-row')).to_contain_text(f'Накопленные баллы: {total-1}')
     teacher.get_by_role('link',name='Посещаемость',exact=True).click()
+    session = teacher.get_by_label('Занятие',exact=True)
+    target = session.locator('option').filter(has_text='Учебная лекция для журнала').get_attribute('value')
+    session.select_option(target)
+    teacher.get_by_role('button',name='Открыть',exact=True).click()
     teacher.get_by_role('button',name='Поставить отметку').click()
     teacher.get_by_label('Отметка',exact=True).select_option('present')
     save(teacher)
@@ -41,36 +90,122 @@ def test_teacher_marks_and_attendance_in_browser(frontend_page):
     teacher.get_by_role('link',name='Отчёт и история',exact=True).click()
     expect(teacher.locator('.op-log')).to_contain_text('Михаил Орлов')
     expect(teacher.locator('.op-log')).to_contain_text(f'→ {total}')
+    expect(teacher.locator('.op-log')).to_contain_text('Уточнение по критерию.')
     assert teacher.evaluate('document.documentElement.scrollWidth <= innerWidth')
 
 
-def test_student_combined_table_and_session(frontend_page):
+@pytest.mark.parametrize('width',[360,390,1440])
+def test_student_combined_table_and_session(frontend_page,width):
     page, base = frontend_page
-    page.set_viewport_size({'width': 320, 'height': 880})
+    page.set_viewport_size({'width':width,'height':880})
     enter(page, base, 0, '/app/records/attendance')
     expect(page).to_have_url(base + '/app/grades')
     title = page.get_by_role('heading', name='Успеваемость и посещаемость', exact=True)
     expect(title).to_be_visible()
-    expect(page.get_by_role('table')).to_be_visible()
+    assert page.get_by_role('table').count()==2
     assert page.evaluate('document.documentElement.scrollWidth === innerWidth')
-    page.locator('#academic-search').fill('Алгоритмы')
-    expect(page.locator('#academic-count')).to_have_text('Дисциплин: 1')
-    switch = page.locator('[data-academic-toggle]').first
-    switch.press('Enter')
-    expect(switch).to_have_attribute('aria-expanded', 'true')
-    expect(page.locator('.academic-awards')).to_contain_text('Баланс при переносе')
-    page.locator('.academic-session summary').first.press('Enter')
-    expect(page.locator('.academic-session[open]').first).to_contain_text('Баллы за занятие')
-    page.locator('#academic-search').fill('')
-    page.locator('[data-academic-sort="earned_points"]').click()
-    expect(page.locator('[data-academic-sort="earned_points"]').locator('..')).to_have_attribute('aria-sort', 'ascending')
-    page.locator('[data-academic-sort="earned_points"]').click()
-    expect(page.locator('[data-academic-sort="earned_points"]').locator('..')).to_have_attribute('aria-sort', 'descending')
+    points_panel = page.locator('[data-type="points"]')
+    points = points_panel.get_by_role('table')
+    points_panel.get_by_label('Дисциплина',exact=True).select_option(label='Алгоритмы и структуры данных')
+    expect(points).to_contain_text('Перенесённый остаток')
+    sort = points.get_by_role('button',name='Баллы',exact=True)
+    sort.press('Enter')
+    expect(sort.locator('..')).to_have_attribute('aria-sort','ascending')
+    sort.press('Enter')
+    expect(sort.locator('..')).to_have_attribute('aria-sort','descending')
+    page.get_by_role('link',name='К посещаемости').click()
+    expect(page.get_by_role('heading',name='Посещаемость занятий')).to_be_focused()
+    attendance = page.locator('[data-type="attendance"]')
+    attendance.get_by_label('Вид занятия',exact=True).select_option('lab')
+    expect(attendance.get_by_role('table')).to_contain_text('Лабораторная работа для справки')
+    expect(attendance.get_by_role('table')).to_contain_text('Статус не выставлен')
+    attendance.get_by_label('Группировка').select_option('kind')
+    expect(attendance.locator('.academic-group').first).to_contain_text('Проведено')
     page.goto(base+'/app/exams')
     expect(page.locator('[data-assessment-status]').first).to_be_visible()
     expect(page.get_by_text('В плане', exact=True)).to_have_count(0)
     expect(page.get_by_text('Нужно внимание', exact=True)).to_have_count(0)
     assert page.evaluate('document.documentElement.scrollWidth === innerWidth')
+
+
+def test_substitute_teacher_marks_actual_class_from_schedule(frontend_page):
+    teacher,base = frontend_page
+    teacher.set_viewport_size({'width':390,'height':900})
+    previous = campus_today()-timedelta(days=1)
+    enter(teacher,base,8,'/app/teach-schedule?week='+str(previous))
+    session = teacher.locator('.op-row').filter(has_text='Практика с заменой преподавателя')
+    session.get_by_role('button',name='Журнал посещаемости').click()
+    journal = teacher.get_by_role('dialog',name='Журнал посещаемости')
+    journal.get_by_role('button',name='Поставить отметку').click()
+    teacher.get_by_label('Отметка',exact=True).select_option('absent')
+    teacher.get_by_role('dialog',name='Посещаемость',exact=True).get_by_role('button',name='Сохранить').click()
+    expect(journal).to_contain_text('Отсутствовал')
+    assert teacher.evaluate('document.documentElement.scrollWidth <= innerWidth')
+
+
+def test_absence_certificate_multiselect_review_and_decisions(frontend_page):
+    student, base = frontend_page
+    teacher_context = student.context.browser.new_context(viewport={'width':390,'height':900},locale='ru-RU')
+    try:
+        teacher = teacher_context.new_page()
+        enter(teacher,base,3,'/app/teaching')
+        load = teacher.request.get(base+'/api/teaching').json()['items'][0]
+        journal = f"{base}/api/teaching/{load['id']}"
+        sessions = teacher.request.get(journal).json()['sessions']
+        for session in (row for row in sessions if row['topic'].endswith('для справки')):
+            person = teacher.request.get(journal,params={'class_id':session['id']}).json()['students'][0]
+            reply = teacher.request.put(journal+'/attendance',headers={'Origin':base,'X-Requested-With':'ATLAS'},
+                data={'class_id':session['id'],'day':session['day'],'student_id':person['id'],
+                      'status':'absent','version':person['attendance']['version']})
+            assert reply.ok,reply.text()
+
+        student.set_viewport_size({'width':360,'height':880})
+        enter(student,base,0,'/app/grades?kind=attendance')
+        table = student.get_by_role('table',name='Посещаемость занятий')
+        lab = table.get_by_role('row').filter(has_text='Лабораторная работа для справки')
+        practice = table.get_by_role('row').filter(has_text='Практическое занятие для справки')
+        lab.get_by_role('button',name='Отправить справку').click()
+        upload = student.get_by_role('dialog',name='Отправить справку')
+        upload.get_by_role('checkbox',name=re.compile('Практическое занятие · Михаил Орлов')).check()
+        document = BytesIO()
+        Image.new('RGB',(32,32),'white').save(document,'PNG')
+        upload.get_by_label('Справка',exact=True).set_input_files({'name':'test.png','mimeType':'image/png','buffer':document.getvalue()})
+        upload.get_by_label('Пояснение (необязательно)').fill('Вымышленный документ для приёмки.')
+        upload.get_by_role('button',name='Отправить справку').click()
+        expect(upload).to_have_count(0)
+        expect(lab).to_contain_text('На рассмотрении')
+        expect(practice).to_contain_text('На рассмотрении')
+
+        teacher.goto(base+'/app/notifications')
+        notice = teacher.locator('.notification-full').filter(has_text='справк').first
+        notice.get_by_role('button',name='Открыть').click()
+        expect(teacher.get_by_role('heading',name='Справки о пропусках',exact=True)).to_be_visible()
+        case = teacher.get_by_role('table').get_by_role('row').filter(has_text='Вымышленный документ')
+        case.get_by_role('button',name='Рассмотреть справку').click()
+        decision = teacher.get_by_role('dialog',name='Рассмотреть справку')
+        with teacher.expect_download() as downloaded:
+            decision.get_by_role('button',name='Скачать справку').click()
+        assert downloaded.value.path().read_bytes().startswith(b'%PDF-')
+        decision.get_by_role('checkbox',name=re.compile('Практическое занятие')).uncheck()
+        decision.get_by_label('Решение',exact=True).select_option('accepted')
+        decision.get_by_role('button',name='Сохранить решение').click()
+        expect(case).to_contain_text('Принята')
+        case.get_by_role('button',name='Рассмотреть справку').click()
+        decision.get_by_label('Решение',exact=True).select_option('rejected')
+        decision.get_by_label('Причина отклонения (необязательно)').fill('Документ относится только к первой дате.')
+        decision.get_by_role('button',name='Сохранить решение').click()
+        expect(case).to_contain_text('Отклонена')
+
+        student.reload()
+        expect(lab).to_contain_text('Уважительный пропуск')
+        expect(practice).to_contain_text('Отсутствовал')
+        practice.get_by_role('button',name='Решение по справке').click()
+        result = student.get_by_role('dialog',name='Решение по справке')
+        expect(result).to_contain_text('Документ относится только к первой дате.')
+        for page in (student,teacher):
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    finally:
+        teacher_context.close()
 
 
 def test_teacher_reads_student_submission_and_returns_feedback(frontend_page):

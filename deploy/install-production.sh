@@ -7,6 +7,9 @@ root=/opt/atlas-campus
 cd "$root"
 test -s .env
 chmod 600 .env
+if ! grep -q '^ATLAS_CERTIFICATE_KEY=' .env; then
+    printf '\nATLAS_CERTIFICATE_KEY=%s\n' "$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')" >> .env
+fi
 revision=$(git -c safe.directory="$root" rev-parse HEAD)
 install -d -m 700 /etc/atlas-campus /var/lib/atlas-ops /var/log/atlas-ops /var/backups/atlas-campus
 cat > /etc/atlas-campus/compose.env <<EOF
@@ -30,6 +33,8 @@ docker run --rm --network none --env "DOMAIN=$caddy_domain" \
 docker compose up -d --wait --wait-timeout 120 db
 docker compose run --rm --no-deps web python -m app.db migrate
 install -m 644 deploy/systemd/atlas-* /etc/systemd/system/
+install -d -m 755 /usr/local/libexec/atlas-campus
+install -m 750 scripts/backup.sh /usr/local/libexec/atlas-campus/backup.sh
 install -m 750 deploy/atlas-backup-export.sh /usr/local/sbin/atlas-backup-export
 cat > /etc/logrotate.d/atlas-campus <<'EOF'
 /var/log/atlas-ops/*.jsonl {

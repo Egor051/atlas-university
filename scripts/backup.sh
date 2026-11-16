@@ -2,7 +2,7 @@
 # PostgreSQL custom-format backup. Run from the project root on the server.
 set -eu
 umask 077
-cd "$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+cd "${ATLAS_BACKUP_PROJECT_ROOT:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}"
 backup_dir=${ATLAS_BACKUP_DIR:-./backups}
 mkdir -p -- "$backup_dir"
 # Keep the lock inode: removing a flock file would allow a second lock inode.
@@ -31,7 +31,10 @@ trap cleanup EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
-docker compose exec -T db pg_dump --username=atlas_admin --dbname=atlas --format=custom --no-owner --no-privileges > "$partial"
+# Keep academic decisions and their audit. Sensitive evidence and free text
+# expire independently and must never enter the retained/exported archives.
+docker compose exec -T db pg_dump --username=atlas_admin --dbname=atlas --format=custom --no-owner --no-privileges \
+    --exclude-table-data=public.absence_certificate_files --exclude-table-data=public.absence_certificate_notes > "$partial"
 # Verify the archive can at least be decoded before retaining it.
 docker compose exec -T db pg_restore --list < "$partial" > /dev/null
 test -s "$partial"

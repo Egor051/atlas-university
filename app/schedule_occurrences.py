@@ -136,6 +136,27 @@ def occurrence_key(item):
     return f"event-{item['id']}"
 
 
+def managed_occurrence(row):
+    item = class_data(row)
+    item.update(_teacher_user_id=row.teacher.user_id, _ends_at=as_utc(row.ends_at))
+    action = row.change_action or ('cancel' if row.status == 'cancelled' else 'update' if row.version > 1 else '')
+    if action:
+        item.update(previous=row.previous, move_day=str(row.previous_day) if row.previous_day else None,
+                    change_action=action, change_key=f'class:{row.id}:{row.version}')
+    return item
+
+
+def student_occurrences(db, student_id, member, first, last, calendar, *, include_moved=False):
+    start, end = campus_instant(first), campus_instant(last + timedelta(days=1))
+    managed = class_query().where(or_(
+        (ScheduledClass.starts_at >= start) & (ScheduledClass.starts_at < end),
+        ScheduledClass.previous_day.between(first, last) if include_moved else False,
+    ))
+    for row in db.scalars(audience(managed, member, student_id)):
+        yield managed_occurrence(row)
+    yield from legacy_occurrences(db, first, last, student_id=student_id, calendar=calendar, include_moved=include_moved)
+
+
 def audience(query, member, user_id):
     if member is None:
         return query.where(ScheduledClass.student_id == user_id)

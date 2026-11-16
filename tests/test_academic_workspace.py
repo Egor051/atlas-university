@@ -38,6 +38,23 @@ def orlov(teacher):
     return body(teacher.get('/api/teaching'))['items'][0]
 
 
+def journal_class(load_id):
+    from app.db import SessionLocal
+    from app.workspace_db import Classroom, ScheduledClass, TeachingLoad
+
+    day = campus_today() - timedelta(days=1)
+    with SessionLocal.begin() as db:
+        load = db.get(TeachingLoad, load_id)
+        start = datetime.combine(day, time(8), CAMPUS_TZ).astimezone(timezone.utc)
+        room = db.query(Classroom).first()
+        meeting = ScheduledClass(load_id=load_id, group_id=load.group_id, teacher_id=load.assignment.teacher_id,
+                                 room_id=room.id, starts_at=start, ends_at=start+timedelta(hours=1), kind='practice',
+                                 series=uuid4().hex)
+        db.add(meeting)
+        db.flush()
+        return meeting.id, day.isoformat()
+
+
 def new_slot(api, day):
     data=body(api.get('/api/scheduling/options'))
     load=next(row for row in data['loads'] if row['teacher']=='Михаил Орлов')
@@ -66,7 +83,8 @@ def test_assessment_history_roster_and_stale_writes(roles):
     teacher,student,other,colleague,admin=(roles(r) for r in ('teacher','student','other','colleague','admin'))
     load=orlov(teacher)
     path=f"/api/teaching/{load['id']}"
-    own=body(teacher.get(path))['students'][0]
+    class_id, day = journal_class(load['id'])
+    own=body(teacher.get(path,params={'class_id':class_id}))['students'][0]
     outsider=body(other.get('/api/me'))['id']
     other_before = body(other.get('/api/grades'))
     assert own['id']!=outsider
@@ -80,10 +98,10 @@ def test_assessment_history_roster_and_stale_writes(roles):
     with ThreadPoolExecutor(max_workers=2) as pool:
         replies=list(pool.map(lambda _:teacher.put(path+'/grade',json=data,headers=HEAD),range(2)))
     assert sorted(response.status_code for response in replies)==[200,409]
-    present=dict(student_id=own['id'],day=campus_today().isoformat(),status='present',version=own['attendance']['version'])
+    present=dict(student_id=own['id'],day=day,status='present',version=own['attendance']['version'],class_id=class_id)
     assert teacher.put(path+'/attendance',json={**present,'student_id':outsider},headers=HEAD).status_code==404
     body(teacher.put(path+'/attendance',json=present,headers=HEAD))
-    records=body(teacher.get(path))
+    records=body(teacher.get(path,params={'class_id':class_id}))
     assert records['students'][0]['grade']['score']==result
     assert records['students'][0]['attendance']['status']=='present'
     assert {x['action'] for x in records['history']} >= {'grade','attendance'}
@@ -99,8 +117,10 @@ def test_positive_awards_replay_and_aggregate(roles):
     assert staff.get(endpoint).status_code == 403
     subject = orlov(teacher)['discipline']
     other_before = body(other.get(endpoint))
-    path = f"/api/teaching/{orlov(teacher)['id']}"
-    roster = body(teacher.get(path))
+    load_id = orlov(teacher)['id']
+    path = f"/api/teaching/{load_id}"
+    class_id, day = journal_class(load_id)
+    roster = body(teacher.get(path,params={'class_id':class_id}))
     own = roster['students'][0]
     current = own['grade']['score'] or 0
     assert student.get(path + '/points/' + str(own['id'])).status_code == 403
@@ -116,7 +136,7 @@ def test_positive_awards_replay_and_aggregate(roles):
     for invalid in (current, None):
         assert teacher.put(path+'/grade', json=dict(student_id=own['id'], score=invalid, version=award['version']),
                            headers=HEAD).status_code == 422
-    body(teacher.put(path + '/attendance', json=dict(student_id=own['id'], day=campus_today().isoformat(), status='absent',
+    body(teacher.put(path + '/attendance', json=dict(student_id=own['id'], day=day, status='absent', class_id=class_id,
                                                     version=own['attendance']['version']), headers=HEAD))
     summary = next(row for row in body(student.get(endpoint))['items'] if row['subject'] == subject)
     assert summary['earned_points'] == current + 4 and summary['missed'] >= 1

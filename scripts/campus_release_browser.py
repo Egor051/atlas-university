@@ -136,30 +136,27 @@ def verify_touch_scroll(browser, base):
 
 
 def exercise_grades(page):
-    table = page.locator('table.academic-table')
+    panel = page.locator('[data-type="points"]')
+    table = panel.get_by_role('table', name='Начисленные баллы')
     expect(table).to_be_visible()
-    sort = page.locator('[data-academic-sort]').first
+    sort = table.get_by_role('button', name='Баллы', exact=True)
     sort.press('Enter')
     expect(table.locator('th[aria-sort="ascending"], th[aria-sort="descending"]')).to_have_count(1)
-    toggle = page.locator('[data-academic-toggle]').first
-    toggle.press('Enter')
-    expect(page.locator('.academic-details:visible').first).to_be_visible()
-    search = page.locator('#academic-search')
+    panel.locator('summary').press('Enter')
+    search = panel.get_by_label('Поиск', exact=True)
     search.fill('zzzz-фильтр-без-результата')
-    expect(page.locator('[data-academic-toggle]')).to_have_count(0)
+    expect(table.get_by_text('По выбранным условиям записей нет.', exact=True)).to_be_visible()
     search.clear()
-    expect(page.locator('[data-academic-toggle]').first).to_be_visible()
-    discipline = page.locator('#academic-discipline')
+    expect(table.locator('[data-academic-record]').first).to_be_visible()
+    discipline = panel.get_by_label('Дисциплина', exact=True)
     discipline.select_option(index=1)
-    expect(page.locator('[data-academic-toggle]')).to_have_count(1)
-    discipline.select_option(index=0)
-    semester = page.locator('#academic-semester')
-    semester.select_option(index=1)
-    first = page.locator('[data-academic-toggle]').first
-    expect(first).to_be_visible()
-    if first.get_attribute('aria-expanded') == 'false':
-        first.press('Enter')
-    expect(page.locator('.academic-details:visible').first).to_be_visible()
+    panel.get_by_label('Группировка', exact=True).select_option('discipline')
+    expect(table.locator('.academic-group')).to_have_count(1)
+    page.get_by_role('link', name='К посещаемости').click()
+    expect(page.get_by_role('heading', name='Посещаемость занятий')).to_be_focused()
+    attendance = page.locator('[data-type="attendance"]')
+    attendance.get_by_label('Вид занятия', exact=True).select_option('lab')
+    expect(attendance.get_by_role('table', name='Посещаемость занятий')).to_be_visible()
 
 
 def verify_block_spacing(page, label):
@@ -275,7 +272,7 @@ def main():
                                             width, theme, scheme, contrast=contrast)
                                 if label == 'grades':
                                     exercise_grades(page)
-                                    observe(page, 'grades-expanded', args.output, report,
+                                    observe(page, 'grades-filtered', args.output, report,
                                             width, theme, scheme, contrast=contrast)
                                 capture_modal(page, label, args.output, report,
                                               width, theme, scheme, contrast=contrast)

@@ -248,6 +248,7 @@ def migrate_database():
     # do not create a connection, run DDL or seed data by themselves.
     from . import academic_points, learning_db, services_db, campus_db, improvement_db, university_db, workspace_db, units_db, announcements_db, certificates  # noqa: F401
     from . import assignment_db  # noqa: F401
+    from . import absence_certificate_db  # noqa: F401
     with engine.begin() as connection:
         if engine.dialect.name == 'postgresql':
             connection.execute(text('SELECT pg_advisory_xact_lock(2026110601)'))
@@ -315,7 +316,8 @@ def migrate_database():
             if 'class_id' not in {column['name'] for column in inspect(connection).get_columns('learning_attendance')}:
                 connection.exec_driver_sql('ALTER TABLE learning_attendance ADD COLUMN class_id INTEGER REFERENCES academic_classes(id)')
             for index in learning_db.Attendance.__table__.indexes:
-                index.create(connection, checkfirst=True)
+                if index.name == 'uq_learning_attendance_student_class':
+                    index.create(connection, checkfirst=True)
             academic_points.import_opening_balances(connection)
             connection.execute(SchemaMigration.__table__.insert().values(version='0013_academic_points', applied_at=utc_now()))
         if '0014_assignment_workflow' not in versions:
@@ -350,6 +352,19 @@ def migrate_database():
             from .assignment_migration import upgrade_assignment_feedback
             upgrade_assignment_feedback(connection)
             connection.execute(SchemaMigration.__table__.insert().values(version='0021_assignment_feedback', applied_at=utc_now()))
+        if '0022_point_register' not in versions:
+            from .point_register_migration import upgrade_point_register
+            upgrade_point_register(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0022_point_register', applied_at=utc_now()))
+        if '0023_absence_certificates' not in versions:
+            columns = {column['name'] for column in inspect(connection).get_columns('learning_attendance')}
+            if 'legacy_lesson_id' not in columns:
+                connection.exec_driver_sql('ALTER TABLE learning_attendance ADD COLUMN legacy_lesson_id INTEGER REFERENCES lessons(id)')
+            if 'legacy_original_day' not in columns:
+                connection.exec_driver_sql('ALTER TABLE learning_attendance ADD COLUMN legacy_original_day DATE')
+            for index in learning_db.Attendance.__table__.indexes:
+                index.create(connection, checkfirst=True)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0023_absence_certificates', applied_at=utc_now()))
 
 
 def seed_demo(session=None):

@@ -3,18 +3,17 @@ from calendar import monthrange
 from datetime import date, timedelta
 from typing import Literal
 
-from sqlalchemy import or_, select
-from sqlalchemy.orm import joinedload
+from sqlalchemy import select
 
 from .assignment_workflow import effective_due, visible_deadline
 from .db import CAMPUS_TZ, Deadline, Grade
 from .schedule_calendar import Calendar, KIND, LESSON_KINDS, date_range, occurrence_kind
-from .schedule_occurrences import audience, campus_instant, class_data, class_query, legacy_occurrences, local_interval, occurrence_key
+from .schedule_occurrences import campus_instant, local_interval, occurrence_key, student_occurrences
 from .services_db import CampusEvent, ConsultationBooking, ConsultationSlot, EventRegistration
 from .session_security import as_utc
 from .units_db import CenterEnrollment, CenterSession
 from .workspace_db import (AcademicGroup, AcademicSubgroup, GroupMember, GroupWork,
-                           ScheduleCalendarAlert, ScheduleDismissal, ScheduledClass, WorkDelivery)
+                           ScheduleCalendarAlert, ScheduleDismissal, WorkDelivery)
 
 ScheduleView = Literal['week', 'month']
 
@@ -135,19 +134,7 @@ def student_days(db, user, first, last, *, markers=True):
     days = {str(day): dict(date=str(day), items=[], markers=[], moves=[], calendar_changes=[], reason=calendar.day(day, group).payload())
             for day in date_range(first, last)}
     start, end = campus_instant(first), campus_instant(last+timedelta(days=1))
-    managed = class_query().where(or_(
-        (ScheduledClass.starts_at >= start) & (ScheduledClass.starts_at < end),
-        ScheduledClass.previous_day.between(first, last) if markers else False,
-    ))
-    dated = []
-    for row in db.scalars(audience(managed, member, user.id)):
-        item = class_data(row)
-        action = row.change_action or ('cancel' if row.status == 'cancelled' else 'update' if row.version > 1 else '')
-        if action:
-            item.update(previous=row.previous, move_day=str(row.previous_day) if row.previous_day else None,
-                        change_action=action, change_key=f'class:{row.id}:{row.version}')
-        dated.append(item)
-    dated.extend(legacy_occurrences(db, first, last, student_id=user.id, calendar=calendar, include_moved=markers))
+    dated = student_occurrences(db, user.id, member, first, last, calendar, include_moved=markers)
     assessments = set()
     for data in dated:
         item = student_item(data, subgroup.code if subgroup else None)

@@ -168,7 +168,8 @@
         </div>
         <div class="school-stack">
           ${section('Обращения и документы',`<p>Непрочитанных сообщений: ${Number(data.direct.unread_count)}.</p>
-            ${appLink('/app/direct','Открыть личные сообщения')}`)}
+            <div class="school-actions">${appLink('/app/direct','Открыть личные сообщения')}
+            ${appLink('/app/absence-certificates','Справки о пропусках')}</div>`)}
           ${section('Занятия на этой неделе',rows(lessons,'На этой неделе занятий больше нет.')+
             appLink('/app/teach-schedule','Расписание преподавателя'))}
           ${section('Предстоящие консультации',rows(consultations,'Предстоящих консультаций пока нет.')+

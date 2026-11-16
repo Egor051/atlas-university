@@ -273,6 +273,12 @@ def create_router():
 
         return student_progress(db, user, date_iso)
 
+    @router.get('/point-register')
+    def point_register(user: User = Depends(require_student), db: Session = Depends(get_db)):
+        from .point_register import student_point_register
+
+        return student_point_register(db, user.id)
+
     class NoteBody(StrictBody):
         title: str = Field(min_length=1, max_length=180)
         subject: str = Field(default='', max_length=130)
@@ -458,12 +464,14 @@ def create_router():
 
     @router.get('/attendance')
     def attendance(user: User = Depends(require_student), db: Session = Depends(get_db)):
-        rows = db.scalars(select(Attendance).where(Attendance.student_id == user.id).order_by(Attendance.day.desc(), Attendance.id.desc()).limit(200)).all()
         from .academics import attendance_summary
+        from .attendance_register import recorded_status
 
-        counts = {status: sum(row.status == status for row in rows) for status in ('present', 'absent', 'excused', 'late')}
-        return dict(items=[dict(id=row.id, subject=row.subject, day=date_iso(row.day), status=row.status, note=row.note) for row in rows],
-                    summary={**counts, 'total':len(rows), 'attendance_percent':attendance_summary(row.status for row in rows)['attendance_percent'],
+        rows = db.execute(select(Attendance, recorded_status()).where(Attendance.student_id == user.id)
+                          .order_by(Attendance.day.desc(), Attendance.id.desc()).limit(200)).all()
+        counts = {kind: sum(status == kind for _, status in rows) for kind in ('present', 'absent', 'excused', 'late')}
+        return dict(items=[dict(id=row.id, subject=row.subject, day=date_iso(row.day), status=status, note=row.note) for row, status in rows],
+                    summary={**counts, 'total':len(rows), 'attendance_percent':attendance_summary(status for _, status in rows)['attendance_percent'],
                              'description':'Уважительные пропуски исключены из расчёта процента посещаемости.'})
 
     class TaskBody(StrictBody):

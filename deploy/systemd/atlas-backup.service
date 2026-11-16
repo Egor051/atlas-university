@@ -8,7 +8,8 @@ Type=oneshot
 WorkingDirectory=/opt/atlas-campus
 EnvironmentFile=/etc/atlas-campus/compose.env
 Environment=ATLAS_BACKUP_DIR=/var/backups/atlas-campus
-ExecStart=/bin/sh /opt/atlas-campus/scripts/backup.sh
+Environment=ATLAS_BACKUP_PROJECT_ROOT=/opt/atlas-campus
+ExecStart=/bin/sh /usr/local/libexec/atlas-campus/backup.sh
 UMask=0077
 Nice=10
 IOSchedulingClass=idle

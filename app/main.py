@@ -1,6 +1,7 @@
 """HTTP API for ATLAS Campus."""
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import html
 import json
@@ -35,6 +36,7 @@ from .db import (SessionLocal, User, LoginSession, Grade,
                  utc_now, request_due_date, request_kind, engine)
 from .config import DEMO_LOGINS, settings
 from .material_upload import MATERIAL_REQUEST_BYTES
+from .medical_retention import retention_loop, stop_retention
 from .version import VERSION, build_id
 from .session_security import as_utc, validate_expected_actor, PasswordAdmission
 
@@ -56,7 +58,11 @@ STATUS_NAMES = {'submitted': 'отправлена', 'review': 'на рассм�
 @asynccontextmanager
 async def lifespan(_app):
     initialize_database()
-    yield
+    task = asyncio.create_task(retention_loop())
+    try:
+        yield
+    finally:
+        await stop_retention(task)
 
 
 app = FastAPI(title='ATLAS Campus API', version=VERSION, lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
@@ -75,7 +81,7 @@ class BodyLimitMiddleware:
             r'/api/(?:learning/assignments/[0-9]+/submit|teaching/[0-9]+/works(?:/[0-9]+/feedback/[0-9]+)?)/?', scope['path'])
             or scope['method'] == 'PATCH' and re.fullmatch(r'/api/teaching/[0-9]+/works/[0-9]+/?', scope['path']))
         material_upload = (scope['method'] == 'POST' and re.fullmatch(
-            r'/api/(?:materials|direct/dialogs(?:/[0-9]+/messages)?)/?', scope['path'])
+            r'/api/(?:materials|direct/dialogs(?:/[0-9]+/messages)?|learning/absence-certificates)/?', scope['path'])
                            or scope['method'] == 'PATCH' and re.fullmatch(r'/api/materials/[0-9]+/?', scope['path']))
         max_body_size = MATERIAL_REQUEST_BYTES if material_upload else 2 * 1024 * 1024 if assignment_upload else 32768
         body = bytearray()
@@ -850,6 +856,7 @@ from .references import router as registry_router
 from .table_imports import router as tables_router
 from .units import router as units_router
 from .announcements import router as announcements_router
+from .absence_certificates import router as absence_certificates_router
 app.include_router(university_router())
 app.include_router(materials_router)
 app.include_router(disciplines_router)
@@ -862,6 +869,7 @@ app.include_router(registry_router)
 app.include_router(tables_router)
 app.include_router(units_router)
 app.include_router(announcements_router)
+app.include_router(absence_certificates_router)
 install_quota(app)
 # Install last so headers also cover early quota, CSRF and actor-affinity
 # rejections. Starlette wraps newly added middleware around the existing stack.

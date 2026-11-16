@@ -56,7 +56,8 @@
   const university=window.ATLASUniversity;
   const operations=window.ATLASOperations;
   const disciplines=window.ATLASDisciplines;
-  const extensions=[university,disciplines,operations,window.ATLASUnits,window.ATLASAnnouncements].filter(Boolean);
+  const academics=window.ATLASAcademics;
+  const extensions=[university,disciplines,operations,academics,window.ATLASUnits,window.ATLASAnnouncements].filter(Boolean);
   const extensionFor=page=>extensions.find(ext=>ext.has(page));
   const extensionPages=role=>extensions.flatMap(ext=>ext.pages.filter(p=>p.roles.includes(role)));
   const profile=pages.find(p=>p.id==='profile');
@@ -85,7 +86,7 @@
       account,
     ],
     teacher:[
-      section('academic-work','Учебная работа','graduation','Группы, ведомости, расписание и консультации',['teaching','teach-schedule','teach-consultations','tables']),
+      section('academic-work','Учебная работа','graduation','Группы, ведомости, расписание и консультации',['teaching','teach-schedule','absence-certificates','teach-consultations','tables']),
       teachingMaterials,
       account,
     ],
@@ -157,9 +158,18 @@
     if(options.responseType==='blob')return {blob:data,disposition:response.headers.get('Content-Disposition')||''};
     return data;
   }
+  function saveDownload({blob, disposition}, fallback){
+    const encoded=disposition.match(/filename\*=UTF-8''([^;]+)/i);
+    const plain=disposition.match(/filename="?([^";]+)"?/i);
+    let filename=plain?.[1]||fallback;
+    if(encoded){try{filename=decodeURIComponent(encoded[1]);}catch{/* The plain filename remains usable. */}}
+    const url=URL.createObjectURL(blob),anchor=document.createElement('a');
+    anchor.href=url;anchor.download=filename;anchor.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
   async function downloadFile(link){
     const path=link.getAttribute('href').slice('/api/'.length);link.setAttribute('aria-busy','true');
-    try{const {blob,disposition}=await api(path,{responseType:'blob'});const encoded=disposition.match(/filename\*=UTF-8''([^;]+)/i);const plain=disposition.match(/filename="?([^";]+)"?/i);let filename=plain?.[1]||link.getAttribute('download')||path.split('?')[0].split('/').at(-1)||'atlas-download';if(encoded){try{filename=decodeURIComponent(encoded[1]);}catch{/* The server's plain filename remains usable. */}}const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=filename;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+    try{saveDownload(await api(path,{responseType:'blob'}),link.getAttribute('download')||path.split('?')[0].split('/').at(-1)||'atlas-download');}
     catch(error){if(!error.stale)toast(error.message);}
     finally{link.removeAttribute('aria-busy');}
   }
@@ -180,7 +190,7 @@
       return {...dashboard,announcements};
     }
     if(page==='schedule')return api('schedule?'+new URLSearchParams({week:state.routeContext.date||today(),view:state.scheduleMode==='month'?'month':'week'}));
-    if(page==='grades')return api('learning/progress');
+    if(page==='grades')return academics.loadStudent();
     if(['requests','certificates'].includes(page)){
       const kind=page==='certificates'?'certificate':'request';
       const [result,types]=await Promise.all([
@@ -572,7 +582,7 @@
   }
   function drawPage(){
     const target=$('#page-content'), page=state.page, data=state.data[page];if(!target||!data)return;
-    const renders={home:dashboard,schedule:window.ATLASSchedule.render,grades:window.ATLASAcademics.render,requests:requestsPage,certificates:requestsPage,notifications:notificationsPage,profile:profilePage,staff:staffPage};
+    const renders={home:dashboard,schedule:window.ATLASSchedule.render,grades:academics.renderStudent,requests:requestsPage,certificates:requestsPage,notifications:notificationsPage,profile:profilePage,staff:staffPage};
     const extension=extensionFor(page);
     if(extension){
       target.innerHTML=extension.render(page,data);
@@ -584,7 +594,7 @@
     }else{
       target.innerHTML=campus.has(page)?campus.render(page,data):renders[page](data);
       campus.afterRender(page);
-      if(page==='grades')window.ATLASAcademics.bind(target,data,state.routeContext);
+      if(page==='grades')academics.bindStudent(target,data,state.routeContext);
     }
     target.removeAttribute('aria-busy');
   }
@@ -1101,7 +1111,7 @@
   window.addEventListener('online',()=>toast('Подключение восстановлено. Можно обновить раздел.'));
   window.addEventListener('offline',()=>toast('Нет сети. Для отправки требуется подключение.'));
   async function boot(){try{state.config=await api('config');}catch{/* Fail closed: do not advertise demo credentials if config is unavailable. */}try{state.user=await api('me');await campus.prepare();if(!state.user)return;await enterRoute();startPolling();}catch{showLogin();}}
-  const context={state,api,searchDelay,$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,isoDate,monday,refreshUnread,newRequestModal,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
-  improvements.init(context);campus.init(context);window.ATLASAcademics.init(context);window.ATLASSchedule.bind(context);extensions.forEach(ext=>ext.init(context));
+  const context={state,api,saveDownload,searchDelay,$,$$,esc,icon,head,cardHead,disclosure,matchesPage,empty,modal,modalHead,closeModal,toast,route,navigateContext,drawPage,updatePage,today,dateFmt,stamp,relative,addDays,asDate,isoDate,monday,refreshUnread,newRequestModal,replaceRouteContext,clearFormDraft:improvements.clearFormDraft,restoreFormDraft:improvements.restoreFormDraft,prepareFormSubmission:improvements.prepareFormSubmission,formSubmission:improvements.formSubmission,showFieldErrors:improvements.showFieldErrors};
+  improvements.init(context);campus.init(context);window.ATLASSchedule.bind(context);extensions.forEach(ext=>ext.init(context));
   boot();
 })();

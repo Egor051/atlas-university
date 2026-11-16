@@ -1,138 +1,445 @@
 (() => {
   'use strict';
-  let c;
-  const columns = [
-    ['subject', 'Дисциплина'], ['earned_points', 'Набрано'], ['teacher', 'Преподаватель'], ['semesters', 'Семестр'],
-    ['class_count', 'Занятий'], ['visited', 'Посещено'], ['missed', 'Пропущено'],
-    ['attendance_percent', 'Посещаемость'], ['max_points', 'Максимум'],
-    ['result', 'Результат'], ['assessment', 'Аттестация'],
+  let c, restoreFilters;
+  const queue = {id:'absence-certificates', label:'Справки о пропусках', icon:'certificate',
+    hint:'Документы студентов и решения об уважительных пропусках', roles:['teacher']};
+  const pointKinds = {opening:'Баланс при переносе', teacher:'Начисление преподавателем',
+    assignment:'Проверенная работа', assignment_correction:'Корректировка оценки',
+    teacher_correction:'Корректировка начисления'};
+  const lessonKinds = {lecture:'Лекции', practice:'Практические занятия', lab:'Лабораторные работы'};
+  const attendanceLabels = {present:'Присутствовал', absent:'Отсутствовал', excused:'Уважительный пропуск',
+    unmarked:'Статус не выставлен', cancelled:'Занятие отменено', late:'Опоздал'};
+  const certificateLabels = {pending:'На рассмотрении', accepted:'Принята', rejected:'Отклонена'};
+  const pointColumns = [
+    ['discipline','Дисциплина'], ['points','Баллы'], ['day','Дата'], ['title','Занятие или работа'],
+    ['kind_label','Вид работы'], ['teacher','Преподаватель'], ['max_points','Максимум'],
+    ['discipline_total','Итог по дисциплине'], ['result','Сведения о результате'],
   ];
-  const workStatuses = {not_started:'Не сдано', in_progress:'Не сдано', draft:'Не сдано', submitted:'Сдано',
-    in_review:'На проверке', revision_required:'Требуется доработка', withdrawn:'Отозвано',
-    resubmitted:'Повторно сдано', accepted:'Принято', completed:'Завершено'};
-  const awardLabels = {opening:'Баланс при переносе', teacher:'Начисление преподавателем', assignment:'Проверенная работа',
-    assignment_correction:'Корректировка оценки'};
+  const attendanceColumns = [
+    ['discipline','Дисциплина'], ['status_label','Посещение'], ['day','Дата и время'], ['kind_label','Вид занятия'],
+    ['teacher','Преподаватель'], ['group','Группа или подгруппа'], ['title','Занятие'],
+  ];
   const collator = new Intl.Collator('ru', {numeric:true, sensitivity:'base'});
-  const cellValue = (row, key) => key==='assessment'?row.assessment.label:key==='semesters'?row.semesters.join(', '):row[key];
-  function showCell(row,key){
-    const value=cellValue(row,key);
-    if(value==null||value==='')return '—';
-    return c.esc(key==='attendance_percent'?value+'%':value);
-  }
-  const sentence = value => value ? `<p class="user-text">${c.esc(value)}</p>` : '';
-  const assignmentLink = item => `<a href="/app/assignments?id=${Number(item.id)}" data-route="assignments" data-record-id="${Number(item.id)}">${c.esc(item.title)}</a>`;
-  const awarded = points => points > 0 ? `+${Number(points)}` : points < 0 ? `${Number(points)}` : '—';
+  const dayFormatter = new Intl.DateTimeFormat('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric'});
+  const esc = value => c.esc(value);
+  const text = value => esc(value ?? '—');
+  const dayFmt = value => dayFormatter.format(c.asDate(value));
+  const day = value => value ? '<time datetime="'+esc(value)+'">'+dayFmt(value)+'</time>' : '—';
+  const stamp = value => value ? '<time datetime="'+esc(value)+'">'+c.stamp(value)+' МСК</time>' : '—';
+  const signed = value => value > 0 ? '+'+value : String(value);
+  const paragraph = value => value ? '<p class="user-text academic-note">'+esc(value)+'</p>' : '';
+  const badge = (label, tone='') => '<span class="campus-pill '+tone+'">'+esc(label)+'</span>';
+  const certificateBadge = status => badge(certificateLabels[status], {
+    accepted:'success', rejected:'warning',
+  }[status]);
+  const option = ([value,label]) => '<option value="'+esc(value)+'">'+esc(label)+'</option>';
+  const select = (prefix, name, label, choices) => '<div class="filter-field"><label for="'+prefix+name+'">'+label+
+    '</label><select id="'+prefix+name+'" name="'+name+'">'+choices.map(option).join('')+'</select></div>';
+  const search = value => String(value ?? '').toLocaleLowerCase('ru').replaceAll('ё','е');
+  const attendanceRow = row => ({...row,status_label:attendanceLabels[row.status]});
+  const pointRow = row => ({...row,discipline:row.subject});
 
-  function showWork(item){
-    const status=item.graded?'Оценено':workStatuses[item.status]||'Не сдано';
-    return `<li><details class="academic-work"><summary>${c.esc(item.title)} <span>${c.esc(status)}</span></summary>
-      <div>${item.due_at?`<p>Срок сдачи · ${c.stamp(item.due_at)} МСК</p>`:''}
-      ${item.score!=null?`<p>Баллы за работу · <b>${Number(item.score)}</b>${item.max_points!=null?' из '+Number(item.max_points):''}</p>`:''}
-      ${sentence(item.feedback)}${assignmentLink(item)}</div></details></li>`;
+  async function loadStudent(){
+    const [points,attendance] = await Promise.all([c.api('learning/point-register'),c.api('learning/attendance-register')]);
+    return {points,attendance};
   }
-  function showClass(item){
-    return `<li><details class="academic-session"${item.class_id?` data-class-id="${Number(item.class_id)}"`:''}><summary>${c.dateFmt(item.day)}${item.kind?' · '+c.esc(item.kind):''} <span>${c.esc(item.status_label)}</span></summary>
-      <div>${item.topic?`<p>Тема · ${c.esc(item.topic)}</p>`:''}${sentence(item.note)}
-      <p>Баллы за занятие · <b>${awarded(item.points)}</b></p>
-      ${item.work?.length?`<ul>${item.work.map(work=>`<li>${assignmentLink(work)}</li>`).join('')}</ul>`:''}</div></details></li>`;
+
+  function showAward(item, actions=''){
+    const value = signed(Number(item.points));
+    const cap = item.max_points==null ? '' : ' из '+Number(item.max_points);
+    return '<li><b>'+esc(value+cap)+'</b> · '+esc(item.title||pointKinds[item.source_kind]||'Начисление')+
+      (item.kind_label?' · '+esc(item.kind_label):'')+
+      (item.effective_points!=null&&item.effective_points!==item.points?
+        '<p>После корректировки · '+Number(item.effective_points)+'</p>':'')+
+      (item.created_at?stamp(item.created_at):'')+paragraph(item.reason)+actions+'</li>';
   }
-  function showAward(item){
-    return `<li><b>${awarded(item.points)}</b> · ${c.esc(awardLabels[item.source_kind]||'Начисление')}
-      ${item.created_at?`<time datetime="${c.esc(item.created_at)}">${c.stamp(item.created_at)} МСК</time>`:''}${sentence(item.reason)}</li>`;
+
+  function pointsCells(row){
+    const assignmentId = Number(row.assignment_id);
+    const title = assignmentId ? '<a href="/app/assignments?id='+assignmentId+
+      '" data-route="assignments" data-record-id="'+assignmentId+'">'+esc(row.title)+'</a>' :
+      classLink(row.class_id,row.class_day,row.title);
+    const adjusted = row.entry_type==='correction';
+    const points = adjusted ? signed(row.points) : text(row.points);
+    const change = adjusted && row.previous_points!=null
+      ? '<br><small>'+Number(row.previous_points)+' → '+Number(row.corrected_points)+'</small>' : '';
+    return [
+      '<strong>'+points+'</strong>'+change, day(row.day), title,
+      text(row.kind_label), text(row.teacher||'—'), text(row.max_points),
+      '<strong>'+text(row.discipline_total)+'</strong>',
+      (row.result?esc(row.result):'')+(row.note!==row.result?paragraph(row.note):'')||'—',
+    ];
   }
-  function subsection(title, items, render, cls, empty){
-    return `<section class="${cls}"><h3>${title}</h3>${items.length?`<ul>${items.map(render).join('')}</ul>`:`<p>${empty}</p>`}</section>`;
+  function classLink(id, date, label){
+    if(!id||!date)return text(label);
+    const params = new URLSearchParams({date,id:1000000000+Number(id)});
+    return '<a href="/app/schedule?'+esc(params)+'" data-app-link>'+esc(label)+'</a>';
   }
-  function details(row){
-    const history=[...row.awards,...(row.corrections||[])].sort((a,b)=>
-      (b.created_at||'').localeCompare(a.created_at||'')||b.id-a.id);
-    return subsection('Занятия',row.classes,showClass,'academic-classes','Записей о занятиях пока нет.')+
-      subsection('Работы и проверка',row.work,showWork,'academic-works','Заданий пока нет.')+
-      subsection('История баллов',history,showAward,'academic-awards','Начислений пока нет.');
+  function attendanceCells(row){
+    const tone = ['present','excused'].includes(row.status) ? 'success' : row.status==='absent' ? 'warning' : '';
+    const doc = row.certificate;
+    const upload = row.can_submit
+      ? '<button class="mini-link academic-row-action" type="button" data-absence-send="'+esc(row.id)+'">Отправить справку</button>' : '';
+    const caseButton = doc
+      ? '<button class="mini-link academic-row-action" type="button" data-absence-view="'+esc(row.id)+'">Решение по справке</button>' : '';
+    const status = badge(row.status_label,tone)+(doc?certificateBadge(doc.status):'')+upload+caseButton;
+    return [
+      '<div class="academic-row-status">'+status+'</div>', day(row.day)+
+        '<small class="academic-meta">'+esc(row.start)+'–'+esc(row.end)+' МСК</small>',
+      text(row.kind_label), text(row.teacher||'—'), esc([row.group,row.subgroup].filter(Boolean).join(' · ')||'—'),
+      classLink(row.class_id,row.day,row.title),
+    ];
   }
-  function tableRows(rows){
-    return rows.map((row, i) => `<tr ${row.id?`data-record-id="${Number(row.id)}"`:''}>
-      <th scope="row"><button class="mini-link academic-toggle" type="button" data-academic-toggle="${i}" aria-expanded="false" aria-controls="academic-details-${i}">${c.esc(row.subject)} ${c.icon('right')}</button></th>
-      ${columns.slice(1).map(([key])=>`<td>${key==='assessment'?`<span class="campus-pill ${c.esc(row.assessment.tone)}">${c.esc(row.assessment.label)}</span>`:
-        showCell(row,key)}</td>`).join('')}
-      </tr><tr id="academic-details-${i}" hidden><td colspan="${columns.length}"><div class="academic-details">${details(row)}</div></td></tr>`).join('');
+  function rowsHTML(rows, cells){
+    return rows.map(row => '<tr'+(row.grade_id?' data-record-id="'+Number(row.grade_id)+'"':'')+
+      (row.id?' data-academic-record="'+esc(row.id)+'"':'')+'><th scope="row">'+esc(row.discipline)+'</th>'+
+      cells(row).map(html => '<td>'+html+'</td>').join('')+'</tr>').join('');
   }
-  function render(data){
-    const items = data.items;
-    const subjects = items.map(row=>row.subject);
-    const semesters = [...new Set(items.flatMap(row=>row.semesters))].sort().reverse();
-    const options = values => values.map(value=>`<option value="${c.esc(value)}">${c.esc(value)}</option>`).join('');
-    return c.head('','Успеваемость и посещаемость','Посещения, результаты работ и история начислений по дисциплинам.',
-      `<a class="outline-button" data-route="exams" href="/app/exams">Сессия и зачёты ${c.icon('right')}</a>`)+
-      (items.length?`<section class="card card-pad academic-progress" aria-label="Результаты по дисциплинам">
-        <div class="filter-bar academic-filters">
-          <label class="search-field filter-query">${c.icon('search')}<input type="search" id="academic-search" maxlength="130" aria-label="Поиск по дисциплинам и преподавателям" placeholder="Поиск"></label>
-          <label class="filter-field">Дисциплина<select id="academic-discipline"><option value="">Все дисциплины</option>${options(subjects)}</select></label>
-          <label class="filter-field">Семестр<select id="academic-semester"><option value="">Все семестры</option>${options(semesters)}<option value="unknown">Не указан</option></select></label>
-        </div>
-        <p class="academic-result-count" id="academic-count" role="status">Дисциплин: ${items.length}</p>
-        <div class="grade-table-wrap academic-scroll" tabindex="0" role="region" aria-label="Таблица академических результатов">
-          <table class="academic-table"><caption class="sr-only">Результаты по дисциплинам. Нажмите название дисциплины для просмотра деталей.</caption><thead><tr>
-            ${columns.map(([id,label],i)=>`<th scope="col" aria-sort="${i===0?'ascending':'none'}"><button type="button" data-academic-sort="${id}">${label} <span aria-hidden="true">${i===0?'↑':'↕'}</span></button></th>`).join('')}
-          </tr></thead><tbody id="academic-rows">${tableRows(items)}</tbody></table>
-        </div>
-        <p class="academic-footnote">При необходимости прокрутите таблицу вправо. Опоздания считаются посещениями. Уважительные пропуски исключаются из расчёта процента.</p>
-        <p class="academic-footnote" id="academic-term-hint" hidden>Фильтр семестра применяется к занятиям и работам. Баллы и результаты аттестации приведены за всё время.</p>
-      </section>`:`<section class="card card-pad">${c.empty('graduation','Учебных результатов пока нет','Здесь появятся занятия, баллы и результаты аттестации.')}</section>`);
+
+  function filterOptions(rows, key, labelKey=key){
+    const options = new Map(rows.filter(row=>row[key]).map(row=>[row[key],row[labelKey]]));
+    return [...options].sort((a,b)=>collator.compare(a[1],b[1]));
   }
-  function bind(root, data, context){
-    const panel = root.querySelector('.academic-progress');
-    if(!panel)return;
-    const [search,subject,semester] = panel.querySelectorAll('input,select');
-    const tbody = panel.querySelector('#academic-rows');
-    const open = new Set();
-    let sort = 'subject', ascending = true;
-    const picked = data.items.find(row=>row.id&&row.id===Number(context.id));
-    const wanted = context.subject || picked?.subject;
-    if(wanted && data.items.some(row=>row.subject===wanted)){subject.value=wanted;open.add(wanted);}
-    let shown = data.items;
-    const toggle = (button, isOpen) => {
-      button.setAttribute('aria-expanded',String(isOpen));
-      c.$('#'+button.getAttribute('aria-controls')).hidden=!isOpen;
-    };
-    function update(){
-      const q=search.value.trim().toLocaleLowerCase('ru');
-      shown=data.items.filter(row=>(!subject.value||row.subject===subject.value)&&
-        (!semester.value||(semester.value==='unknown'?!row.semesters.length:row.semesters.includes(semester.value)))&&
-        (!q||`${row.subject} ${row.teacher}`.toLocaleLowerCase('ru').includes(q)));
-      const filteredTerm=Boolean(semester.value&&semester.value!=='unknown');
-      if(filteredTerm)shown=shown.map(row=>({...row,...row.attendance_by_semester[semester.value],semesters:[semester.value],
-        classes:row.classes.filter(item=>item.semester===semester.value),work:row.work.filter(item=>item.semester===semester.value)}));
-      panel.querySelector('#academic-term-hint').hidden=!filteredTerm;
-      shown.sort((a,b)=>{
-        const x=cellValue(a,sort),y=cellValue(b,sort);
-        if(x==null||y==null)return Number(x==null)-Number(y==null);
-        return (typeof x==='number'&&typeof y==='number'?x-y:collator.compare(String(x),String(y)))*(ascending?1:-1);
-      });
-      tbody.innerHTML=tableRows(shown)||`<tr><td colspan="${columns.length}">Дисциплин по выбранным условиям нет.</td></tr>`;
-      tbody.querySelectorAll('[data-academic-toggle]').forEach(button=>toggle(button,open.has(shown[Number(button.dataset.academicToggle)].subject)));
-      panel.querySelector('#academic-count').textContent='Дисциплин: '+shown.length;
-      panel.querySelectorAll('[data-academic-sort]').forEach(button=>{
-        const selected=button.dataset.academicSort===sort;
-        button.closest('th').setAttribute('aria-sort',selected?(ascending?'ascending':'descending'):'none');
-        button.querySelector('span').textContent=selected?(ascending?'↑':'↓'):'↕';
-      });
+  function filters(rows, attendance){
+    const prefix = attendance ? 'attendance-filter-' : 'points-filter-';
+    return '<div class="academic-filters">'+
+      select(prefix,'discipline','Дисциплина',[['','Все дисциплины'],...filterOptions(rows,'discipline')])+
+      select(prefix,'kind',attendance?'Вид занятия':'Вид работы',[['','Все виды'],...(attendance?
+        Object.entries(lessonKinds):filterOptions(rows,'kind_label'))])+
+      select(prefix,'grouping','Группировка',[['','Без группировки'],['discipline','По дисциплине'],
+        ['kind',attendance?'По дисциплине и виду':'По дисциплине и виду работы']])+
+      (attendance?select(prefix,'status','Отметка',[['','Все отметки'],...Object.entries(attendanceLabels)]):'')+
+      '</div><details class="academic-extra-filters"><summary>Поиск и период</summary><div class="academic-filters">'+
+      '<label class="filter-field">Поиск<input type="search" name="search" autocomplete="off" maxlength="130" '+
+        'placeholder="Дисциплина, преподаватель…"></label>'+
+      '<label class="filter-field">С даты<input type="date" name="from"></label>'+
+      '<label class="filter-field">По дату<input type="date" name="to"></label>'+
+      '</div></details>';
+  }
+
+  function tablePanel(rows, columns, attendance, term, availabilityMessage){
+    const id = attendance ? 'academic-attendance' : 'academic-points';
+    const title = attendance ? 'Посещаемость занятий' : 'Начисленные баллы';
+    const scope = attendance ? (term ? esc(term.label)+' · '+day(term.starts_on)+' — '+day(term.ends_on) :
+      'Учебный семестр не опубликован') : 'Итог по дисциплине учитывает все начисления и корректировки.';
+    return '<section class="card card-pad academic-panel" aria-labelledby="'+id+'" data-academic-table '+
+      'data-type="'+(attendance?'attendance':'points')+'"><header class="academic-panel-head"><h2 id="'+id+
+      '" tabindex="-1">'+title+'</h2><p>'+scope+'</p></header>'+
+      (availabilityMessage?'<p class="academic-availability">'+esc(availabilityMessage)+'</p>':'')+
+      filters(rows,attendance)+(attendance?'<div data-attendance-counts class="academic-counts"></div>':'')+
+      '<p class="academic-result-count" role="status" data-academic-count></p>'+
+      '<p class="academic-scroll-hint">Прокрутите таблицу, чтобы увидеть остальные столбцы.</p>'+
+      '<div class="academic-scroll" tabindex="0" role="region" aria-label="Прокрутка таблицы «'+title+'»"><table class="academic-table"'+
+      ' aria-labelledby="'+id+'"><thead><tr>'+columns.map(([key,label])=>
+        '<th scope="col" aria-sort="none"><button type="button" data-academic-sort="'+key+'">'+label+
+          ' <span aria-hidden="true">↕</span></button></th>').join('')+
+      '</tr></thead><tbody></tbody></table></div></section>';
+  }
+  function renderStudent(data){
+    const links = '<a class="outline-button" href="#academic-attendance" data-academic-jump>К посещаемости '+c.icon('arrow')+'</a>'+
+      '<a class="outline-button" data-route="exams" href="/app/exams">Сессия и зачёты '+c.icon('right')+'</a>';
+    return c.head('','Успеваемость и посещаемость','',links)+'<div class="academic-registers">'+
+      tablePanel(data.points.items.map(pointRow),pointColumns,false)+
+      tablePanel(data.attendance.items.map(attendanceRow),attendanceColumns,true,data.attendance.term,
+        data.attendance.availability_message)+'</div>';
+  }
+
+  function counts(rows){
+    const totals = {present:0, absent:0, excused:0, unmarked:0, late:0, cancelled:0};
+    for(const row of rows)totals[row.status]++;
+    return [
+      ['Проведено',rows.length-totals.cancelled], ['Посещено',totals.present+totals.late],
+      ['Пропущено',totals.absent+totals.excused], ['Из них уважительных',totals.excused], ['Без отметки',totals.unmarked],
+    ];
+  }
+  function attendanceCounts(rows){
+    return Object.entries(lessonKinds).map(([kind,label])=>'<section aria-label="'+label+'"><h3>'+label+
+      '</h3><dl>'+counts(rows.filter(row=>row.kind===kind)).map(([name,value])=>
+        '<div><dt>'+name+'</dt><dd>'+value+'</dd></div>').join('')+'</dl></section>').join('');
+  }
+
+  function groupRows(rows, group, columnCount, cells, attendance){
+    if(!group)return '<tbody>'+rowsHTML(rows,cells)+'</tbody>';
+    const groups = new Map();
+    for(const row of rows){
+      const key = group==='kind' ? row.discipline+' · '+row.kind_label : row.discipline;
+      if(!groups.has(key))groups.set(key,[]);
+      groups.get(key).push(row);
     }
-    search.addEventListener('input',update);
-    subject.addEventListener('change',update);
-    semester.addEventListener('change',update);
-    panel.addEventListener('click',event=>{
-      const heading=event.target.closest('[data-academic-sort]');
-      if(heading){const key=heading.dataset.academicSort;ascending=key!==sort||!ascending;sort=key;update();return;}
-      const button=event.target.closest('[data-academic-toggle]');
-      if(!button)return;
-      const row=shown[Number(button.dataset.academicToggle)];
-      const isOpen=!open.delete(row.subject);
-      if(isOpen)open.add(row.subject);
-      toggle(button,isOpen);
+    return [...groups].sort((a,b)=>collator.compare(a[0],b[0])).map(([label,items])=>{
+      const totals = attendance ? counts(items).map(([name,n])=>name+' '+n).join(' · ') :
+        items[0].discipline_total!=null ? 'Итог по дисциплине · '+items[0].discipline_total : '';
+      return '<tbody><tr class="academic-group"><th scope="rowgroup" colspan="'+columnCount+'">'+esc(label)+
+        (totals?'<small class="academic-meta">'+esc(totals)+'</small>':'')+'</th></tr>'+rowsHTML(items,cells)+'</tbody>';
+    }).join('');
+  }
+  function filterValues(root){
+    return [...root.querySelectorAll('[data-academic-table]')].map(panel=>{
+      const values = Object.fromEntries([...panel.querySelectorAll('[name]')].map(control=>[control.name,control.value]));
+      const active = panel.querySelector('th:not([aria-sort=none])');
+      return {...values,sort:active?.firstElementChild.dataset.academicSort,
+        direction:active?.getAttribute('aria-sort'),expanded:panel.querySelector('details').open,
+        top:panel.querySelector('.academic-scroll').scrollTop,left:panel.querySelector('.academic-scroll').scrollLeft};
     });
-    if(wanted)update();
+  }
+  function bindTable(panel, rows, {attendance, saved, subject, date}){
+    const table = panel.querySelector('table');
+    const region = panel.querySelector('.academic-scroll');
+    const indicator = panel.querySelector('[data-academic-count]');
+    const controls = Object.fromEntries([...panel.querySelectorAll('[name]')].map(control=>[control.name,control]));
+    const columns = attendance ? attendanceColumns : pointColumns;
+    let sort = saved?.sort||'day', direction = saved?.direction||'descending';
+    const initial = saved||{discipline:subject,from:date,to:date};
+    for(const [name,control] of Object.entries(controls)){
+      if(initial[name]!=null)control.value=initial[name];
+      // A scope link can lead to a discipline that has no rows yet.
+      if(control instanceof HTMLSelectElement && control.selectedIndex<0)control.selectedIndex=0;
+    }
+    if(initial.expanded||date)panel.querySelector('details').open=true;
+
+    function update(){
+      const query = search(controls.search.value.trim());
+      const scope = rows.filter(row =>
+        (!controls.discipline.value || row.discipline===controls.discipline.value) &&
+        (!controls.kind.value || (attendance?row.kind:row.kind_label)===controls.kind.value) &&
+        (!controls.from.value || row.day && row.day>=controls.from.value) &&
+        (!controls.to.value || row.day && row.day<=controls.to.value) &&
+        (!query || search([row.discipline,row.title,row.teacher,row.group,row.subgroup].join(' ')).includes(query)));
+      const visible = scope.filter(row=>!controls.status?.value||row.status===controls.status.value);
+      visible.sort((a,b)=>{
+        const x=a[sort], y=b[sort];
+        if(x==null||y==null)return Number(x==null)-Number(y==null);
+        const result = typeof x==='number'&&typeof y==='number' ? x-y : collator.compare(x,y);
+        const time = sort==='day' ? (a.start||a.created_at||'').localeCompare(b.start||b.created_at||'') : 0;
+        return (result||time)*(direction==='ascending'?1:-1);
+      });
+      table.querySelectorAll('tbody').forEach(body=>body.remove());
+      const message = rows.length ? 'По выбранным условиям записей нет.' :
+        attendance ? 'В текущем семестре пока нет завершённых занятий.' : 'Начислений и оценённых работ пока нет.';
+      const body = visible.length ? groupRows(visible,controls.grouping.value,columns.length,
+        attendance?attendanceCells:pointsCells,attendance) :
+        '<tbody><tr><td colspan="'+columns.length+'">'+message+'</td></tr></tbody>';
+      table.insertAdjacentHTML('beforeend',body);
+      indicator.textContent='Строк в таблице · '+visible.length;
+      if(attendance)panel.querySelector('[data-attendance-counts]').innerHTML=attendanceCounts(scope);
+      for(const button of table.querySelectorAll('[data-academic-sort]')){
+        const picked = button.dataset.academicSort===sort;
+        button.closest('th').setAttribute('aria-sort',picked?direction:'none');
+        button.querySelector('span').textContent=picked?(direction==='ascending'?'↑':'↓'):'↕';
+      }
+      region.scrollTop=0;
+    }
+
+    for(const input of Object.values(controls)){
+      input.addEventListener(input.type==='search'?'input':'change',update);
+    }
+    table.addEventListener('click',event=>{
+      const button = event.target.closest('[data-academic-sort]');
+      if(!button)return;
+      const key = button.dataset.academicSort;
+      direction = key===sort&&direction==='ascending'?'descending':'ascending';
+      sort=key;
+      update();
+    });
+    update();
+    if(saved){region.scrollTop=saved.top;region.scrollLeft=saved.left;}
+  }
+  function showSection(heading){
+    heading.scrollIntoView({block:'start',behavior:'instant'});
+    heading.focus({preventScroll:true});
+  }
+  function bindStudent(root,data,context){
+    const rows = data.attendance.items.map(attendanceRow);
+    const points = data.points.items.map(pointRow);
+    const subject = context.subject||points.find(row=>row.grade_id===Number(context.id))?.discipline;
+    const saved = restoreFilters?.href===c.state.routeHref ? restoreFilters : null;
+    restoreFilters = null;
+    root.querySelectorAll('[data-academic-table]').forEach((panel,index)=>{
+      const attendance = panel.dataset.type==='attendance';
+      bindTable(panel,attendance?rows:points,{attendance,subject,saved:saved?.tables[index],
+        date:attendance&&context.kind==='attendance'?context.date:undefined});
+    });
+    const heading = root.querySelector('#academic-attendance');
+    root.querySelector('[data-academic-jump]').addEventListener('click',event=>{
+      event.preventDefault();
+      showSection(heading);
+    });
+    if(saved?.row){
+      const row = [...root.querySelectorAll('[data-academic-record]')].find(element=>element.dataset.academicRecord===saved.row);
+      (row?.querySelector('[data-absence-view]')||heading).focus({preventScroll:true});
+    }else if(context.kind==='attendance'){
+      queueMicrotask(()=>{if(heading.isConnected)showSection(heading);});
+    }
+    root.querySelector('[data-type="attendance"]').addEventListener('click',event=>{
+      const send = event.target.closest('[data-absence-send]');
+      const view = event.target.closest('[data-absence-view]');
+      if(send)openUpload(rows,send.dataset.absenceSend,root);
+      if(view)openStudentCase(rows.find(row=>row.id===view.dataset.absenceView));
+    });
   }
 
-  window.ATLASAcademics={init(context){c=context;},render,bind,showAward};
+  function checklist(title, rows, name, selected, label){
+    return '<fieldset class="academic-checklist"><legend>'+title+'</legend><div>'+
+      rows.map(row=>'<label><input type="checkbox" name="'+name+'" value="'+esc(row.id)+'" '+
+        (selected(row)?'checked':'')+'><span>'+label(row)+'</span></label>').join('')+'</div></fieldset>';
+  }
+  function occurrenceLabel(row){
+    return '<strong>'+esc(row.discipline)+'</strong><small>'+day(row.day)+' · '+esc(row.start)+
+      ' · '+esc(row.kind_label)+(row.teacher?' · '+esc(row.teacher):'')+'</small>';
+  }
+  const downloadButton = id => '<button type="button" class="outline-button" data-absence-download="'+Number(id)+
+    '">'+c.icon('download')+' Скачать справку</button>';
+
+  async function fileContent(file){
+    const maximum = 5*1024*1024;
+    if(!file?.size||file.size>maximum||!/\.(pdf|jpe?g|png)$/i.test(file.name)){
+      throw new Error('Выберите PDF, JPG, JPEG или PNG размером до 5 МиБ.');
+    }
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    let binary = '';
+    for(let offset=0;offset<bytes.length;offset+=16384){
+      binary+=String.fromCharCode(...bytes.subarray(offset,offset+16384));
+    }
+    return {name:file.name,content:btoa(binary)};
+  }
+  function openUpload(rows, id, root){
+    const chosen = rows.find(row=>row.id===id&&row.can_submit);
+    if(!chosen)return;
+    const other = rows.filter(row=>row.can_submit&&row.id!==id);
+    const fields = checklist('Пропуски, к которым относится справка',[chosen,...other],'occurrences',
+      row=>row.id===id,occurrenceLabel)+
+      '<div class="field"><label for="absence-document">Справка</label><input id="absence-document" name="document" '+
+      'type="file" accept=".pdf,.jpg,.jpeg,.png" aria-describedby="absence-file-rules" required>'+
+      '<p class="field-meta" id="absence-file-rules">PDF, JPG, JPEG или PNG до 5 МиБ. Файл хранится до 90 дней.</p></div>'+
+      window.ATLASOperations.ui.area('note','Пояснение (необязательно)','',500);
+    let previousBody, idempotencyKey;
+    window.ATLASOperations.ui.modal('Отправить справку','Выберите занятия, которые подтверждает один документ.',fields,
+      async (values,formData)=>{
+        const occurrences = formData.getAll('occurrences');
+        if(!occurrences.length||occurrences.length>30)throw new Error('Выберите от 1 до 30 пропущенных занятий.');
+        const epoch = c.state.sessionEpoch;
+        const file = await fileContent(values.document);
+        if(epoch!==c.state.sessionEpoch)throw Object.assign(new Error('Сеанс изменился.'),{stale:true});
+        const body = JSON.stringify({occurrences,file,note:values.note});
+        if(body!==previousBody){previousBody=body;idempotencyKey=crypto.randomUUID();}
+        return c.api('learning/absence-certificates',{method:'POST',headers:{'Idempotency-Key':idempotencyKey},
+          body});
+      },
+      async ()=>{
+        restoreFilters={href:c.state.routeHref,tables:filterValues(root),row:id};
+        await c.updatePage({quiet:true});
+      },'Отправить справку');
+  }
+  function openStudentCase(row){
+    if(!row?.certificate)return;
+    const doc = row.certificate;
+    c.modal(c.modalHead('Решение по справке',row.discipline+' · '+dayFmt(row.day))+
+      certificateBadge(doc.status)+'<p class="academic-meta">Отправлена '+stamp(doc.submitted_at)+'</p>'+
+      (doc.reviewed_at?'<p class="academic-meta">Рассмотрена '+stamp(doc.reviewed_at)+'</p>':'')+
+      paragraph(doc.reason)+(doc.file_available?'<div class="modal-actions">'+downloadButton(doc.id)+'</div>':
+        '<p class="academic-meta">Файл больше недоступен.</p>'),{label:'Решение по справке'});
+  }
+
+  function cleanQuery(_page,query){
+    const id = Number(query.id), offset = Number(query.offset);
+    if(Number.isSafeInteger(id)&&id>0)return {id};
+    return {...(query.status==='all'||Object.hasOwn(certificateLabels,query.status)?{status:query.status}:{}),
+      ...(Number.isSafeInteger(offset)&&offset>0?{offset}:{})};
+  }
+  function loadQueue(_page,_parts,query){
+    const params = new URLSearchParams(query.id?{id:query.id}:{offset:query.offset||0});
+    if(!query.id&&query.status!=='all')params.set('status',query.status||'pending');
+    return c.api('teaching/absence-certificates?'+params);
+  }
+  function queueLink(query){
+    const params = new URLSearchParams(query).toString();
+    return '/app/'+queue.id+(params?'?'+params:'');
+  }
+  function queueRows(items){
+    return items.map(item=>{
+      const entries = item.entries.map(row=>'<li>'+occurrenceLabel(row)+' '+certificateBadge(row.status)+paragraph(row.reason)+'</li>');
+      const actions = item.entries.some(row=>row.can_review)?
+        '<button type="button" class="outline-button academic-case-action" data-absence-review="'+Number(item.id)+
+        '">Рассмотреть справку</button>':'';
+      return '<tr><th scope="row">'+esc(item.student)+'</th><td><ul class="academic-case-entries">'+entries.join('')+
+        '</ul>'+actions+'</td><td>'+stamp(item.submitted_at)+'</td><td>'+(item.file_available?
+          downloadButton(item.id)+'<small class="academic-meta">Хранится до '+day(docDate(item.expires_at))+'</small>':
+          'Файл больше недоступен')+'</td><td>'+paragraph(item.note)+(item.note?'':'—')+'</td></tr>';
+    }).join('');
+  }
+  function docDate(value){
+    return value ? new Date(Date.parse(value)+3*3600000).toISOString().slice(0,10) : '';
+  }
+  function renderQueue(_page,data){
+    const query = c.state.routeContext;
+    const active = query.id ? '' : query.status||'pending';
+    const choices = [['pending','На рассмотрении'],['accepted','Приняты'],['rejected','Отклонены'],['all','Все']];
+    const filters = choices.map(([key,label])=>'<a class="outline-button" href="'+queueLink({status:key})+
+      '" data-app-link '+(key===active?'aria-current="page"':'')+'>'+label+'</a>').join('');
+    const pager = (offset,label)=>'<a class="outline-button" data-app-link href="'+
+      queueLink({status:active,offset})+'">'+label+'</a>';
+    const navigation = !query.id&&(data.offset||data.more) ? '<div class="academic-queue-pages">'+
+      (data.offset?pager(Math.max(0,data.offset-data.limit),'Предыдущая'):'')+
+      (data.more?pager(data.offset+data.limit,'Следующая'):'')+'</div>' : '';
+    const header = c.head('',queue.label,'Решения о пропусках по уважительной причине.');
+    return header+'<section class="card card-pad academic-panel" aria-label="Очередь справок">'+
+      (data.availability_message?'<p class="academic-availability">'+esc(data.availability_message)+'</p>':'')+
+      '<nav class="academic-queue-filters" aria-label="Статус справки">'+filters+'</nav>'+
+      (data.items.length?'<p class="academic-scroll-hint">Прокрутите таблицу, чтобы увидеть остальные столбцы.</p>'+
+        '<div class="academic-scroll" tabindex="0" role="region" aria-label="Прокрутка очереди справок">'+
+        '<table class="academic-table academic-queue-table" aria-label="Справки о пропусках"><thead><tr>'+
+        ['Студент','Пропуски и решения','Отправлена','Документ','Пояснение'].map(label=>'<th scope="col">'+label+'</th>').join('')+
+        '</tr></thead><tbody>'+queueRows(data.items)+'</tbody></table></div>':
+        '<p class="academic-result-count">Справок по выбранным условиям нет.</p>')+navigation+'</section>';
+  }
+  function openReview(item){
+    const entries = item.entries.filter(row=>row.can_review);
+    if(!entries.length)return;
+    const ui = window.ATLASOperations.ui;
+    const fields = (item.file_available?downloadButton(item.id):'')+paragraph(item.note)+
+      checklist('Рассматриваемые пропуски',entries,'entries',()=>true,occurrenceLabel)+
+      ui.select('status','Решение',[['','Выберите решение'],['accepted','Принять'],['rejected','Отклонить']],'','required')+
+      ui.area('reason','Причина отклонения (необязательно)','',500);
+    ui.modal('Рассмотреть справку',item.student,fields,(values,data)=>{
+      const selected = data.getAll('entries').map(Number);
+      if(!selected.length)throw new Error('Выберите пропуски для рассмотрения.');
+      return c.api('teaching/absence-certificates/'+Number(item.id)+'/decision',{
+        method:'POST',body:JSON.stringify({entries:selected,status:values.status,reason:values.reason}),
+      });
+    },()=>c.route(queue.id,{replace:true,context:{id:item.id}}),'Сохранить решение');
+    const form = c.$('.modal [data-op-form]');
+    const toggleReason = ()=>{
+      const rejected = form.elements.status.value==='rejected';
+      form.elements.reason.disabled=!rejected;
+      form.elements.reason.closest('.field').hidden=!rejected;
+    };
+    form.elements.status.addEventListener('change',toggleReason);
+    toggleReason();
+  }
+  async function download(button){
+    if(button.disabled)return;
+    button.disabled=true;
+    button.setAttribute('aria-busy','true');
+    try{
+      const id=Number(button.dataset.absenceDownload);
+      c.saveDownload(await c.api('absence-certificates/'+id+'/download',{method:'POST',responseType:'blob'}),'spravka');
+    }catch(error){if(!error.stale)c.toast(error.message);}
+    finally{button.disabled=false;button.removeAttribute('aria-busy');}
+  }
+  function init(context){
+    c=context;
+    document.addEventListener('click',event=>{
+      const file = event.target.closest('[data-absence-download]');
+      if(file){download(file);return;}
+      const decision = event.target.closest('[data-absence-review]');
+      if(decision&&c.state.page===queue.id){
+        const item = c.state.data[queue.id]?.items.find(record=>record.id===Number(decision.dataset.absenceReview));
+        if(item)openReview(item);
+      }
+    });
+  }
+
+  window.ATLASAcademics={pages:[queue],has:page=>page===queue.id,validParts:()=>false,
+    cleanQuery,load:loadQueue,render:renderQueue,init,reset(){restoreFilters=null;},
+    loadStudent,renderStudent,bindStudent,showAward};
 })();

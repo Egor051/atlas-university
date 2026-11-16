@@ -281,7 +281,8 @@
   function teaching(data){
     if(data.work)return workDetails(data);
     if(!data.students)return title('Группы и дисциплины','Назначения преподавателя.',
-      link('/app/teach-schedule','Мои занятия','outline-button')+link('/app/notifications','Уведомления','outline-button'))+
+      link('/app/teach-schedule','Мои занятия','outline-button')+link('/app/absence-certificates','Справки о пропусках','outline-button')+
+      link('/app/notifications','Уведомления','outline-button'))+
       list(data.items,x=>row(link('/app/teaching/'+x.id,x.discipline,'school-card-link'),p(x.group)));
     const selected=q().tab||'roster', base='/app/teaching/'+data.id;
     const heading=title(data.discipline,'Группа '+data.group)+tabs('Работа с группой',teachTabs,selected,tab=>url(base,{tab}));
@@ -298,10 +299,11 @@
         <div><dt>Средний балл</dt><dd>${s.average??'—'}</dd></div><div><dt>Сдано работ</dt><dd>${s.submitted}</dd></div>
         ${Object.entries(s.attendance).map(([key,n])=>`<div><dt>${esc(attendanceNames[key]||key)}</dt><dd>${n}</dd></div>`).join('')}</dl>`)+
         section('История операций',data.history.length?`<ol class="op-log">${data.history.map(entry=>{
-          const labels={grade:'Начисление баллов',attendance:'Посещаемость',work_created:'Задание создано',work_edited:'Задание изменено',
+          const labels={grade:'Начисление баллов',points_corrected:'Начисление скорректировано',attendance:'Посещаемость',work_created:'Задание создано',work_edited:'Задание изменено',
             work_extension:'Срок сдачи продлён',work_individual_due:'Индивидуальный срок изменён',work_score_corrected:'Балл за работу скорректирован',
             feedback:'Работа проверена',consultation:'Назначена консультация',consultation_completed:'Консультация проведена'};
           const value=['grade','work_score_corrected'].includes(entry.action)?`${entry.before.score??'—'} → ${entry.after.score??'—'}`:
+            entry.action==='points_corrected'?`${entry.before.points} → ${entry.after.points}`:
             entry.action==='attendance'?`${entry.after.day} · ${attendanceNames[entry.after.status]}`:'';
           return `<li><b>${esc(labels[entry.action]||entry.action)}</b>${p([names[entry.after?.student_id],value,entry.after?.reason].filter(Boolean).join(' · '))}<small>${esc(entry.author)} · ${c.stamp(entry.created_at)} МСК</small></li>`;
         }).join('')}</ol>`:p('Операций пока нет.'));
@@ -342,11 +344,20 @@
     const base=page==='registry'?'/app/registry/'+c.state.routeParts[0]:'/app/'+page;
     const tools=page==='timetable-admin'?(dispatch?button('class-create','Подготовить занятие'):'')+
       link('/app/schedule-changes','Проекты','outline-button')+link('/app/academic-calendar','Учебный календарь','outline-button'):'';
+    const classActions=(item,index)=>{
+      if(dispatch&&item.key)return item.status==='active'
+        ?button('class-update','Изменить',index)+button('class-cancel','Отменить',index)
+        :button('class-restore','Восстановить',index);
+      if(page==='teach-schedule'&&!item.legacy_day&&item.status==='active'&&
+          ['lecture','practice','lab'].includes(item.kind)&&Date.parse(item.day+'T'+item.start+':00+03:00')<=Date.now()){
+        return button('class-roll','Журнал посещаемости',item.id);
+      }
+      return '';
+    };
     return title(name,'Время занятий — МСК (UTC+3).',tools)+weekControls(base,data.week)+
       list(data.items,(x,i)=>row(esc(x.title||x.discipline),p(c.dateFmt(x.day,{day:'numeric',month:'long'})+' · '+x.start+'–'+x.end)+
         p([x.kind_label,x.group,x.subgroup,x.student_id&&!x.legacy_day?'Индивидуально':'',x.teacher,x.room].filter(Boolean).join(' · '))+
-        p(x.status==='cancelled'?'Отменено. '+x.note:x.note),
-        dispatch&&x.key?(x.status==='active'?button('class-update','Изменить',i)+button('class-cancel','Отменить',i):button('class-restore','Восстановить',i)):''),
+        p(x.status==='cancelled'?'Отменено. '+x.note:x.note),classActions(x,i)),
       'Занятий на этой неделе нет','Выберите другую неделю.');
   }
 
@@ -550,7 +561,7 @@
 
   async function request(path,method='POST',body){
     const source=body===undefined?undefined:JSON.stringify(body);
-    const deduplicate=method==='POST'&&/^(scheduling\/changes|units\/(?:union|vuc)\/cases|teaching\/(?:consultations|\d+\/(?:points|works(?:\/\d+\/(?:feedback\/\d+|submissions\/\d+\/score-corrections))?)))$/.test(path);
+    const deduplicate=method==='POST'&&/^(scheduling\/changes|units\/(?:union|vuc)\/cases|teaching\/(?:consultations|\d+\/(?:points(?:\/\d+\/awards\/\d+\/corrections)?|works(?:\/\d+\/(?:feedback\/\d+|submissions\/\d+\/score-corrections))?)))$/.test(path);
     const prior=retries.get(path);
     const key=deduplicate?(prior?.source===source?prior.key:crypto.randomUUID()):null;
     if(key)retries.set(path,{source,key});
@@ -773,11 +784,14 @@
       const student=data.students.find(x=>x.id===id);
       if(action==='grade')return modal('Начислить баллы',student.name+' · накоплено '+(student.grade.score??0),
         input('points','Сколько баллов добавить','','number','required min="1" max="100" step="1"')+
+        input('max_points','Максимум за работу (необязательно)','','number','min="1" max="100" step="1"')+
+        select('kind','Вид деятельности',[['','По занятию или без вида'],['lecture','Лекция'],...Object.entries(workKinds)])+
+        input('title','Название работы или занятия (необязательно)','','text','maxlength="180"')+
         input('reason','Основание начисления','','text','required minlength="3" maxlength="300"'),v=>request(base+'/points','POST',{
-          student_id:id,version:student.grade.version,points:Number(v.points),reason:v.reason,class_id:data.class_id}));
-      return modal('Посещаемость',student.name+' · '+c.dateFmt(data.day),
-        select('status','Отметка',Object.entries(attendanceNames),student.attendance.status||'present')+
-        area('note','Комментарий',student.attendance.note),v=>request(base+'/attendance','PUT',{
+          student_id:id,version:student.grade.version,points:Number(v.points),reason:v.reason,class_id:data.class_id,
+          title:v.title,kind:v.kind||null,max_points:v.max_points?Number(v.max_points):null}));
+      return modal('Посещаемость',student.name+' · '+c.dateFmt(data.day),attendanceFields(student.attendance),
+        v=>request(base+'/attendance','PUT',{
           ...v,student_id:id,day:data.day,version:student.attendance.version,class_id:data.class_id}));
     }
     if(action==='new-work'||action==='edit-work')return openWorkForm(base,data);
@@ -849,18 +863,63 @@
       ()=>request('teaching/consultations/'+id+'/complete'));
   }
 
+  function attendanceFields(mark){
+    const current=mark.factual_status||mark.status;
+    return select('status','Отметка',Object.entries(attendanceNames),Object.hasOwn(attendanceNames,current)?current:'present')+
+      area('note','Комментарий',mark.note);
+  }
+
+  async function openClassRoll(classId){
+    const path='teaching/class-attendance/'+classId;
+    const {sessionEpoch,loadingId,modalId}=c.state;
+    const live=()=>sessionEpoch===c.state.sessionEpoch&&loadingId===c.state.loadingId&&modalId===c.state.modalId;
+    try{
+      const meeting=await c.api(path);
+      if(!live())return;
+      const heading='Журнал посещаемости';
+      const details=[meeting.title||meeting.discipline,meeting.group,c.dateFmt(meeting.day)].join(' · ');
+      c.modal(c.modalHead(heading,details)+list(meeting.students,student=>row(esc(student.name),
+        p(attendanceNames[student.attendance.status]||'Статус не выставлен'),meeting.started?
+          `<button type="button" class="outline-button" data-roll-mark="${Number(student.id)}">Поставить отметку</button>`:'')),{label:heading});
+      c.$('.modal')?.addEventListener('click',event=>{
+        const mark=event.target.closest('[data-roll-mark]');
+        if(!mark)return;
+        const student=meeting.students.find(person=>person.id===Number(mark.dataset.rollMark));
+        modal('Посещаемость',student.name+' · '+c.dateFmt(meeting.day),attendanceFields(student.attendance),
+          values=>request(path,'PUT',{...values,student_id:student.id,day:meeting.day,version:student.attendance.version}),
+          ()=>openClassRoll(classId));
+      });
+    }catch(error){if(!error.stale&&live())c.toast(error.message);}
+  }
+
   async function openPointHistory(base,id,data){
     const epoch=c.state.sessionEpoch, loadId=c.state.loadingId, modalId=c.state.modalId;
     const student=data.students.find(x=>x.id===id);
     try{
       const result=await c.api(`${base}/points/${id}`);
       if(epoch!==c.state.sessionEpoch||loadId!==c.state.loadingId||modalId!==c.state.modalId)return;
-      const corrections=(result.corrections||[]).map(entry=>`<li><b>Корректировка · ${Number(entry.previous_points)} → ${Number(entry.corrected_points)}</b>
-        ${entry.created_at?`<time datetime="${esc(entry.created_at)}">${esc(deadlineLabel(entry.created_at))}</time>`:''}${userText(entry.reason)}</li>`);
+      const history=[...result.items,...result.corrections].sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
+      const renderEntry=entry=>entry.corrected_points!=null
+        ?`<li><b>Корректировка · ${Number(entry.previous_points)} → ${Number(entry.corrected_points)}</b>
+          ${entry.created_at?`<time datetime="${esc(entry.created_at)}">${esc(deadlineLabel(entry.created_at))}</time>`:''}
+          ${userText(entry.teacher)}${userText(entry.reason)}</li>`
+        :window.ATLASAcademics.showAward(entry,entry.can_correct?
+          `<button type="button" class="mini-link" data-point-correct="${Number(entry.id)}">Скорректировать начисление</button>`:'');
       c.modal(c.modalHead('История баллов',student.name)+
-        (result.items.length||corrections.length?`<ol class="academic-history">${corrections.join('')}${result.items.map(window.ATLASAcademics.showAward).join('')}</ol>`:
+        (history.length?`<ol class="academic-history">${history.map(renderEntry).join('')}</ol>`:
           p('Начислений пока нет.')),
         {label:'История баллов'});
+      c.$('.modal .academic-history')?.addEventListener('click',event=>{
+        const button=event.target.closest('[data-point-correct]');
+        if(!button)return;
+        const entry=result.items.find(item=>item.id===Number(button.dataset.pointCorrect));
+        if(!entry?.can_correct)return;
+        modal('Скорректировать начисление',student.name+' · '+(entry.title||'начисление преподавателя'),
+          input('points','Исправленные баллы',entry.effective_points,'number',`required min="0" max="${Number(entry.max_points??100)}" step="1"`)+
+          input('reason','Причина корректировки','','text','required minlength="3" maxlength="300"'),
+          values=>request(`${base}/points/${id}/awards/${entry.id}/corrections`,'POST',
+            {points:Number(values.points),version:result.version,reason:values.reason}));
+      });
     }catch(error){if(!error.stale&&epoch===c.state.sessionEpoch&&loadId===c.state.loadingId)c.toast(error.message);}
   }
 
@@ -1001,6 +1060,7 @@
   function click(action,id){
     const data=current();
     if(!data||c.state.pending)return;
+    if(action==='class-roll')return openClassRoll(id);
     if(action.startsWith('calendar-'))return calendarForm(action.slice(9),id,data);
     if(action.startsWith('class-')||action==='edit-change')return classForm(action,id,data);
     if(action.startsWith('step-')){

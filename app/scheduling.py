@@ -421,6 +421,8 @@ def publish_change(db, row, body):
 
 
 def notify_publication(db, action, events, teachers):
+    from .absence_certificates import notify_reassigned_reviews
+
     title = {'create': 'Опубликовано занятие', 'update': 'Расписание изменилось',
              'cancel': 'Занятие отменено', 'restore': 'Занятие восстановлено'}[action]
     data = events[0]
@@ -432,6 +434,8 @@ def notify_publication(db, action, events, teachers):
         notify(db, student, title, message, f"/app/schedule?date={data['day']}&id={item_id}", student=True, category='schedule')
     for teacher in teachers:
         notify(db, teacher, title, message, f"/app/teach-schedule?week={data['day']}", category='schedule')
+    if action in {'update', 'restore'}:
+        notify_reassigned_reviews(db, events)
 
 
 @router.get('/scheduling')

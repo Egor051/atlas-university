@@ -4,8 +4,10 @@ from datetime import datetime
 
 from sqlalchemy import select
 
-from .academic_points import AssignmentPointCorrection, PointAward, award_data, correction_data
+from .academic_points import (AssignmentPointCorrection, PointAward, award_data, correction_data,
+                              manual_correction_data, manual_correction_query)
 from .db import CAMPUS_TZ, Grade, Lesson, campus_today
+from .attendance_register import cleared_marks
 from .learning_db import Attendance
 from .schedule_calendar import KIND, LESSON_KINDS
 from .schedule_occurrences import audience
@@ -72,6 +74,7 @@ def attendance_summary(statuses):
 
 
 def _class_rows(db, student, group_ids, load_by_id, marks):
+    excused = cleared_marks(db, [mark.id for mark in marks])
     query = select(ScheduledClass).where(ScheduledClass.group_id.in_(group_ids),
                                         ScheduledClass.status == 'active', ScheduledClass.kind.in_(LESSON_KINDS))
     meetings = db.scalars(audience(query, db.get(GroupMember, student.id), student.id)
@@ -93,7 +96,8 @@ def _class_rows(db, student, group_ids, load_by_id, marks):
         mark = by_class.get(row.id) or legacy
         used_marks.update(record.id for record in (mark, legacy) if record)
         sessions[subject].append(dict(class_id=row.id, day=day, kind=KIND.get(row.kind, row.kind), topic=row.note,
-                                      status=mark.status if mark else '', note=mark.note if mark else ''))
+                                      status=('excused' if mark.id in excused and mark.status == 'absent' else mark.status) if mark else '',
+                                      note=mark.note if mark else ''))
     lessons = defaultdict(list)
     for lesson in db.scalars(select(Lesson).where(Lesson.student_id == student.id)):
         lessons[(lesson.title, lesson.weekday)].append(lesson)
@@ -105,7 +109,7 @@ def _class_rows(db, student, group_ids, load_by_id, marks):
             continue
         candidates = lessons[(row.subject, row.day.weekday())]
         sessions[row.subject].append(dict(class_id=row.class_id, day=row.day, kind=candidates[0].kind if len(candidates) == 1 else '',
-                                          topic='', status=row.status, note=row.note))
+                                          topic='', status='excused' if row.id in excused and row.status == 'absent' else row.status, note=row.note))
     return sessions
 
 
@@ -131,6 +135,8 @@ def student_progress(db, student, date_iso):
     for row in db.scalars(select(AssignmentPointCorrection).where(AssignmentPointCorrection.student_id == student.id)
                           .order_by(AssignmentPointCorrection.id.desc())):
         corrections[row.grade_id].append(correction_data(row, date_iso))
+    for row, award, _ in db.execute(manual_correction_query(student.id)):
+        corrections[award.grade_id].append(manual_correction_data(row, award, date_iso))
     by_subject = {}
     for grade in grades:
         by_subject.setdefault(grade.subject, grade)

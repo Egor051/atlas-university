@@ -5,6 +5,7 @@ injection only delays an actual response or drops it after the server commits.
 """
 from __future__ import annotations
 
+from contextlib import contextmanager
 import os
 from pathlib import Path
 import re
@@ -24,16 +25,17 @@ pytestmark = pytest.mark.skipif(os.environ.get("ATLAS_RUN_BROWSER_TESTS") != "1"
 ROOT = Path(__file__).resolve().parents[1]
 
 
-@pytest.fixture(scope="module")
-def frontend_server():
+@contextmanager
+def isolated_frontend_server(extra_env=None):
     with tempfile.TemporaryDirectory(prefix="atlas-frontend-") as directory:
+        database = Path(directory) / 'browser.db'
         with socket.socket() as candidate:
             candidate.bind(("127.0.0.1", 0))
             port = candidate.getsockname()[1]
         address = f"http://127.0.0.1:{port}"
-        env = {**os.environ, "DATABASE_URL": "sqlite:///" + str(Path(directory) / "browser.db"),
+        env = {**os.environ, "DATABASE_URL": "sqlite:///" + str(database),
                "APP_ENV": "development", "DEMO_MODE": "true", "COOKIE_SECURE": "false",
-               "PUBLIC_ORIGIN": address, "ALLOWED_HOSTS": "127.0.0.1,localhost,testserver"}
+               "PUBLIC_ORIGIN": address, "ALLOWED_HOSTS": "127.0.0.1,localhost,testserver", **(extra_env or {})}
         with (Path(directory) / "server.log").open("w+", encoding="utf-8") as log:
             server = subprocess.Popen([sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1",
                                        "--port", str(port)], cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT,
@@ -52,7 +54,7 @@ def frontend_server():
                     time.sleep(0.1)
                 else:
                     pytest.fail("Isolated browser server did not become ready within 20 seconds")
-                yield address
+                yield address, database
             finally:
                 if server.poll() is None:
                     if os.name == "nt":
@@ -68,6 +70,12 @@ def frontend_server():
                 except subprocess.TimeoutExpired:
                     server.kill()
                     server.wait(timeout=5)
+
+
+@pytest.fixture(scope="module")
+def frontend_server():
+    with isolated_frontend_server() as (address, _):
+        yield address
 
 
 @pytest.fixture(scope="module")

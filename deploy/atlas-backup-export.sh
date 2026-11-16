@@ -8,7 +8,8 @@ set -a
 . /etc/atlas-campus/compose.env
 set +a
 export ATLAS_BACKUP_DIR=/var/backups/atlas-campus
-sh scripts/backup.sh >&2
+export ATLAS_BACKUP_PROJECT_ROOT=/opt/atlas-campus
+sh /usr/local/libexec/atlas-campus/backup.sh >&2
 archive=$(find "$ATLAS_BACKUP_DIR" -maxdepth 1 -type f -name 'atlas-*.dump' -printf '%f\n' | sort | tail -n 1)
 test -n "$archive"
 cd "$ATLAS_BACKUP_DIR"

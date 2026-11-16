@@ -4,23 +4,30 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
-from pydantic import Field, ValidationError, field_validator
+from pydantic import Field, ValidationError, field_validator, model_validator
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from .academic_points import (AssignmentPointCorrection, PointAward, award_data, award_points,
-                              correct_assignment_points, correction_data, grade_record as student_grade)
+                              award_belongs_to_load, correct_assignment_points, correct_manual_points,
+                              correction_data, grade_record as student_grade, manual_correction_data,
+                              manual_correction_query)
 from .db import CAMPUS_TZ, Deadline, Grade, User, campus_today, utc_now
 from .assignment_files import (download_feedback_file, download_source_file, replace_source_files,
                                save_feedback_files, source_files)
 from .assignment_grades import official_score_query, score_from_history
+from .attendance_register import (bind_mark, cleared_marks, journal_occurrence, marks_for_occurrences, occurrence_window,
+                                  recorded_status, validate_journal_day)
 from .assignment_inputs import ExtendBody, FeedbackBody, ScoreCorrectionBody, WorkBody, WorkEdit
 from .assignment_workflow import (DEFAULT_POLICY, FORMATS, MAX_UPLOAD_BYTES, SUBMITTED, assignment_notice, assignment_recipients,
                                   attachment_payload, attachment_response, attempt_count, attempt_details, base_due, deadline_fields,
                                   deliver_work, effective_due, effective_state, feedback_data, iso,
                                   submission_data, sync_due_date, validate_due, work_data, work_policy)
 from .learning_db import AssignmentSubmission, Attendance
+from .schedule_calendar import LESSON_KINDS
+from .schedule_occurrences import class_data, occurrence_key
 from .main import StrictBody, date_iso, get_db, require_roles, require_same_origin
+from .schedule_calendar import occurrence_kind
 from .services import begin_idempotent, commit_idempotent
 from .services_db import ConsultationBooking, ConsultationSlot
 from .session_security import as_utc
@@ -49,6 +56,27 @@ class PointsBody(StrictBody):
     version: int = Field(strict=True, ge=0)
     reason: str = Field(min_length=3, max_length=300)
     class_id: int | None = Field(default=None, strict=True, ge=1)
+    title: str = Field(default='', max_length=180)
+    kind: Literal['lecture', 'practice', 'lab', 'test', 'homework', 'project', 'independent', 'essay', 'talk',
+                  'term_paper', 'individual', 'group', 'other'] | None = None
+    max_points: int | None = Field(default=None, strict=True, ge=1, le=100)
+
+    @field_validator('reason', 'title', mode='before')
+    @classmethod
+    def trim_text(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
+    @model_validator(mode='after')
+    def check_maximum(self):
+        if self.max_points is not None and self.points > self.max_points:
+            raise ValueError('Балл превышает максимум деятельности')
+        return self
+
+
+class ManualPointCorrectionBody(StrictBody):
+    points: int = Field(strict=True, ge=0, le=100)
+    version: int = Field(strict=True, ge=1)
+    reason: str = Field(min_length=3, max_length=300)
 
     @field_validator('reason', mode='before')
     @classmethod
@@ -82,12 +110,6 @@ def grade_record(db, load, student_id):
     return student_grade(db, student_id, load.discipline.title)
 
 
-def attendance_record(db, load, student_id, day, class_id=None):
-    return db.scalar(select(Attendance).where(Attendance.student_id == student_id,
-                     Attendance.subject == load.discipline.title, attendance_scope(day, class_id))
-                     .order_by(Attendance.id).limit(1))
-
-
 def attendance_scope(day, class_id):
     return Attendance.class_id == class_id if class_id else Attendance.class_id.is_(None) & (Attendance.day == day)
 
@@ -96,8 +118,11 @@ def grade_data(row):
     return dict(score=row.current, version=row.version, assessment=row.assessment) if row else dict(score=None, version=0, assessment='')
 
 
-def attendance_data(row):
-    return dict(status=row.status, version=row.version, note=row.note) if row else dict(status='', version=0, note='')
+def attendance_data(row, excused=False):
+    if row is None:
+        return dict(status='', factual_status='', version=0, note='')
+    status = 'excused' if row.status == 'absent' and excused else row.status
+    return dict(status=status, factual_status=row.status, version=row.version, note=row.note)
 
 
 def save_grade(db, user, load, body, *, apply=True):
@@ -118,13 +143,15 @@ def save_grade(db, user, load, body, *, apply=True):
     return add_grade_points(db, user, load, body.student_id, body.score - current, before, body.reason)
 
 
-def add_grade_points(db, user, load, student_id, points, before, reason, class_id=None):
+def add_grade_points(db, user, load, student_id, points, before, reason, class_id=None, *,
+                     title='', kind='', max_points=None):
     award = award_points(db, student_id=student_id, discipline_id=load.discipline_id, points=points,
                          source_kind='teacher', source_id=f'{load.id}:{before["version"]}', actor_id=user.id,
-                         reason=reason, class_id=class_id)
+                         reason=reason, class_id=class_id, title=title, kind=kind, max_points=max_points)
     after = grade_data(db.get(Grade, award.grade_id))
     recorded(db, user, 'teaching', load.id, 'grade', {'student_id': student_id, **before},
-             {'student_id': student_id, **after, 'reason': reason, 'points': points, 'class_id': class_id})
+             {'student_id': student_id, **after, 'reason': reason, 'points': points, 'class_id': class_id,
+              'title': title, 'kind': kind, 'max_points': max_points})
     notify(db, student_id, 'Начислены учебные баллы', f'{load.discipline.title} · +{points}', '/app/grades', student=True)
     return after
 
@@ -146,32 +173,48 @@ def class_participants(db, meeting):
     return recipients(db, dict(group_id=meeting.group_id, subgroup_id=meeting.subgroup_id, student_id=meeting.student_id))
 
 
+def journal_marks(db, load, student_ids, day, class_id):
+    scope = attendance_scope(day, class_id)
+    if class_id is None:
+        scope &= Attendance.subject == load.discipline.title
+    result = {}
+    for mark in db.scalars(select(Attendance).where(Attendance.student_id.in_(student_ids), scope).order_by(Attendance.id)):
+        result.setdefault(mark.student_id, mark)
+    if class_id:
+        old_ids = db.scalars(select(Attendance.student_id).where(
+            Attendance.student_id.in_(set(student_ids) - result.keys()), Attendance.subject == load.discipline.title,
+            Attendance.class_id.is_(None), Attendance.legacy_lesson_id.is_(None), Attendance.day == day).distinct())
+        for student_id in old_ids:
+            _, _, occurrences = occurrence_window(db, student_id, day, day)
+            mark = marks_for_occurrences(db, student_id, occurrences).get(f'event-{class_id}')
+            if mark:
+                result[student_id] = mark
+    return result
+
+
 def save_attendance(db, user, load, body, *, apply=True):
     check_member(db, load, body.student_id)
-    if not campus_today()-timedelta(days=370) <= body.day <= campus_today():
-        raise HTTPException(422, 'Отметка посещаемости относится к прошедшему учебному дню')
-    if body.class_id:
-        meeting = scoped_class(db, load, body.class_id)
-        if body.student_id not in class_participants(db, meeting):
-            raise HTTPException(404, 'Студент не участвует в этом занятии')
-        if class_day(meeting) != body.day or as_utc(meeting.starts_at) > utc_now():
-            raise HTTPException(422, 'Отметка должна относиться к начавшемуся занятию на выбранную дату')
-    row = attendance_record(db, load, body.student_id, body.day, body.class_id)
-    before = attendance_data(row)
+    validate_journal_day(body.day)
+    occurrence, row = journal_occurrence(db, load, user.id, body.student_id, body.day, body.class_id)
+    excused = bool(row and row.id in cleared_marks(db, [row.id]))
+    before = attendance_data(row, excused)
     if before['version'] != body.version:
         raise HTTPException(409, 'Посещаемость уже изменена. Загрузите актуальный журнал.')
     if not apply:
         return
     if row is None:
-        row = Attendance(student_id=body.student_id, subject=load.discipline.title, day=body.day, class_id=body.class_id)
+        row = Attendance(student_id=body.student_id, subject=load.discipline.title, day=body.day)
         db.add(row)
-    row.day, row.status, row.note, row.version = body.day, body.status, body.note, body.version+1
-    after = attendance_data(row)
-    identity = {'student_id': body.student_id, 'day': body.day.isoformat(), 'class_id': body.class_id}
+    bind_mark(row, occurrence)
+    status = 'absent' if excused and body.status == 'excused' else body.status
+    row.day, row.status, row.note, row.version = body.day, status, body.note, body.version+1
+    after = attendance_data(row, excused)
+    identity = {'student_id': body.student_id, 'day': body.day.isoformat(), 'class_id': body.class_id,
+                'occurrence': occurrence_key(occurrence)}
     recorded(db, user, 'teaching', load.id, 'attendance', {**identity, **before}, {**identity, **after})
     if before['status'] != after['status']:
         notify(db, body.student_id, 'Изменилась отметка о посещении',
-               f'{load.discipline.title} · {body.day:%d.%m.%Y}', '/app/grades')
+               f'{load.discipline.title} · {body.day:%d.%m.%Y}', '/app/grades?kind=attendance')
     return after
 
 
@@ -218,16 +261,16 @@ def details(load_id: int, day: date | None = None, class_id: int | None = Query(
                                          .where(GroupMember.group_id == load.group_id)).all())
     subgroups = db.execute(select(AcademicSubgroup.id, AcademicSubgroup.code).where(
         AcademicSubgroup.group_id == load.group_id).order_by(AcademicSubgroup.code, AcademicSubgroup.id)).all()
-    grades, attendance = {}, {}
+    grades = {}
     for row in db.scalars(select(Grade).where(Grade.student_id.in_(ids), Grade.subject == load.discipline.title).order_by(Grade.id)):
         grades.setdefault(row.student_id, row)
-    for row in db.scalars(select(Attendance).where(Attendance.student_id.in_(attendance_ids), Attendance.subject == load.discipline.title,
-                                                   attendance_scope(day, class_id)).order_by(Attendance.id)):
-        attendance.setdefault(row.student_id, row)
+    attendance = journal_marks(db, load, attendance_ids, day, class_id)
+    excused = cleared_marks(db, [mark.id for mark in attendance.values()])
+    attendance_status = recorded_status()
     attendance_by_student = {}
-    for student_id, status, count in db.execute(select(Attendance.student_id, Attendance.status, func.count())
+    for student_id, status, count in db.execute(select(Attendance.student_id, attendance_status, func.count())
             .where(Attendance.student_id.in_(ids), Attendance.subject == load.discipline.title)
-            .group_by(Attendance.student_id, Attendance.status)):
+            .group_by(Attendance.student_id, attendance_status)):
         attendance_by_student.setdefault(student_id, {})[status] = count
     history = db.execute(select(OperationEvent, User.full_name).join(User, User.id == OperationEvent.actor_id)
                          .where(OperationEvent.area == 'teaching', OperationEvent.object_id == load.id)
@@ -236,8 +279,8 @@ def details(load_id: int, day: date | None = None, class_id: int | None = Query(
                           WorkDelivery.deadline_id == AssignmentSubmission.deadline_id).join(GroupWork)
                           .where(GroupWork.load_id == load.id, AssignmentSubmission.student_id.in_(ids),
                                  AssignmentSubmission.status.in_(SUBMITTED)))
-    totals = db.execute(select(Attendance.status, func.count()).where(Attendance.student_id.in_(ids),
-                        Attendance.subject == load.discipline.title).group_by(Attendance.status)).all()
+    totals = db.execute(select(attendance_status, func.count()).where(Attendance.student_id.in_(ids),
+                        Attendance.subject == load.discipline.title).group_by(attendance_status)).all()
     scores = [g.current for g in grades.values() if g.current is not None]
     now = utc_now()
     return {**load_payload(load), 'day': day.isoformat(), 'class_id': class_id,
@@ -246,13 +289,14 @@ def details(load_id: int, day: date | None = None, class_id: int | None = Query(
                          for row in sessions],
             'subgroups': [dict(id=key, code=code) for key, code in subgroups],
             'students': [dict(id=p.id, name=p.full_name, number=p.student_number, subgroup_id=subgroup_by_student.get(p.id),
-                              grade=grade_data(grades.get(p.id)), attendance=attendance_data(attendance.get(p.id)),
+                              grade=grade_data(grades.get(p.id)), attendance=attendance_data(
+                                  attendance.get(p.id), p.id in attendance and attendance[p.id].id in excused),
                               class_participant=p.id in attendance_ids,
                               attendance_counts=attendance_by_student.get(p.id, {})) for p in people],
             'summary': dict(student_count=len(people), assessed=len(scores), average=round(sum(scores)/len(scores),1) if scores else None,
                             submitted=submitted, attendance=dict(totals)),
             'history': [item for row,author in history if (item:=event_payload(row,author,date_iso))['action'] not in
-                        {'grade','attendance'} or item['after']['student_id'] in ids]}
+                        {'grade','attendance','points_corrected'} or item['after']['student_id'] in ids]}
 
 
 @router.put('/{load_id:int}/grade', dependencies=write)
@@ -269,11 +313,13 @@ def points(load_id: int, body: PointsBody, request: Request, response: Response,
     lock_workspace(db, user.id)
     load = owned_load(db, user, load_id)
     check_member(db, load, body.student_id)
-    receipt, replay = begin_idempotent(db, request, response, user, f'points:{load.id}', body.model_dump())
+    metadata = {'title', 'kind', 'max_points'}
+    payload = {**body.model_dump(exclude=metadata), **body.model_dump(include=metadata, exclude_defaults=True)}
+    receipt, replay = begin_idempotent(db, request, response, user, f'points:{load.id}', payload)
     if replay is not None:
         return replay
-    if body.class_id:
-        meeting = scoped_class(db, load, body.class_id)
+    meeting = scoped_class(db, load, body.class_id) if body.class_id else None
+    if meeting is not None:
         if body.student_id not in class_participants(db, meeting):
             raise HTTPException(404, 'Студент не участвует в этом занятии')
         if as_utc(meeting.starts_at) > utc_now():
@@ -281,8 +327,10 @@ def points(load_id: int, body: PointsBody, request: Request, response: Response,
     before = grade_data(grade_record(db, load, body.student_id))
     if before['version'] != body.version:
         raise HTTPException(409, 'Ведомость уже изменилась. Обновите данные.')
+    title = body.title or ((meeting.title or meeting.note)[:180] if meeting is not None else '')
+    kind = body.kind or (occurrence_kind(meeting.kind) if meeting is not None else 'other')
     return commit_idempotent(db, receipt, add_grade_points(db, user, load, body.student_id, body.points,
-                                                          before, body.reason, body.class_id))
+                             before, body.reason, body.class_id, title=title, kind=kind, max_points=body.max_points))
 
 
 @router.get('/{load_id:int}/points/{student_id:int}')
@@ -290,18 +338,87 @@ def point_history(load_id: int, student_id: int, user=Depends(teacher_only), db:
     load = owned_load(db, user, load_id)
     check_member(db, load, student_id)
     grade = grade_record(db, load, student_id)
+    if grade is None:
+        return {'items': [], 'corrections': [], 'version': 0}
     rows = db.scalars(select(PointAward).where(PointAward.student_id == student_id,
-                      PointAward.grade_id == grade.id).order_by(PointAward.id.desc())) if grade else ()
-    corrections = db.scalars(select(AssignmentPointCorrection).where(AssignmentPointCorrection.student_id == student_id,
-                              AssignmentPointCorrection.grade_id == grade.id).order_by(AssignmentPointCorrection.id.desc())) if grade else ()
-    return {'items': [award_data(row, date_iso) for row in rows],
-            'corrections': [correction_data(row, date_iso) for row in corrections]}
+                      PointAward.grade_id == grade.id).order_by(PointAward.id.desc())).all()
+    manual = db.execute(manual_correction_query(student_id).where(PointAward.grade_id == grade.id)).all()
+    assignment = db.execute(select(AssignmentPointCorrection, User.full_name)
+                            .join(User, User.id == AssignmentPointCorrection.actor_id)
+                            .where(AssignmentPointCorrection.student_id == student_id,
+                                   AssignmentPointCorrection.grade_id == grade.id)).all()
+    effective = {}
+    for row, award, _ in manual:
+        effective.setdefault(award.id, row.corrected_points)
+    corrections = [{**manual_correction_data(row, award, date_iso), 'teacher': author} for row, award, author in manual]
+    corrections.extend({**correction_data(row, date_iso), 'teacher': author} for row, author in assignment)
+    return {'items': [{**award_data(row, date_iso), 'effective_points': effective.get(row.id, row.points),
+                       'can_correct': award_belongs_to_load(row, load)} for row in rows],
+            'corrections': sorted(corrections, key=lambda item: item['created_at'], reverse=True),
+            'version': grade.version}
+
+
+@router.post('/{load_id:int}/points/{student_id:int}/awards/{award_id:int}/corrections', status_code=201, dependencies=write)
+def correct_manual_award(load_id: int, student_id: int, award_id: int, body: ManualPointCorrectionBody,
+                         request: Request, response: Response, user=Depends(teacher_only), db: Session = Depends(get_db)):
+    lock_workspace(db, user.id)
+    load = owned_load(db, user, load_id)
+    check_member(db, load, student_id)
+    award = db.scalar(select(PointAward).where(PointAward.id == award_id, PointAward.student_id == student_id))
+    grade = grade_record(db, load, student_id)
+    if award is None or not award_belongs_to_load(award, load) or grade is None or award.grade_id != grade.id:
+        raise HTTPException(404, 'Начисление не найдено в этой ведомости')
+    receipt, replay = begin_idempotent(db, request, response, user, f'points-correction:{award.id}', body.model_dump())
+    if replay is not None:
+        return replay
+    grade, previous = correct_manual_points(db, award, points=body.points, actor_id=user.id,
+                                           reason=body.reason, version=body.version)
+    recorded(db, user, 'teaching', load.id, 'points_corrected',
+             {'student_id': student_id, 'award_id': award.id, 'points': previous},
+             {'student_id': student_id, 'award_id': award.id, 'points': body.points, 'reason': body.reason})
+    notify(db, student_id, 'Начисление баллов скорректировано',
+           f'{load.discipline.title} · {previous} → {body.points}', '/app/grades', student=True)
+    return commit_idempotent(db, receipt, grade_data(grade))
 
 
 @router.put('/{load_id:int}/attendance', dependencies=write)
 def attendance(load_id: int, body: AttendanceBody, user=Depends(teacher_only), db: Session = Depends(get_db)):
     lock_workspace(db, user.id)
     result = save_attendance(db, user, owned_load(db, user, load_id), body)
+    db.commit()
+    return result
+
+
+def assigned_class(db, user, class_id):
+    meeting = db.scalar(select(ScheduledClass).join(Teacher).where(ScheduledClass.id == class_id,
+        ScheduledClass.status == 'active', ScheduledClass.kind.in_(LESSON_KINDS), Teacher.user_id == user.id))
+    if meeting is None:
+        raise HTTPException(404, 'Занятие не найдено в вашем расписании')
+    return meeting
+
+
+@router.get('/class-attendance/{class_id:int}')
+def class_attendance(class_id: int, user=Depends(teacher_only), db: Session = Depends(get_db)):
+    meeting = assigned_class(db, user, class_id)
+    day = class_day(meeting)
+    data = class_data(meeting)
+    ids = class_participants(db, meeting)
+    marks = journal_marks(db, meeting.load, ids, day, meeting.id)
+    excused = cleared_marks(db, [mark.id for mark in marks.values()])
+    students = [dict(id=key, name=name, attendance=attendance_data(marks.get(key), key in marks and marks[key].id in excused))
+                for key, name in db.execute(select(User.id, User.full_name).where(User.id.in_(ids), User.role == 'student')
+                                            .order_by(User.full_name, User.id))]
+    return dict(class_id=class_id, day=data['day'], discipline=data['discipline'], title=data['title'], group=data['group'],
+                started=as_utc(meeting.starts_at) <= utc_now(), students=students)
+
+
+@router.put('/class-attendance/{class_id:int}', dependencies=write)
+def mark_class_attendance(class_id: int, body: AttendanceBody, user=Depends(teacher_only), db: Session = Depends(get_db)):
+    lock_workspace(db, user.id)
+    meeting = assigned_class(db, user, class_id)
+    if body.class_id not in (None, class_id):
+        raise HTTPException(422, 'Укажите занятие из открытого журнала')
+    result = save_attendance(db, user, meeting.load, body.model_copy(update={'class_id': class_id}))
     db.commit()
     return result
 
@@ -694,7 +811,8 @@ def feedback(load_id: int, work_id: int, submission_id: int, body: FeedbackBody,
             if body.score > 0 and (policy['award_mode'] == 'all' or deadline.student_id == row.student_id):
                 award_points(db, student_id=deadline.student_id, discipline_id=load.discipline_id, points=body.score,
                              source_kind='assignment', source_id=work.id, actor_id=user.id, class_id=policy['class_id'],
-                             reason=work.title)
+                             reason=work.title, title=work.title, kind=policy['kind'], custom_kind=policy['custom_kind'],
+                             max_points=policy['max_points'], review_id=entry.id)
                 title = 'Начислены баллы за работу'
         assignment_notice(db, deadline, title, notice_body, event_key=f'work-review:{entry.id}:{deadline.id}')
     recorded(db, user, 'teaching', load.id, 'feedback', {'status': before_status}, {

@@ -69,6 +69,7 @@ def test_additive_legacy_migration_preserves_records_and_is_repeatable():
                 ('0015_announcement_summaries',), ('0016_trim_bundled_copy',), ('0017_trim_remaining_copy',),
                 ('0018_academic_calendar',), ('0019_discipline_materials',),
                 ('0020_assignment_deadlines',), ('0021_assignment_feedback',),
+                ('0022_point_register',), ('0023_absence_certificates',),
             ]
             assert database.execute('SELECT body,target FROM notifications WHERE id=201').fetchone() == ('Preserve notice', '/app/requests')
 

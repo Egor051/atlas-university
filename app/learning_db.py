@@ -106,12 +106,17 @@ class QuizAttempt(Base):
 
 class Attendance(Base):
     __tablename__ = 'learning_attendance'
-    __table_args__ = (Index('uq_learning_attendance_student_class', 'student_id', 'class_id', unique=True),)
+    __table_args__ = (
+        Index('uq_learning_attendance_student_class', 'student_id', 'class_id', unique=True),
+        Index('uq_learning_attendance_student_legacy', 'student_id', 'legacy_lesson_id', 'legacy_original_day', unique=True),
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
     student_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
     subject: Mapped[str] = mapped_column(String(130))
     day: Mapped[date] = mapped_column(Date)
     class_id: Mapped[int | None] = mapped_column(ForeignKey('academic_classes.id'))
+    legacy_lesson_id: Mapped[int | None] = mapped_column(ForeignKey('lessons.id'))
+    legacy_original_day: Mapped[date | None] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(20))
     note: Mapped[str] = mapped_column(String(300), default='')
     version: Mapped[int] = mapped_column(Integer, default=1, server_default='1')

@@ -14,13 +14,14 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .db import Grade, User, campus_today, utc_now
-from .learning_db import Attendance
 from .main import StrictBody, date_iso, get_db, require_same_origin, require_user
 from .references import (GroupBody, LoadBody, MemberBody, RoomBody, group_data, member_data,
                          room_data, write_load, write_member, write_reference)
 from .scheduling import ChangeBody, class_data, class_query, create_draft, own_timetable, validate_change, week_bounds
 from .table_formats import MAX_UPLOAD, read_table, table_bytes
-from .teaching import AttendanceBody, MarkBody, attendance_scope, class_day, class_participants, save_attendance, save_grade, scoped_class
+from .attendance_register import cleared_marks
+from .teaching import (AttendanceBody, MarkBody, attendance_data, class_day, class_participants, journal_marks,
+                       save_attendance, save_grade, scoped_class)
 from .university_db import Teacher, TeachingAssignment
 from .workspace import load_payload, load_query, lock_workspace, owned_load, recorded, roster
 from .workspace_db import AcademicGroup, Classroom, GroupMember, ScheduledClass, TableImport
@@ -132,12 +133,13 @@ def export_rows(dataset, db, user, load, day, class_id=None):
         people = {uid: person for uid, person in people.items() if uid in participants}
     else:
         day = day or campus_today()
-    present = {}
-    for row in db.scalars(select(Attendance).where(Attendance.student_id.in_(people),Attendance.subject==load.discipline.title,
-                                                  attendance_scope(day, class_id)).order_by(Attendance.id)):
-        present.setdefault(row.student_id,row)
-    return [dict(student_id=uid,name=person.full_name,day=day.isoformat(),class_id=class_id,status=present[uid].status if uid in present else '',
-                 note=present[uid].note if uid in present else '',version=present[uid].version if uid in present else 0)
+    marks = journal_marks(db, load, people, day, class_id)
+    excused = cleared_marks(db, [mark.id for mark in marks.values()])
+    def export_mark(student_id):
+        mark = marks.get(student_id)
+        data = attendance_data(mark, bool(mark and mark.id in excused))
+        return {key: data[key] for key in ('status', 'note', 'version')}
+    return [dict(student_id=uid,name=person.full_name,day=day.isoformat(),class_id=class_id,**export_mark(uid))
             for uid,person in people.items()]
 
 
