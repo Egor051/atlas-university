@@ -95,7 +95,7 @@
     coordinator:[teachingMaterials,account],
     department:[teachingMaterials,account],
     union:[section('union-work','Работа профсоюза','file','Заявления, членство, публикации и отчёты',['union-office']),account],
-    vuc:[section('vuc-work','Работа ВУЦ','file','Отбор, учебные группы и публикации',['vuc-office']),account],
+    vuc:[section('vuc-work','Работа ВУЦ','file','Программы, кампании и кандидаты',['vuc-office']),account],
   };
   pages.push(...extensionPages('student'));
   staffPages.push(...extensionPages('staff'));

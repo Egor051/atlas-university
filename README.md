@@ -80,12 +80,16 @@ CSV и XLSX, шаблоны, сопоставление столбцов, оши
 помощью, записывается на мероприятия. Представитель профсоюза
 рассматривает заявления и публикует информацию.
 
-ВУЦ показывает учебные программы и сроки приёма. Студент подаёт заявку
-с отметками в чек-листе. Сотрудник проводит её по этапам,
-назначает группу, ведёт календарь и результаты. Решения сохраняются
-в истории и приходят в уведомления. У подразделений отдельные роли,
-очереди, документы, журналы и выгрузки. [Предварительное исследование](docs/union-vuc-research.md),
-[реализация и права](docs/union-vuc-implementation.md).
+ВУЦ показывает программы подготовки офицеров, сержантов и солдат запаса
+по модели НИУ МГСУ. Кампания привязана к программе и учебному году.
+Студент проверяет сроки и документы, создаёт обращение и получает сообщения
+о следующих шагах. Сотрудник ВУЦ публикует кампании и объявления, регистрирует
+подачу документов, решения комиссии и допуск по реквизитам документов.
+Действия сохраняются с автором и временем. Завершённые кампании доступны
+в архиве. [Порядок приёма, источники и полномочия](docs/vuc-admission.md) · [Снимки этапа 7](screenshots/vuc-stage-7-2026-11-22/README.md).
+
+Общие сведения о профсоюзе и прежней структуре подразделений описаны
+в [документации первого выпуска](docs/union-vuc-implementation.md).
 
 [Локальная приёмка 3.5.0](docs/release-checklist.md).
 [Итоговый отчёт и доступы для ручной приёмки](docs/final-local-acceptance.md).
@@ -195,6 +199,7 @@ node --check static/improvements.js
 node --check static/university.js
 node --check static/operations.js
 node --check static/units.js
+node --check static/vuc.js
 .venv/Scripts/python.exe scripts/navigation_check.py complete --engines chromium,firefox,webkit --screenshots screenshots/navigation-2026-11-11 --report docs/verification/navigation-2026-11-11/complete-ui.json
 .venv/Scripts/python.exe scripts/workspace_ui.py units --engines chromium,firefox,webkit --screenshots screenshots/workspace-2026-11-11 --report docs/verification/workspace-2026-11-11/final-ui.json
 .venv/Scripts/python.exe scripts/improvement_ui_capture.py after

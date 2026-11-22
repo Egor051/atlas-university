@@ -249,6 +249,7 @@ def migrate_database():
     from . import academic_points, learning_db, services_db, campus_db, improvement_db, university_db, workspace_db, units_db, announcements_db, certificates  # noqa: F401
     from . import assignment_db  # noqa: F401
     from . import absence_certificate_db  # noqa: F401
+    from . import vuc_db  # noqa: F401
     with engine.begin() as connection:
         if engine.dialect.name == 'postgresql':
             connection.execute(text('SELECT pg_advisory_xact_lock(2026110601)'))
@@ -365,6 +366,10 @@ def migrate_database():
             for index in learning_db.Attendance.__table__.indexes:
                 index.create(connection, checkfirst=True)
             connection.execute(SchemaMigration.__table__.insert().values(version='0023_absence_certificates', applied_at=utc_now()))
+        if '0024_vuc_admission' not in versions:
+            from .vuc_migration import upgrade_vuc_admission
+            upgrade_vuc_admission(connection)
+            connection.execute(SchemaMigration.__table__.insert().values(version='0024_vuc_admission', applied_at=utc_now()))
 
 
 def seed_demo(session=None):

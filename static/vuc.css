@@ -1,0 +1,57 @@
+.vuc-layout, .vuc-stack {
+  display: grid;
+  gap: var(--atlas-gap);
+  min-width: 0;
+}
+.vuc-layout { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
+.vuc-card {
+  padding: clamp(12px, 2vw, 20px);
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.vuc-card > header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px 16px;
+}
+.vuc-card h3 { margin: 0; font-size: 1.1rem; }
+.vuc-overline { color: var(--muted); margin: 0 0 4px; font-size: .85rem; }
+.vuc-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--atlas-surface-alt);
+  color: var(--muted);
+  font-size: .85rem;
+  font-weight: 650;
+}
+.vuc-status[data-status="open"], .vuc-status[data-status="active"] {
+  color: var(--atlas-accent-text);
+  background: var(--atlas-accent-surface);
+}
+.vuc-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(148px, 100%), 1fr));
+  gap: 8px 16px;
+  margin: 14px 0;
+}
+.vuc-facts dt, .vuc-source small, .vuc-timeline small { color: var(--muted); font-size: .85rem; }
+.vuc-facts dd { margin: 3px 0 0; font-weight: 650; }
+.vuc-detail { padding-top: 8px; border-top: 1px solid var(--border); }
+.vuc-detail summary, .vuc-fieldset summary { cursor: pointer; font-weight: 650; padding: 6px 0; }
+.vuc-detail h4 { margin: 10px 0 4px; font-size: .94rem; }
+.vuc-detail p { margin-top: 0; }
+.vuc-list, .vuc-timeline { padding-inline-start: 22px; }
+.vuc-list li + li { margin-top: 4px; }
+.vuc-timeline li { padding: 4px 0 6px 2px; }
+.vuc-source small, .vuc-timeline small { display: block; margin-top: 2px; }
+.vuc-actions { margin-top: 10px; }
+.vuc-fieldset { box-sizing: border-box; min-width: 0; margin: 0 0 12px; }
+.vuc-fieldset fieldset { min-width: 0; border: 0; padding: 0; margin: 12px 0; }
+.vuc-filter { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+.vuc-filter .field { min-width: 0; margin: 0; }
+.vuc-filter select { width: 100%; }

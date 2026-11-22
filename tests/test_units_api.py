@@ -1,14 +1,15 @@
 """Union and VUC workflows use their own role and record boundaries."""
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
-from datetime import datetime, time, timedelta
+from dataclasses import replace
+from datetime import date, timedelta
 import uuid
 
 import pytest
 
 from test_academic_workspace import ACTORS, HEAD, body
 from test_api import client, sign_in
-from app.db import CAMPUS_TZ, campus_today
+from app import vuc, vuc_policy
 
 ROLES={**ACTORS,'union':('union.demo','AtlasUnion!2026-U'),'vuc':('vuc.demo','AtlasCenter!2026-V')}
 
@@ -65,97 +66,211 @@ def test_union_membership_clarification_decision_and_departure(units):
     assert not body(student.get('/api/units/union'))['member']['active']
 
 
-def test_vuc_application_selection_group_result_and_scoped_publications(units):
-    student,other,vuc,union,admin=(units(r) for r in ('student','other','vuc','union','admin'))
-    path='/api/units/vuc/cases'
-    overview=body(student.get('/api/units/vuc'))
-    program=overview['programs'][0]
-    data={'kind':'apply','confirmed':True,'program_id':program['id'],'checklist':list(overview['checklist'])}
-    assert student.post(path,json={**data,'medical_file':'sample'},headers=HEAD).status_code==422
-    assert student.post(path,json={**data,'message':'В заявлении заполняют только флажки'},headers=HEAD).status_code==422
-    assert student.post(path,json={**data,'checklist':[]},headers=HEAD).status_code==422
-    application=body(student.post(path,json=data,headers=HEAD),201)
-    assert body(student.get('/api/units/vuc/learning'))['enrollments']==[]
-    group=next(x for x in body(vuc.get('/api/units/vuc/learning'))['groups'] if x['program_id']==program['id'])
-    other_group=next(x for x in body(vuc.get('/api/units/vuc/learning'))['groups'] if x['program_id']!=program['id'])
-    record=f"{path}/{application['id']}"
-    assert other.get(record).status_code==404
-    assert admin.get(record).status_code==403
-    assert union.get(record).status_code==403
-    review=move(vuc,path,application,'review')
-    assert vuc.post(record+'/step',json={'status':'accepted','group_id':group['id'],'version':review['version'],
-                                       'message':'Образец одобрен'},headers=HEAD).status_code==409
-    selection=move(vuc,path,review,'selection')
-    assert vuc.post(record+'/step',json={'status':'accepted','group_id':other_group['id'],'version':selection['version'],
-                                       'message':'Образец одобрен'},headers=HEAD).status_code==422
-    result=move(vuc,path,selection,'accepted',message='Учебная группа назначена.',group_id=group['id'])
-    learning=body(student.get('/api/units/vuc/learning'))
-    assert len(learning['sessions'])==1 and learning['groups'][0]['id']==group['id']
-    assert body(other.get('/api/units/vuc/learning'))['sessions']==[]
-    enrollment=learning['enrollments'][0]
-    change={'outcome':'passed','comment':'Демонстрационный практикум зачтён.','version':enrollment['version']}
-    result_path=f"/api/units/vuc/learning/results/{enrollment['id']}"
-    assert union.put(result_path,json=change,headers=HEAD).status_code==403
-    body(vuc.put(result_path,json=change,headers=HEAD))
-    assert vuc.put(result_path,json=change,headers=HEAD).status_code==409
-    assert body(student.get('/api/units/vuc/learning'))['enrollments'][0]['outcome']=='passed'
-    assert other.get(result['file_url']).status_code==404
-    post=body(vuc.put('/api/units/vuc/publications',json={'kind':'material','title':'Групповая памятка',
-        'body':'<b>Вымышленное описание</b> для учебной группы.', 'group_id':group['id']},headers=HEAD))
-    assert '&lt;b&gt;' in student.get(post['file_url']).text
-    assert other.get(post['file_url']).status_code==404
-    assert union.get(post['file_url']).status_code==403
-    assert other.get('/api/units/vuc/report').status_code==403
-    assert vuc.get('/api/units/vuc/report?format=xlsx').content.startswith(b'PK')
-    assert any(x['action']=='result' for x in body(vuc.get('/api/units/vuc/history'))['items'])
-    assert any(n['title']=='Результат ВУЦ обновлён' for n in body(student.get('/api/notifications?filter=vuc')))
+
+BASE = '/api/units/vuc/admission'
+APPLICATIONS = BASE + '/applications'
+DAY = date(2026, 11, 22)
+SOURCE = {
+    'source_title': 'Источник для проверки на отдельной базе',
+    'source_url': 'https://vucmsu.ru/mem.html',
+    'verified_on': DAY.isoformat(),
+}
+PROGRAM_FIELDS = ('title', 'category', 'outcome', 'duration_months', 'academic_link', 'requirements',
+                  'selection', 'state', 'source_title', 'source_url', 'verified_on')
+CAMPAIGN_FIELDS = ('program_id', 'academic_year', 'title', 'state', 'opens_on', 'closes_on', 'intake_enabled',
+                   'seats', 'documents', 'procedure', 'requirements', 'stages', 'source_title', 'source_url', 'verified_on')
 
 
-def test_unit_publication_and_center_schedule_management(units):
-    vuc,union,student=(units(role) for role in ('vuc','union','student'))
-    now=campus_today()
-    program={'title':'Новая учебная программа '+uuid.uuid4().hex[:6],
-             'description':'Организационная демонстрация работы с учебным календарём.',
-             'requirements':'Заполните демонстрационный чек-лист.',
-             'opens':now.isoformat(),'closes':(now+timedelta(days=30)).isoformat()}
-    path='/api/units/vuc/learning'
-    assert union.put(path+'/programs',json=program,headers=HEAD).status_code==403
-    created=body(vuc.put(path+'/programs',json=program,headers=HEAD))
-    group=body(vuc.put(path+'/groups',json={'program_id':created['id'],'code':'ДЕМО-'+uuid.uuid4().hex[:6],'capacity':8},headers=HEAD))
-    start=datetime.combine(now+timedelta(days=4),time(18,15),CAMPUS_TZ)
-    session=dict(group_id=group['id'],title='Демонстрационный календарь',room='Кабинет АТ-314',
-                 starts=start.isoformat(),ends=(start+timedelta(hours=1)).isoformat())
-    entry=body(vuc.put(path+'/sessions',json=session,headers=HEAD))
-    assert vuc.put(path+'/sessions',json=session,headers=HEAD).status_code==409
-    assert student.put(path+'/sessions',json=session,headers=HEAD).status_code==403
-    body(vuc.put(path+'/sessions',json={**session,'id':entry['id'],'version':entry['version'],'cancelled':True},headers=HEAD))
-    assert not any(x['id']==entry['id'] for x in body(student.get(path))['sessions'])
-    post=body(union.put('/api/units/union/publications',json={'title':'Новая консультация',
-        'kind':'news','body':'Учебная консультация по заявкам на членство.'},headers=HEAD))
-    assert any(x['id']==post['id'] for x in body(student.get('/api/units/union'))['publications'])
-    assert vuc.put('/api/units/vuc/publications',json={
-        'id':post['id'],'version':post['version'],'title':'Чужая запись','kind':'news','body':'Вымышленное содержимое.'},headers=HEAD).status_code==404
+@pytest.fixture
+def today(monkeypatch):
+    def set_day(day):
+        monkeypatch.setattr(vuc, 'campus_today', lambda: day)
+    set_day(DAY)
+    return set_day
 
 
-def test_center_acceptance_preserves_one_place_when_decisions_are_concurrent(units):
-    student,other,worker=(units(role) for role in ('student','other','vuc'))
-    today=campus_today()
-    path='/api/units/vuc'
-    program=body(worker.put(path+'/learning/programs',json={'title':'Практикум '+uuid.uuid4().hex[:6],
-        'description':'Демонстрационная работа с календарём.','requirements':'Два учебных подтверждения.',
-        'opens':today.isoformat(),'closes':(today+timedelta(days=14)).isoformat()},headers=HEAD))
-    group=body(worker.put(path+'/learning/groups',json={
-        'program_id':program['id'],'code':'ВУЦ-'+uuid.uuid4().hex[:6],'capacity':1},headers=HEAD))
-    rows=[]
-    for actor in (student,other):
-        row=body(actor.post(path+'/cases',json={'kind':'apply','confirmed':True,'program_id':program['id'],
-            'checklist':['sample_application','sample_status']},headers=HEAD),201)
-        rows.append(move(worker,path+'/cases',move(worker,path+'/cases',row,'review'),'selection'))
+def program_body(**fields):
+    return {
+        'title': 'Изолированная проверка ' + uuid.uuid4().hex[:8],
+        'category': 'officer_reserve', 'outcome': 'Подготовка к зачислению в запас.',
+        'academic_link': 'Условия направления устанавливает ВУЦ.',
+        'state': 'active', **SOURCE, **fields,
+    }
+
+
+def campaign_body(program_id, **fields):
+    return {
+        'program_id': program_id, 'academic_year': DAY.year, 'title': 'Проверка кампании ' + uuid.uuid4().hex[:8],
+        'state': 'published', 'opens_on': DAY.isoformat(), 'closes_on': (DAY + timedelta(days=7)).isoformat(),
+        'documents': ['Заявление по утверждённой форме'], 'procedure': 'Передайте комплект сотруднику ВУЦ.',
+        'stages': {'medical': {'details': 'По направлению ВУЦ.'}}, **SOURCE, **fields,
+    }
+
+
+def update(api, path, row, keys, **fields):
+    payload = {key: row[key] for key in keys}
+    return api.put(path, json={**payload, 'id': row['id'], 'version': row['version'], **fields}, headers=HEAD)
+
+
+def test_vuc_catalog_visibility_sources_and_academic_years(units, today):
+    student, worker, teacher = (units(role) for role in ('student', 'vuc', 'teacher'))
+    catalog = body(student.get(BASE))
+    assert {'officer_reserve', 'sergeant_reserve', 'soldier_reserve'} <= {item['category'] for item in catalog['programs']}
+    assert all(not item['title'].startswith('Организация учебного процесса') for item in catalog['programs'])
+    assert 'Гражданство РФ' in catalog['federal_requirements'][0]
+    assert {'medical', 'psychological', 'physical', 'formalities'} <= catalog['stages'].keys()
+    assert teacher.get(BASE).status_code == 403
+    new_program = program_body()
+    assert teacher.put(BASE + '/programs', json=new_program, headers=HEAD).status_code == 403
+    assert student.put(BASE + '/programs', json=new_program, headers=HEAD).status_code == 403
+    assert worker.put(BASE + '/programs', json=new_program).status_code == 403
+    assert worker.put(BASE + '/programs', json={**new_program, 'source_url': 'javascript:alert(1)'}, headers=HEAD).status_code == 422
+    program = body(worker.put(BASE + '/programs', json=new_program, headers=HEAD))
+    assert program['duration_months'] is None
+    first_day = DAY + timedelta(days=1)
+    draft = body(worker.put(BASE + '/campaigns', json=campaign_body(
+        program['id'], opens_on=first_day.isoformat(), state='draft',
+    ), headers=HEAD))
+    request = {'campaign_id': draft['id'], 'confirmed': True}
+    assert student.post(APPLICATIONS, json=request, headers=HEAD).status_code == 404
+    assert all(item['id'] != draft['id'] for item in body(student.get(BASE))['campaigns'])
+    path = BASE + '/campaigns'
+    assert update(worker, path, draft, CAMPAIGN_FIELDS, state='published', source_title='').status_code == 422
+    assert update(worker, path, draft, CAMPAIGN_FIELDS, state='published', documents=[]).status_code == 422
+    assert update(worker, path, draft, CAMPAIGN_FIELDS, opens_on='2026-12-01').status_code == 422
+    assert update(worker, path, draft, CAMPAIGN_FIELDS, stages={'medical': {
+        'starts_on': '2026-12-20', 'ends_on': '2026-12-10',
+    }}).status_code == 422
+    published = body(update(worker, path, draft, CAMPAIGN_FIELDS, state='published'))
+    assert published['status'] == 'upcoming'
+    assert published['seats'] is None
+    assert student.post(APPLICATIONS, json=request, headers=HEAD).status_code == 409
+    assert update(worker, path, draft, CAMPAIGN_FIELDS, state='published').status_code == 409
+
+    today(first_day)
+    def read_campaign():
+        return next(item for item in body(student.get(BASE))['campaigns'] if item['id'] == published['id'])
+    assert read_campaign()['status'] == 'open'
+    program_path = BASE + '/programs'
+    edited_program = body(update(worker, program_path, program, PROGRAM_FIELDS, state='inactive', title=program['title'] + ' II'))
+    assert read_campaign()['status'] == 'program_inactive'
+    assert student.post(APPLICATIONS, json=request, headers=HEAD).status_code == 409
+    body(update(worker, program_path, edited_program, PROGRAM_FIELDS, state='active'))
+    changed = body(update(worker, path, published, CAMPAIGN_FIELDS, closes_on=first_day.isoformat()))
+    assert changed['status'] == 'open'
+    today(first_day + timedelta(days=1))
+    assert read_campaign()['status'] == 'documents_closed'
+    assert student.post(APPLICATIONS, json=request, headers=HEAD).status_code == 409
+    archived = body(update(worker, path, changed, CAMPAIGN_FIELDS, state='archived'))
+    assert read_campaign()['program']['title'] == program['title']
+    assert update(worker, path, archived, CAMPAIGN_FIELDS, opens_on=None).status_code == 409
+    assert student.post(APPLICATIONS, json=request, headers=HEAD).status_code == 409
+
+    next_year = date(2027, 9, 15)
+    today(next_year)
+    next_campaign = body(worker.put(path, json=campaign_body(
+        program['id'], academic_year=next_year.year, opens_on=None, closes_on=None,
+        documents=[], procedure='', stages={},
+    ), headers=HEAD))
+    assert next_campaign['status'] == 'awaiting_dates'
+    assert next_campaign['program']['title'] == edited_program['title']
+    assert read_campaign()['status'] == 'archived'
+    assert all(item['id'] != next_campaign['id'] or item['academic_year'] == 2027 for item in body(student.get(BASE))['campaigns'])
+
+
+def test_vuc_records_require_evidence_and_are_visible_only_to_owner_and_vuc(units, today):
+    student, other, worker, teacher, dean, union = (units(role) for role in
+                                                    ('student', 'other', 'vuc', 'teacher', 'staff', 'union'))
+    program = body(worker.put(BASE + '/programs', json=program_body(), headers=HEAD))
+    campaign = body(worker.put(BASE + '/campaigns', json=campaign_body(program['id']), headers=HEAD))
+    payload = {'campaign_id': campaign['id'], 'confirmed': True}
+    assert student.post(APPLICATIONS, json={**payload, 'student_id': 2}, headers=HEAD).status_code == 422
+    assert student.post(APPLICATIONS, json={**payload, 'medical_file': 'value'}, headers=HEAD).status_code == 422
+    assert student.post(APPLICATIONS, json={**payload, 'confirmed': False}, headers=HEAD).status_code == 422
+    assert student.post('/api/units/vuc/cases', json={'kind': 'apply'}, headers=HEAD).status_code == 410
+    headers = {**HEAD, 'Idempotency-Key': uuid.uuid4().hex}
+    application = body(student.post(APPLICATIONS, json=payload, headers=headers), 201)
+    assert body(student.post(APPLICATIONS, json=payload, headers=headers)) == application
+    assert student.post(APPLICATIONS, json=payload, headers=HEAD).status_code == 409
+    path = f"{APPLICATIONS}/{application['id']}"
+    step = path + '/step'
+    assert other.get(path).status_code == 404
+    assert other.get(path, params={'before': 1}).status_code == 404
+    assert body(other.get(APPLICATIONS, params={'campaign_id': campaign['id']}))['items'] == []
+    assert next(item for item in body(other.get(BASE))['campaigns'] if item['id'] == campaign['id'])['application_id'] is None
+    for denied in (teacher, dean, union):
+        assert denied.get(path).status_code == 403
+    initial = {'version': application['version'], 'status': 'enrolled', 'message': 'Изолированная проверка.'}
+    assert student.post(step, json=initial, headers=HEAD).status_code == 403
+    assert teacher.post(step, json=initial, headers=HEAD).status_code == 403
+    assert worker.post(step, json=initial, headers=HEAD).status_code == 409
+
+    def payload_for(status, **values):
+        return {'version': application['version'], 'status': status, 'message': 'Следующее действие в изолированном тесте.', **values}
+
+    evidence = {'basis_ref': 'Тестовый документ № 1', 'basis_on': DAY.isoformat()}
+    assert worker.post(step, json=payload_for('documents_received'), headers=HEAD).status_code == 422
+    application = body(worker.post(step, json=payload_for('documents_received', **evidence), headers=HEAD))
+    application = body(worker.post(step, json=payload_for('needs_documents'), headers=HEAD))
+    assert worker.post(step, json=payload_for('preliminary'), headers=HEAD).status_code == 409
+    application = body(worker.post(step, json=payload_for('documents_received', **evidence), headers=HEAD))
+    application = body(worker.post(step, json=payload_for('preliminary'), headers=HEAD))
+    assert worker.post(step, json=payload_for('admitted', **{**evidence, 'basis_on': '2026-11-21'}), headers=HEAD).status_code == 422
+    assert worker.post(step, json=payload_for('admitted', **{**evidence, 'basis_on': '2026-11-23'}), headers=HEAD).status_code == 422
+    for status in ('admitted', 'selection_complete', 'recommended'):
+        application = body(worker.post(step, json=payload_for(status, **evidence), headers=HEAD))
+    assert worker.post(step, json=payload_for('enrolled', **evidence), headers=HEAD).status_code == 422
+    application = body(worker.post(step, json=payload_for('enrolled', **evidence, contract_ref='Тестовый договор'), headers=HEAD))
+    assert not application['allowed']
+    assert body(student.get('/api/units/vuc/learning'))['enrollments'] == []
+    notice = {'version': application['version'], 'message': 'Получите выписку в ВУЦ.'}
+    result = body(worker.post(path + '/notice', json=notice, headers=HEAD))
+    assert result['status'] == 'enrolled'
+    assert worker.post(path + '/notice', json=notice, headers=HEAD).status_code == 409
+    detail = body(student.get(path))
+    assert detail['student'] is None
+    assert detail['next_action'] == notice['message']
+    assert [history['action'] for history in detail['history']].count('status') == 8
+    assert detail['history'][-2]['contract_ref'] == 'Тестовый договор'
+    assert detail['history'][-2]['author'] == 'Артём Неверов'
+    assert not body(other.get('/api/notifications?filter=vuc')) or all(
+        notice['target'] != f"/app/vuc/admission/{application['id']}"
+        for notice in body(other.get('/api/notifications?filter=vuc'))
+    )
+    assert any(item['title'] == 'Сообщение ВУЦ' and item['target'] == f"/app/vuc/admission/{application['id']}"
+               for item in body(student.get('/api/notifications?filter=vuc')))
+    assert any(row['section'] == 'Приём в ВУЦ' for row in body(worker.get('/api/units/vuc/report'))['items'])
+
+
+def test_vuc_repeated_inquiry_and_publication(units, today):
+    student, worker, union = (units(role) for role in ('student', 'vuc', 'union'))
+    program = body(worker.put(BASE + '/programs', json=program_body(), headers=HEAD))
+    campaign = body(worker.put(BASE + '/campaigns', json=campaign_body(program['id']), headers=HEAD))
     with ThreadPoolExecutor(max_workers=2) as pool:
-        def accept(row):
-            return worker.post(f"{path}/cases/{row['id']}/step",json={'status':'accepted','version':row['version'],
-                'group_id':group['id'],'message':'Учебная запись назначена.'},headers=HEAD)
-        results=list(pool.map(accept, rows))
-    assert sorted(result.status_code for result in results)==[200,409]
-    roster=body(worker.get(path+'/learning'))['enrollments']
-    assert sum(record['group_id']==group['id'] for record in roster)==1
+        results = list(pool.map(lambda _: student.post(
+            APPLICATIONS, json={'campaign_id': campaign['id'], 'confirmed': True}, headers=HEAD,
+        ), range(2)))
+    assert sorted(result.status_code for result in results) == [201, 409]
+
+    post = {'title': 'Объявление о консультации', 'kind': 'news', 'body': 'Уточнить комплект можно в рабочие часы.'}
+    path = '/api/units/vuc/publications'
+    assert union.put(path, json=post, headers=HEAD).status_code == 403
+    published = body(worker.put(path, json=post, headers=HEAD))
+    assert any(item['id'] == published['id'] for item in body(student.get('/api/units/vuc'))['publications'])
+    assert body(worker.get('/api/notifications?filter=vuc'))[0]['target'].startswith('/app/vuc-office/admission/')
+
+
+def test_public_contest_accounts_can_only_read_published_admission(units, today, monkeypatch):
+    student, worker = (units(role) for role in ('student', 'vuc'))
+    draft = body(worker.put(BASE + '/programs', json=program_body(state='draft'), headers=HEAD))
+    monkeypatch.setattr(vuc_policy, 'settings', replace(vuc_policy.settings, app_env='production'))
+    snapshot = body(worker.get(BASE))
+    assert snapshot['can_manage'] is False
+    assert all(item['id'] != draft['id'] for item in snapshot['programs'])
+    assert not body(student.get(BASE))['can_apply']
+    for path in [APPLICATIONS, '/api/units/vuc/cases', '/api/units/vuc/report', '/api/units/vuc/learning']:
+        assert worker.get(path).status_code == 403
+    assert worker.put(BASE + '/programs', json=program_body(), headers=HEAD).status_code == 403
+    assert worker.put('/api/units/vuc/publications', json={'kind': 'news', 'title': 'Запись', 'body': 'Проверка публикации.'},
+                      headers=HEAD).status_code == 403
+    assert student.post(APPLICATIONS, json={'campaign_id': 1, 'confirmed': True}, headers=HEAD).status_code == 403

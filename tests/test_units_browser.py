@@ -1,5 +1,7 @@
 """The new units are exercised through real accounts, forms and downloads."""
 from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 import os
 import re
 
@@ -94,38 +96,130 @@ def test_union_form_queue_clarification_decision_and_publication(frontend_page, 
         assert other.request.get(base + '/api/units/union/cases/' + case_id + '/file').status == 404
 
 
-def test_vuc_application_selection_and_group_result(frontend_page):
-    student, base = frontend_page
-    student.set_viewport_size({'width': 390, 'height': 900})
-    enter(student, base, 0, '/app/vuc')
-    student.locator('.op-row').filter(has_text='Организация учебного процесса').get_by_role('button', name='Подать заявление').click()
-    dialog = student.get_by_role('dialog')
-    assert dialog.locator('input[type="file"]').count() == 0
-    dialog.get_by_role('checkbox', name='Заявление').check()
-    dialog.get_by_role('checkbox', name='Подтверждение статуса студента').check()
-    dialog.get_by_role('checkbox', name='Подтверждаю отправку').check()
-    submit(student, 'Отправить')
-    expect(student).to_have_url(re.compile(r'/app/vuc/\d+$'))
-    student_path = student.url.removeprefix(base)
-    office_path = student_path.replace('/vuc/', '/vuc-office/')
-    with cabinet(student, base, 7, '/app/notifications') as worker:
-        worker.locator('.notification-full').filter(has_text='Заявление в ВУЦ').get_by_role('button', name='Открыть').click()
-        expect(worker).to_have_url(base + office_path)
-        step(worker, 'Взять на проверку', 'Проверяется')
-        step(worker, 'Передать на решение', 'Рассмотрение решения')
-        step(worker, 'Одобрить', 'Одобрено', message='Учебная группа назначена.', group='АТ-ВУЦ-01')
-        open_notice(student, base, 'Заявление в ВУЦ · Одобрено', student_path)
-        student.goto(base + '/app/vuc?tab=learning')
-        expect(student.get_by_role('heading', name='Вводная встреча и учебный календарь')).to_be_visible()
-        expect(student.get_by_text('Ожидает результата', exact=True)).to_be_visible()
 
-        worker.goto(base + '/app/vuc-office?tab=learning')
-        worker.get_by_role('button', name='Оформить результат').click()
-        worker.get_by_label('Результат', exact=True).select_option('passed')
-        worker.get_by_label('Комментарий студенту').fill('Демонстрационное занятие зачтено.')
+def screenshot(page, name):
+    destination = os.environ.get('ATLAS_VUC_SCREENSHOTS')
+    if destination:
+        directory = Path(destination)
+        directory.mkdir(parents=True, exist_ok=True)
+        expect(page.locator('#toast .toast-message')).to_have_count(0, timeout=6500)
+        page.evaluate('() => { document.activeElement?.blur(); window.scrollTo(0, 0); }')
+        page.screenshot(path=directory / (name + '.jpg'), type='jpeg', quality=74, full_page=True, animations='disabled')
+
+
+def fits_viewport(page):
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    assert page.evaluate("""() => {
+        const modal = document.querySelector('.modal');
+        return !modal || modal.scrollWidth <= modal.clientWidth + 1;
+    }""")
+
+
+def test_vuc_campaign_publication_inquiry_and_archive(frontend_page):
+    student, base = frontend_page
+    today = datetime.now(timezone(timedelta(hours=3))).date()
+    upcoming = (today + timedelta(days=1)).isoformat()
+    later = (today + timedelta(days=8)).isoformat()
+    earlier = (today - timedelta(days=1)).isoformat()
+    title = 'Кампания для изолированной приёмки'
+    student.set_viewport_size({'width': 360, 'height': 900})
+    enter(student, base, 0, '/app/vuc')
+    expect(student.get_by_text('Подтверждённых кампаний пока нет')).to_be_visible()
+    expect(student.get_by_role('heading', name='Подготовка офицеров запаса')).to_be_visible()
+    student.get_by_text('Условия программы', exact=True).first.focus()
+    student.keyboard.press('Enter')
+    expect(student.get_by_text('НИУ МГСУ: очный специалитет', exact=False)).to_be_visible()
+    fits_viewport(student)
+    screenshot(student, 'catalog-360')
+
+    with cabinet(student, base, 7, '/app/vuc-office') as worker:
+        worker.get_by_role('button', name='Добавить кампанию').click()
+        editor = worker.get_by_role('dialog')
+        expect(editor.get_by_label('Начало приёма документов')).to_have_value('')
+        editor.get_by_label('Программа', exact=True).select_option(label='Подготовка офицеров запаса')
+        editor.get_by_label('Первый год учебного года').fill(str(today.year))
+        editor.get_by_label('Название кампании').fill(title)
+        editor.get_by_label('Состояние кампании').select_option('published')
+        editor.get_by_label('Начало приёма документов').fill(upcoming)
+        editor.get_by_label('Последний день приёма').fill(later)
+        editor.get_by_label('Документы, по одному на строку').fill('Заявление по форме кампании\nСправка об обучении')
+        editor.get_by_label('Как и куда подать документы').fill('Передайте комплект в учебный офис по инструкции кампании.')
+        editor.get_by_text('Сроки отдельных этапов', exact=True).click()
+        editor.get_by_label('Окончание · Медицинское освидетельствование', exact=True).fill(later)
+        editor.get_by_label('Название документа или страницы').fill('Источник для изолированной проверки')
+        editor.get_by_label('Ссылка на официальный источник').fill('https://vucmsu.ru/mem.html')
+        editor.get_by_label('Дата проверки источника').fill(today.isoformat())
+        fits_viewport(worker)
         submit(worker, 'Сохранить')
-        expect(worker.get_by_text('Демонстрационное занятие зачтено.')).to_be_visible()
-    open_notice(student, base, 'Результат ВУЦ обновлён', '/app/vuc?tab=learning')
-    expect(student.get_by_text('Зачтено', exact=True)).to_be_visible()
-    expect(student.get_by_text('Демонстрационное занятие зачтено.')).to_be_visible()
-    assert student.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        expect(worker.get_by_text('Приём ещё не открыт')).to_be_visible()
+        student.reload()
+        expect(student.get_by_text('Приём ещё не открыт')).to_be_visible()
+        expect(student.get_by_role('button', name='Создать обращение')).to_have_count(0)
+
+        worker.get_by_role('button', name='Изменить кампанию').click()
+        worker.get_by_label('Начало приёма документов').fill(earlier)
+        submit(worker, 'Сохранить')
+        expect(worker.get_by_text('Приём документов открыт')).to_be_visible()
+        screenshot(worker, 'office-campaign-390')
+
+        student.set_viewport_size({'width': 390, 'height': 900})
+        student.reload()
+        expect(student.get_by_text('Приём документов открыт')).to_be_visible()
+        student.get_by_text('Условия, документы и этапы', exact=True).click()
+        expect(student.get_by_text('Справка об обучении', exact=True)).to_be_visible()
+        expect(student.locator('.vuc-campaign').get_by_text('Профессиональный психологический отбор', exact=True)).to_be_visible()
+        expect(student.get_by_text('Не опубликованы', exact=True)).to_be_visible()
+        fits_viewport(student)
+        screenshot(student, 'campaign-390')
+        student.set_viewport_size({'width': 1440, 'height': 1000})
+        fits_viewport(student)
+        screenshot(student, 'campaign-1440')
+        student.get_by_role('button', name='Создать обращение').click()
+        dialog = student.get_by_role('dialog')
+        assert dialog.locator('input[type="file"]').count() == 0
+        dialog.get_by_role('checkbox').check()
+        submit(student, 'Отправить обращение')
+        expect(student).to_have_url(re.compile(r'/app/vuc/admission/\d+$'))
+        student_path = student.url.removeprefix(base)
+        expect(student.locator('.page-subtitle')).to_contain_text('Обращение создано')
+
+        office_path = student_path.replace('/vuc/', '/vuc-office/')
+        open_notice(worker, base, 'Новое обращение по приёму в ВУЦ', office_path)
+        worker.get_by_role('button', name='Зарегистрировать полученные документы').click()
+        worker.get_by_label('Сообщение кандидату и следующие действия').fill('Комплект получен. Ожидайте направление.')
+        worker.get_by_label('Регистрационный номер принятого комплекта').fill('Номер изолированной проверки')
+        worker.get_by_label('Дата документа').fill(today.isoformat())
+        submit(worker, 'Сохранить')
+        expect(worker.locator('.page-subtitle')).to_contain_text('Документы зарегистрированы')
+        open_notice(student, base, 'Документы зарегистрированы', student_path)
+        expect(student.locator('.op-log')).to_contain_text('Ожидайте направление.')
+        worker.get_by_role('link', name='К кандидатам').click()
+        expect(worker.get_by_role('article').get_by_text('Документы зарегистрированы', exact=True)).to_be_visible()
+
+        worker.goto(base + '/app/vuc-office?tab=content')
+        worker.get_by_role('button', name='Добавить публикацию').click()
+        worker.get_by_label('Раздел публикации').select_option('news')
+        worker.get_by_label('Заголовок').fill('Ответы на вопросы по кампании')
+        worker.get_by_label('Текст', exact=True).fill('Приём уточнений через учебный офис.')
+        submit(worker, 'Сохранить')
+        student.goto(base + '/app/vuc?tab=content')
+        expect(student.get_by_role('heading', name='Ответы на вопросы по кампании')).to_be_visible()
+
+        worker.goto(base + '/app/vuc-office')
+        worker.get_by_role('button', name='Изменить кампанию').click()
+        worker.get_by_label('Последний день приёма').fill(earlier)
+        submit(worker, 'Сохранить')
+        expect(worker.get_by_text('Приём документов завершён')).to_be_visible()
+        worker.get_by_role('button', name='Изменить кампанию').click()
+        worker.get_by_label('Состояние кампании').select_option('archived')
+        submit(worker, 'Сохранить')
+        worker.get_by_role('link', name='Архив кампаний').click()
+        expect(worker.get_by_role('heading', name=title)).to_be_visible()
+        expect(worker.get_by_role('button', name='Изменить кампанию')).to_have_count(0)
+    student.set_viewport_size({'width': 360, 'height': 900})
+    student.goto(base + '/app/vuc?tab=archive')
+    expect(student.get_by_role('heading', name=title)).to_be_visible()
+    expect(student.get_by_role('button', name='Создать обращение')).to_have_count(0)
+    student.get_by_role('link', name='Открыть моё обращение').click()
+    expect(student).to_have_url(base + student_path)
+    fits_viewport(student)

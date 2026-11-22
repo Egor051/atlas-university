@@ -28,28 +28,28 @@ def call(client, method, path, payload=None):
 
 
 def unit_examples(base):
-    """Create visible sample decisions in the disposable database via the public workflow."""
+    """Exercise the two units in the disposable database."""
     options = dict(base_url=base, headers={'X-Requested-With':'ATLAS'}, trust_env=False)
-    with httpx.Client(**options) as student:
+    today = datetime.now(timezone(timedelta(hours=3))).date()
+    with httpx.Client(**options) as student, httpx.Client(**options) as union, httpx.Client(**options) as center:
         call(student,'POST','login',{'login':'alina.demo','password':'AtlasDemo!2026-A'})
-        overview = call(student,'GET','units/vuc')
-        program_id = overview['programs'][0]['id']
-        join = call(student,'POST','units/union/cases',{'kind':'join','confirmed':True})
-        apply = call(student,'POST','units/vuc/cases',{'kind':'apply','confirmed':True,'program_id':program_id,
-                                                      'checklist':list(overview['checklist'])})
-    with httpx.Client(**options) as union, httpx.Client(**options) as center:
         call(union,'POST','login',{'login':'union.demo','password':'AtlasUnion!2026-U'})
         call(center,'POST','login',{'login':'vuc.demo','password':'AtlasCenter!2026-V'})
-        for client, row, statuses in [(union, join, ('review','accepted')), (center, apply, ('review','selection','accepted'))]:
-            for status in statuses:
-                body = {'status':status,'version':row['version']}
-                if status=='accepted':
-                    body['message'] = 'Демонстрационное заявление рассмотрено.'
-                    if row['unit']=='vuc':
-                        groups = call(center,'GET','units/vuc/learning')['groups']
-                        body['group_id'] = next(group['id'] for group in groups if group['program_id']==program_id)
-                row = call(client,'POST',f"units/{row['unit']}/cases/{row['id']}/step",body)
-    return join['id'], apply['id']
+        join = call(student,'POST','units/union/cases',{'kind':'join','confirmed':True})
+        join_step = f"units/union/cases/{join['id']}/step"
+        review = call(union,'POST',join_step,{'status':'review','version':join['version']})
+        call(union,'POST',join_step,{'status':'accepted','version':review['version'],
+                                    'message':'Проверка профсоюза в изолированной базе.'})
+        program = call(center,'GET','units/vuc/admission')['programs'][0]
+        campaign = call(center,'PUT','units/vuc/admission/campaigns',{
+            'program_id':program['id'],'academic_year':today.year,'title':'Проверочная кампания',
+            'state':'published','opens_on':today.isoformat(),'closes_on':(today+timedelta(days=7)).isoformat(),
+            'documents':['Заявление по форме кампании'],'procedure':'Передайте комплект в учебный офис.',
+            'source_title':'Источник для изолированной приёмки','source_url':program['source_url'],
+            'verified_on':today.isoformat(),
+        })
+        application = call(student,'POST','units/vuc/admission/applications',{'campaign_id':campaign['id'],'confirmed':True})
+    return join['id'], application['id']
 
 
 def academic_examples(base):
@@ -102,18 +102,19 @@ def main():
         actors[0][2].extend(['union','union?tab=content','union?tab=cases',
                             'vuc','vuc?tab=learning','vuc?tab=content','vuc?tab=cases'])
         actors.extend([(6,'union', ['union-office','union-office?tab=content','union-office?tab=report','notifications']),
-                       (7,'vuc', ['vuc-office','vuc-office?tab=content','vuc-office?tab=learning','vuc-office?tab=report','notifications'])])
+                       (7,'vuc', ['vuc-office','vuc-office?tab=programs','vuc-office?tab=admissions',
+                                   'vuc-office?tab=content','vuc-office?tab=learning','vuc-office?tab=report','notifications'])])
     axe = (ROOT/'node_modules/axe-core/axe.min.js').read_text(encoding='utf-8')
     try:
         with isolated_server() as server, sync_playwright() as browsers:
             captures = set(CAPTURES)
             expected = {}
             if args.phase!='academic':
-                join, apply = unit_examples(server['base'])
-                actors[0][2].extend([f'union/{join}',f'vuc/{apply}'])
+                join, application = unit_examples(server['base'])
+                actors[0][2].extend([f'union/{join}',f'vuc/admission/{application}'])
                 actors[-2][2].append(f'union-office/{join}')
-                actors[-1][2].append(f'vuc-office/{apply}')
-                captures.update([f'union/{join}', f'vuc-office/{apply}'])
+                actors[-1][2].append(f'vuc-office/admission/{application}')
+                captures.update([f'union/{join}', f'vuc-office/admission/{application}'])
             if args.phase=='acceptance':
                 expected = academic_examples(server['base'])
                 work, conversation, project = expected

@@ -561,7 +561,7 @@
 
   async function request(path,method='POST',body){
     const source=body===undefined?undefined:JSON.stringify(body);
-    const deduplicate=method==='POST'&&/^(scheduling\/changes|units\/(?:union|vuc)\/cases|teaching\/(?:consultations|\d+\/(?:points(?:\/\d+\/awards\/\d+\/corrections)?|works(?:\/\d+\/(?:feedback\/\d+|submissions\/\d+\/score-corrections))?)))$/.test(path);
+    const deduplicate=method==='POST'&&/^(scheduling\/changes|units\/(?:union\/cases|vuc\/(?:cases|admission\/applications))|teaching\/(?:consultations|\d+\/(?:points(?:\/\d+\/awards\/\d+\/corrections)?|works(?:\/\d+\/(?:feedback\/\d+|submissions\/\d+\/score-corrections))?)))$/.test(path);
     const prior=retries.get(path);
     const key=deduplicate?(prior?.source===source?prior.key:crypto.randomUUID()):null;
     if(key)retries.set(path,{source,key});
@@ -1150,6 +1150,6 @@
   }
 
   function reset(){upload=null;retries.clear();}
-  const ui={title,section,list,row,download,input,area,select,yesNo,p,tabs,pageLinks,modal,request,msk,numbers,url,link};
+  const ui={title,section,empty,list,row,download,input,area,select,yesNo,p,tabs,pageLinks,modal,request,msk,numbers,url,link};
   window.ATLASOperations={pages,has,validParts,cleanQuery,load,render,init,reset,ui};
 })();

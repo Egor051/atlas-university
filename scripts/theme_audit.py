@@ -54,10 +54,10 @@ MODAL_ACTIONS = {
     'registry': ['[data-op-action="new-ref"]', '[data-op-action="edit-ref"]'],
     'union': ['[data-unit-action="join"]', '[data-unit-action="aid"]', '[data-unit-action="consult"]',
               '[data-unit-action="appeal"]', '[data-unit-action="event"]'],
-    'vuc': ['[data-unit-action="apply"]'],
+    'vuc': ['[data-vuc-action="inquire"]'],
     'union-office': ['[data-unit-action="new-publication"]', '[data-unit-action="edit-publication"]',
                      '[data-unit-action^="step-"]'],
-    'vuc-office': ['[data-unit-action="new-publication"]', '[data-unit-action="edit-program"]',
+    'vuc-office': ['[data-vuc-action="new-campaign"]',
                    '[data-unit-action="edit-group"]', '[data-unit-action="edit-session"]',
                    '[data-unit-action="edit-result"]', '[data-unit-action^="step-"]'],
 }

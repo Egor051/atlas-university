@@ -11,12 +11,13 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from .db import User, campus_today, utc_now
-from .main import StrictBody, date_iso, get_db, require_roles, require_same_origin, require_student, require_user
+from .main import StrictBody, date_iso, get_db, require_same_origin, require_student, require_user
 from .services import begin_idempotent, commit_idempotent
 from .session_security import as_utc
 from .table_formats import table_bytes
 from .units_db import (CenterEnrollment, CenterGroup, CenterProgram, CenterSession,
                        UnionMembership, UnitCase, UnitCaseEvent, UnitPublication)
+from .vuc_policy import can_manage_vuc, private_account
 from .workspace import lock_workspace, notify, recorded
 from .workspace_db import OperationEvent
 
@@ -25,16 +26,14 @@ RecordId = Annotated[int, Path(ge=1,le=2147483647)]
 BodyId = Annotated[int, Field(strict=True,ge=1,le=2147483647)]
 router = APIRouter(prefix='/api/units')
 write = [Depends(require_same_origin)]
-center_staff = require_roles('vuc')
 CASE_NAMES = {'join':'Вступление в профсоюз','leave':'Выход из профсоюза','aid':'Материальная помощь',
-              'consult':'Консультация','appeal':'Обращение','event':'Запись на мероприятие','apply':'Заявление в ВУЦ'}
+              'consult':'Консультация','appeal':'Обращение','event':'Запись на мероприятие','apply':'Архивная запись ВУЦ'}
 STATES = {'submitted':'Подано','review':'Проверяется','needs_info':'Нужно уточнение','selection':'Рассмотрение решения',
           'accepted':'Одобрено','rejected':'Отклонено','resolved':'Ответ готов'}
 UNITS = {'union':'Студенческий профсоюз','vuc':'Военный учебный центр'}
 POST_KINDS = {'union':{'structure','news','benefit','event','document'},'vuc':{'structure','news','document','material'}}
-UNIT_CASES = {'union':{'join','leave','aid','consult','appeal','event'},'vuc':{'apply','consult','appeal'}}
+UNIT_CASES = {'union':{'join','leave','aid','consult','appeal','event'},'vuc':{'consult','appeal'}}
 TERMINAL = {'accepted','rejected','resolved'}
-CHECKLIST = {'sample_application':'Заявление','sample_status':'Подтверждение статуса студента'}
 
 
 class CaseBody(StrictBody):
@@ -83,20 +82,6 @@ class PublicationBody(Editor):
         return value.strip() if isinstance(value,str) else value
 
 
-class ProgramBody(Editor):
-    title: str = Field(min_length=4,max_length=180)
-    description: str = Field(min_length=10,max_length=1200)
-    requirements: str = Field(min_length=10,max_length=1200)
-    opens: date
-    closes: date
-    published: bool = Field(default=True,strict=True)
-
-    @field_validator('title','description','requirements',mode='before')
-    @classmethod
-    def trim(cls,value):
-        return value.strip() if isinstance(value,str) else value
-
-
 class GroupBody(Editor):
     program_id: BodyId
     code: str = Field(min_length=2,max_length=60)
@@ -128,8 +113,16 @@ class ResultBody(StrictBody):
     version: int = Field(strict=True,ge=1)
 
 
-def unit_access(unit,user,*,manage=False):
+def require_vuc_operator(user=Depends(require_user)):
+    if not can_manage_vuc(user):
+        raise HTTPException(403,'Нужна служебная учётная запись ВУЦ')
+    return user
+
+
+def unit_access(unit,user,*,manage=False,private=False):
     if user.role==unit:
+        if unit=='vuc' and (manage or private):
+            require_vuc_operator(user)
         return True
     if user.role=='student' and not manage:
         return False
@@ -141,7 +134,7 @@ def case_path(unit,case_id,*,office=False):
 
 
 def get_case(db,unit,case_id,user):
-    office=unit_access(unit,user)
+    office=unit_access(unit,user,private=True)
     query=select(UnitCase).where(UnitCase.unit==unit,UnitCase.id==case_id)
     if not office:
         query=query.where(UnitCase.student_id==user.id)
@@ -152,12 +145,12 @@ def get_case(db,unit,case_id,user):
 
 
 def case_steps(row):
+    if row.kind=='apply':
+        return []
     if row.status in {'submitted','needs_info'}:
         return ['review']
-    if row.status=='selection':
-        return ['accepted','rejected','needs_info']
     if row.status=='review':
-        next_status='selection' if row.kind=='apply' else 'resolved' if row.kind in {'consult','appeal'} else 'accepted'
+        next_status='resolved' if row.kind in {'consult','appeal'} else 'accepted'
         return [next_status,'needs_info','rejected']
     return []
 
@@ -168,8 +161,9 @@ def case_data(row,*,name=None):
                 status_label=STATES[row.status],response=row.response,message=row.message,program_id=row.program_id,
                 publication_id=row.publication_id,checklist=json.loads(row.sample_checklist),version=row.version,
                 created_at=date_iso(row.created_at),updated_at=date_iso(row.updated_at),student=name,
-                allowed=case_steps(row) if name else [],can_followup=name is None and row.status=='needs_info',
-                file_url=f'/api/units/{row.unit}/cases/{row.id}/file' if row.status in TERMINAL else None)
+                allowed=case_steps(row) if name else [],
+                can_followup=name is None and row.kind!='apply' and row.status=='needs_info',
+                file_url=f'/api/units/{row.unit}/cases/{row.id}/file' if row.kind!='apply' and row.status in TERMINAL else None)
 
 
 def post_data(row):
@@ -177,12 +171,6 @@ def post_data(row):
                 event_day=date_iso(row.event_day),capacity=row.capacity,published=row.published,
                 updated_at=date_iso(row.updated_at),version=row.version,
                 file_url=f'/api/units/{row.unit}/publications/{row.id}/file' if row.kind in {'document','material'} else None)
-
-
-def program_data(row):
-    return dict(id=row.id,title=row.title,description=row.description,requirements=row.requirements,
-                opens=row.opens.isoformat(),closes=row.closes.isoformat(),published=row.published,version=row.version,
-                accepting=row.published and row.opens<=campus_today()<=row.closes)
 
 
 def group_data(row):
@@ -204,8 +192,9 @@ def add_history(db,actor,row,action,message):
 
 
 def notify_operators(db,unit,row,title):
-    for uid in db.scalars(select(User.id).where(User.role==unit)):
-        notify(db,uid,title,f'{CASE_NAMES[row.kind]} №{row.id}',case_path(unit,row.id,office=True),category=unit)
+    for operator in db.scalars(select(User).where(User.role==unit)):
+        if unit!='vuc' or can_manage_vuc(operator):
+            notify(db,operator.id,title,f'{CASE_NAMES[row.kind]} №{row.id}',case_path(unit,row.id,office=True),category=unit)
 
 
 def membership(db,uid):
@@ -224,27 +213,24 @@ def visible_posts(unit,user,office):
 @router.get('/{unit}')
 def overview(unit:Unit,user=Depends(require_user),db:Session=Depends(get_db)):
     office=unit_access(unit,user)
+    can_manage=office and (unit!='vuc' or can_manage_vuc(user))
     counts_query=select(UnitCase.status,func.count()).where(UnitCase.unit==unit)
     if not office:
         counts_query=counts_query.where(UnitCase.student_id==user.id)
-    counts=dict(db.execute(counts_query.group_by(UnitCase.status)).all())
-    posts=db.scalars(visible_posts(unit,user,office).order_by(UnitPublication.id.desc()).limit(80)).all()
-    result=dict(title=UNITS[unit],unit=unit,office=office,counts=counts,publications=[post_data(row) for row in posts])
+    counts=dict(db.execute(counts_query.group_by(UnitCase.status)).all()) if not office or can_manage else {}
+    posts=db.scalars(visible_posts(unit,user,can_manage).order_by(UnitPublication.id.desc()).limit(80)).all()
+    result=dict(title=UNITS[unit],unit=unit,office=office,can_manage=can_manage,counts=counts,
+                publications=[post_data(row) for row in posts])
     if unit=='union' and not office:
         member=membership(db,user.id)
         result['member']={'active':bool(member and member.active),'updated_at':date_iso(member.updated_at) if member else None}
-    if unit=='vuc':
-        query=select(CenterProgram)
-        if not office:
-            query=query.where(CenterProgram.published.is_(True))
-        result.update(programs=[program_data(row) for row in db.scalars(query.order_by(CenterProgram.id))],checklist=CHECKLIST)
     return result
 
 
 @router.get('/{unit}/cases')
 def cases(unit:Unit,offset:int=Query(0,ge=0,le=2147483647),status:str=Query('',max_length=20),
           user=Depends(require_user),db:Session=Depends(get_db)):
-    office=unit_access(unit,user)
+    office=unit_access(unit,user,private=True)
     query=(select(UnitCase,User.full_name).join(User,User.id==UnitCase.student_id)
            .options(joinedload(UnitCase.program),joinedload(UnitCase.publication)).where(UnitCase.unit==unit))
     if not office:
@@ -265,11 +251,9 @@ def case_detail(unit:Unit,case_id:RecordId,before:int|None=Query(None,ge=1,le=21
     if before:
         query=query.where(UnitCaseEvent.id<before)
     rows=db.execute(query.order_by(UnitCaseEvent.id.desc()).limit(51)).all()
-    groups=[]
-    if user.role=='vuc' and row.kind=='apply' and row.status=='selection':
-        groups=[group_data(item) for item in db.scalars(select(CenterGroup).where(CenterGroup.program_id==row.program_id))]
-    can_followup=name is None and row.status=='needs_info' and before is None and (not rows or rows[0][0].action!='followup')
-    return {**case_data(row,name=name),'can_followup':can_followup,'groups':groups,'older_before':rows[49][0].id if len(rows)>50 else None,
+    can_followup=(name is None and row.kind!='apply' and row.status=='needs_info'
+                  and before is None and (not rows or rows[0][0].action!='followup'))
+    return {**case_data(row,name=name),'can_followup':can_followup,'older_before':rows[49][0].id if len(rows)>50 else None,
             'history':[dict(id=event.id,author=author,action=event.action,status=STATES[event.status],message=event.message,
                             created_at=date_iso(event.created_at)) for event,author in reversed(rows[:50])]}
 
@@ -278,12 +262,12 @@ def verify_submission(db,unit,user,body):
     kind=body.kind
     if kind not in UNIT_CASES[unit]:
         raise HTTPException(422,'Выберите услугу этого подразделения')
-    if kind in {'join','leave','event','apply'} and not body.confirmed:
+    if kind in {'join','leave','event'} and not body.confirmed:
         raise HTTPException(422,'Подтвердите отправку заявления')
     if kind in {'aid','consult','appeal'} and len(body.message.strip())<5:
         raise HTTPException(422,'Опишите ситуацию или вопрос')
-    if kind!='apply' and (body.program_id is not None or body.checklist):
-        raise HTTPException(422,'Программа и чек-лист относятся к заявлению в ВУЦ')
+    if body.program_id is not None or body.checklist:
+        raise HTTPException(422,'Эти поля относятся к прежней форме ВУЦ')
     if kind!='event' and body.publication_id is not None:
         raise HTTPException(422,'Укажите мероприятие только при записи на событие')
     if kind in {'join','leave','aid'}:
@@ -293,17 +277,6 @@ def verify_submission(db,unit,user,body):
             raise HTTPException(409,'Членство уже действует')
         if kind in {'leave','aid'} and not active:
             raise HTTPException(409,'Действие доступно члену профсоюза')
-    if kind=='apply':
-        if body.message or set(body.checklist)!=set(CHECKLIST) or len(body.checklist)!=len(CHECKLIST):
-            raise HTTPException(422,'Проверьте оба пункта списка')
-        program=db.get(CenterProgram,body.program_id) if body.program_id else None
-        if program is None or not program.published:
-            raise HTTPException(404,'Программа не найдена')
-        if not program.opens<=campus_today()<=program.closes:
-            raise HTTPException(409,'Приём заявлений закрыт')
-        if db.scalar(select(CenterEnrollment.id).where(CenterEnrollment.student_id==user.id,
-                                                       CenterEnrollment.program_id==program.id)) is not None:
-            raise HTTPException(409,'Учебная группа уже назначена')
     if kind=='event':
         item=db.scalar(select(UnitPublication).where(UnitPublication.id==body.publication_id,UnitPublication.unit=='union',
                                                       UnitPublication.kind=='event',UnitPublication.published.is_(True)))
@@ -311,19 +284,21 @@ def verify_submission(db,unit,user,body):
             raise HTTPException(404,'Мероприятие недоступно')
     duplicate = select(UnitCase.id).where(UnitCase.unit==unit,UnitCase.student_id==user.id,UnitCase.kind==kind,
                                          UnitCase.status.not_in(TERMINAL-{'accepted'} if kind=='event' else TERMINAL))
-    if kind=='apply':
-        duplicate=duplicate.where(UnitCase.program_id==body.program_id)
     if kind=='event':
         duplicate=duplicate.where(UnitCase.publication_id==body.publication_id)
-    if kind in {'join','leave','event','apply'} and db.scalar(duplicate.limit(1)) is not None:
+    if kind in {'join','leave','event'} and db.scalar(duplicate.limit(1)) is not None:
         raise HTTPException(409,'Действующая заявка уже есть в истории')
-    if db.scalar(select(func.count()).select_from(UnitCase).where(UnitCase.unit==unit,UnitCase.student_id==user.id,
+    if db.scalar(select(func.count()).select_from(UnitCase).where(UnitCase.unit==unit,UnitCase.student_id==user.id,UnitCase.kind!='apply',
                                                                   UnitCase.status.not_in(TERMINAL))) >= 20:
         raise HTTPException(429,'Достигнут предел открытых обращений')
 
 
 @router.post('/{unit}/cases',status_code=201,dependencies=write)
 def submit(unit:Unit,body:CaseBody,request:Request,response:Response,user=Depends(require_student),db:Session=Depends(get_db)):
+    if unit=='vuc' and body.kind=='apply':
+        raise HTTPException(410,'Для нового обращения откройте опубликованную кампанию ВУЦ')
+    if unit=='vuc' and not private_account(user):
+        raise HTTPException(403,'Для отправки обращения нужна личная учётная запись студента')
     lock_workspace(db,user.id)
     receipt,prior=begin_idempotent(db,request,response,user,f'unit-case:{unit}',body.model_dump())
     if prior is not None:
@@ -339,7 +314,7 @@ def submit(unit:Unit,body:CaseBody,request:Request,response:Response,user=Depend
     return commit_idempotent(db,receipt,case_data(row))
 
 
-def accept(db,row,group_id):
+def accept(db,row):
     if row.kind in {'join','leave'}:
         item=membership(db,row.student_id)
         active=row.kind=='join'
@@ -354,17 +329,6 @@ def accept(db,row,group_id):
         item=membership(db,row.student_id)
         if not item or not item.active:
             raise HTTPException(409,'Членство уже завершено')
-    if row.kind=='apply':
-        group=db.get(CenterGroup,group_id) if group_id else None
-        if group is None or group.program_id!=row.program_id:
-            raise HTTPException(422,'Выберите учебную группу выбранной программы')
-        if db.scalar(select(CenterEnrollment.id).where(CenterEnrollment.student_id==row.student_id,
-                                                       CenterEnrollment.program_id==row.program_id)) is not None:
-            raise HTTPException(409,'Студент уже записан на программу')
-        count=db.scalar(select(func.count()).select_from(CenterEnrollment).where(CenterEnrollment.group_id==group.id))
-        if count>=group.capacity:
-            raise HTTPException(409,'В учебной группе нет мест')
-        db.add(CenterEnrollment(student_id=row.student_id,program_id=row.program_id,group_id=group.id,case_id=row.id))
     if row.kind=='event':
         item=row.publication
         if item is None or not item.published or item.event_day<campus_today():
@@ -383,10 +347,10 @@ def advance(unit:Unit,case_id:RecordId,body:CaseStep,user=Depends(require_user),
         raise HTTPException(409,'Состояние изменилось или переход недоступен')
     if body.status in TERMINAL|{'needs_info'} and len(body.message.strip())<4:
         raise HTTPException(422,'Добавьте текст ответа')
-    if body.group_id and (row.kind!='apply' or body.status!='accepted'):
-        raise HTTPException(422,'Группа назначается при одобрении заявления в ВУЦ')
+    if body.group_id:
+        raise HTTPException(422,'В этом обращении учебная группа не назначается')
     if body.status=='accepted':
-        accept(db,row,body.group_id)
+        accept(db,row)
     row.status,row.updated_at,row.version=body.status,utc_now(),row.version+1
     if body.message.strip():
         row.response=body.message.strip()
@@ -401,7 +365,7 @@ def advance(unit:Unit,case_id:RecordId,body:CaseStep,user=Depends(require_user),
 def clarify(unit:Unit,case_id:RecordId,body:Followup,user=Depends(require_student),db:Session=Depends(get_db)):
     lock_workspace(db,user.id)
     row=get_case(db,unit,case_id,user)
-    if row.status!='needs_info' or row.version!=body.version:
+    if row.kind=='apply' or row.status!='needs_info' or row.version!=body.version:
         raise HTTPException(409,'Уточнение уже обработано или состояние изменилось')
     previous=db.scalar(select(UnitCaseEvent.action).where(UnitCaseEvent.case_id==row.id).order_by(UnitCaseEvent.id.desc()).limit(1))
     if previous=='followup':
@@ -424,6 +388,8 @@ def html_file(title,body,filename):
 @router.get('/{unit}/cases/{case_id}/file')
 def case_file(unit:Unit,case_id:RecordId,user=Depends(require_user),db:Session=Depends(get_db)):
     row=get_case(db,unit,case_id,user)
+    if row.kind=='apply':
+        raise HTTPException(410,'История прежней записи ВУЦ доступна в кабинете')
     if row.status not in TERMINAL:
         raise HTTPException(409,'Решение ещё не оформлено')
     return html_file(CASE_NAMES[row.kind],f'Заявление №{row.id}\nРезультат: {STATES[row.status]}\n{row.response}',f'atlas-{unit}-case-{row.id}')
@@ -432,6 +398,8 @@ def case_file(unit:Unit,case_id:RecordId,user=Depends(require_user),db:Session=D
 @router.get('/{unit}/publications/{post_id}/file')
 def publication_file(unit:Unit,post_id:RecordId,user=Depends(require_user),db:Session=Depends(get_db)):
     office=unit_access(unit,user)
+    if unit=='vuc':
+        office=can_manage_vuc(user)
     row=db.scalar(visible_posts(unit,user,office).where(UnitPublication.id==post_id,UnitPublication.kind.in_(['document','material'])))
     if row is None:
         raise HTTPException(404,'Документ не найден')
@@ -491,20 +459,12 @@ def save_publication(unit:Unit,body:PublicationBody,user=Depends(require_user),d
 
 
 @router.put('/vuc/learning/programs',dependencies=write)
-def save_program(body:ProgramBody,user=Depends(center_staff),db:Session=Depends(get_db)):
-    lock_workspace(db,user.id)
-    row=edit_row(db,CenterProgram,body)
-    if body.closes<body.opens:
-        raise HTTPException(422,'Срок приёма должен быть позже даты открытия')
-    if db.scalar(select(CenterProgram.id).where(CenterProgram.title==body.title,CenterProgram.id!=(body.id or 0))) is not None:
-        raise HTTPException(409,'Название программы уже используется')
-    result=persist(db,user,'vuc','program',CenterProgram,row,body.model_dump(exclude={'id','version'}),program_data)
-    db.commit()
-    return result
+def obsolete_program_editor(user=Depends(require_vuc_operator)):
+    raise HTTPException(410,'Программы приёма редактируются в каталоге ВУЦ')
 
 
 @router.put('/vuc/learning/groups',dependencies=write)
-def save_group(body:GroupBody,user=Depends(center_staff),db:Session=Depends(get_db)):
+def save_group(body:GroupBody,user=Depends(require_vuc_operator),db:Session=Depends(get_db)):
     lock_workspace(db,user.id)
     row=edit_row(db,CenterGroup,body)
     program=db.get(CenterProgram,body.program_id)
@@ -520,7 +480,7 @@ def save_group(body:GroupBody,user=Depends(center_staff),db:Session=Depends(get_
 
 
 @router.put('/vuc/learning/sessions',dependencies=write)
-def save_session(body:SessionBody,user=Depends(center_staff),db:Session=Depends(get_db)):
+def save_session(body:SessionBody,user=Depends(require_vuc_operator),db:Session=Depends(get_db)):
     lock_workspace(db,user.id)
     row=edit_row(db,CenterSession,body)
     group=db.get(CenterGroup,body.group_id)
@@ -549,7 +509,7 @@ def save_session(body:SessionBody,user=Depends(center_staff),db:Session=Depends(
 
 @router.get('/vuc/learning')
 def learning(user=Depends(require_user),db:Session=Depends(get_db)):
-    office=unit_access('vuc',user)
+    office=unit_access('vuc',user,private=True)
     query=(select(CenterEnrollment,User.full_name).join(User,User.id==CenterEnrollment.student_id)
            .options(joinedload(CenterEnrollment.group),joinedload(CenterEnrollment.program)))
     if not office:
@@ -561,13 +521,15 @@ def learning(user=Depends(require_user),db:Session=Depends(get_db)):
         ids=[row.group_id for row,_ in enrollment]
         groups=groups.where(CenterGroup.id.in_(ids))
         sessions=sessions.where(CenterSession.group_id.in_(ids))
-    return dict(groups=[group_data(row) for row in db.scalars(groups)],
+    programs=select(CenterProgram).order_by(CenterProgram.id)
+    return dict(programs=[dict(id=row.id,title=row.title) for row in db.scalars(programs)] if office else [],
+                groups=[group_data(row) for row in db.scalars(groups)],
                 sessions=[session_data(row) for row in db.scalars(sessions.order_by(CenterSession.starts_at.desc()).limit(100))],
                 enrollments=[enrollment_data(row,name if office else None) for row,name in enrollment])
 
 
 @router.put('/vuc/learning/results/{enrollment_id}',dependencies=write)
-def save_result(enrollment_id:RecordId,body:ResultBody,user=Depends(center_staff),db:Session=Depends(get_db)):
+def save_result(enrollment_id:RecordId,body:ResultBody,user=Depends(require_vuc_operator),db:Session=Depends(get_db)):
     lock_workspace(db,user.id)
     row=db.get(CenterEnrollment,enrollment_id)
     if row is None:
@@ -594,6 +556,10 @@ def report(unit:Unit,format:Literal['json','csv','xlsx']='json',user=Depends(req
         rows.append(dict(section='Членство',status='Действующее',count=db.scalar(
             select(func.count()).select_from(UnionMembership).where(UnionMembership.active.is_(True)))))
     else:
+        from .vuc import STATUSES as admission_statuses
+        from .vuc_db import VucApplication
+        rows.extend(dict(section='Приём в ВУЦ',status=admission_statuses[status],count=count) for status,count in
+                    db.execute(select(VucApplication.status,func.count()).group_by(VucApplication.status)))
         labels={'pending':'Ожидает результата','passed':'Зачтено','revision':'Нужна доработка'}
         rows.extend(dict(section='Учебные результаты',status=labels[outcome],count=count) for outcome,count in
                     db.execute(select(CenterEnrollment.outcome,func.count()).group_by(CenterEnrollment.outcome)))

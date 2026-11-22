@@ -825,7 +825,8 @@ def static_files(filename:str, v: str = ''):
              'university.js':'text/javascript','campus.css':'text/css','style.css':'text/css','usability.css':'text/css',
              'university.css':'text/css','operations.css':'text/css','operations.js':'text/javascript',
              'academics.css':'text/css','academics.js':'text/javascript',
-             'units.js':'text/javascript','announcements.js':'text/javascript','announcements.css':'text/css',
+             'units.js':'text/javascript','vuc.js':'text/javascript','vuc.css':'text/css',
+             'announcements.js':'text/javascript','announcements.css':'text/css',
              'schedule.js':'text/javascript','schedule.css':'text/css',
              'shell.css':'text/css','viewport.js':'text/javascript','theme.css':'text/css','theme.js':'text/javascript',
              'favicon.svg':'image/svg+xml'}
@@ -855,6 +856,7 @@ from .calendar_admin import router as calendar_router
 from .references import router as registry_router
 from .table_imports import router as tables_router
 from .units import router as units_router
+from .vuc import router as vuc_router
 from .announcements import router as announcements_router
 from .absence_certificates import router as absence_certificates_router
 app.include_router(university_router())
@@ -868,6 +870,7 @@ app.include_router(calendar_router)
 app.include_router(registry_router)
 app.include_router(tables_router)
 app.include_router(units_router)
+app.include_router(vuc_router)
 app.include_router(announcements_router)
 app.include_router(absence_certificates_router)
 install_quota(app)
