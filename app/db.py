@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 import sys
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from datetime import datetime, timedelta, timezone, date
 from sqlalchemy import create_engine, ForeignKey, Integer, String, DateTime, Date, Boolean, Text, UniqueConstraint, event, inspect, select, text, Index
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
@@ -22,7 +22,7 @@ CAMPUS_TZ = timezone(timedelta(hours=3), 'Europe/Moscow')
 
 
 def campus_today():
-    return datetime.now(CAMPUS_TZ).date()
+    return utc_now().astimezone(CAMPUS_TZ).date()
 
 
 def utc_now():
@@ -179,6 +179,13 @@ class SchemaMigration(Base):
     applied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
+class ContestDataset(Base):
+    __tablename__ = 'contest_datasets'
+    name: Mapped[str] = mapped_column(String(40), primary_key=True)
+    history_through: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    initialized_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 Index('ix_requests_student_created', DocumentRequest.student_id, DocumentRequest.created_at)
 Index('ix_requests_status_created', DocumentRequest.status, DocumentRequest.created_at, DocumentRequest.id)
 Index('ix_requests_due_status', DocumentRequest.due_at, DocumentRequest.status)
@@ -238,7 +245,17 @@ def request_due_date(type_name: str, start: date) -> date:
     return add_business_days(start, count)
 
 
-def migrate_database():
+@contextmanager
+def database_setup(lock):
+    with engine.begin() as connection:
+        if engine.dialect.name == 'postgresql':
+            connection.execute(text('SELECT pg_advisory_xact_lock(:key)'), {'key': lock})
+        elif engine.dialect.name == 'sqlite':
+            connection.exec_driver_sql('BEGIN IMMEDIATE')
+        yield connection
+
+
+def migrate_database(connection=None):
     """Additive, versioned upgrade of v1 databases, preserving every existing row.
 
     Startup holds a database lock, so concurrent workers cannot race the DDL.
@@ -250,11 +267,7 @@ def migrate_database():
     from . import assignment_db  # noqa: F401
     from . import absence_certificate_db  # noqa: F401
     from . import vuc_db  # noqa: F401
-    with engine.begin() as connection:
-        if engine.dialect.name == 'postgresql':
-            connection.execute(text('SELECT pg_advisory_xact_lock(2026110601)'))
-        elif engine.dialect.name == 'sqlite':
-            connection.exec_driver_sql('BEGIN IMMEDIATE')
+    with (database_setup(2026110601) if connection is None else nullcontext(connection)) as connection:
         Base.metadata.create_all(connection)
         columns = {column['name'] for column in inspect(connection).get_columns('document_requests')}
         for name, sql_type in [
@@ -370,18 +383,26 @@ def migrate_database():
             from .vuc_migration import upgrade_vuc_admission
             upgrade_vuc_admission(connection)
             connection.execute(SchemaMigration.__table__.insert().values(version='0024_vuc_admission', applied_at=utc_now()))
+        if '0025_contest_dataset' not in versions:
+            connection.execute(SchemaMigration.__table__.insert().values(version='0025_contest_dataset', applied_at=utc_now()))
+
+
+def seed_demo_accounts(db):
+    students = [
+        User(login='alina.demo', password_hash=password_hasher.hash('AtlasDemo!2026-A'), full_name='Алина Ветрова', initials='АВ', faculty='Институт цифровых технологий', program='Информационные системы и технологии', course=2, group_name='ИТ-24-03', student_number='AT-2024-001', accent='purple'),
+        User(login='mark.demo', password_hash=password_hasher.hash('AtlasDemo!2026-M'), full_name='Марк Северин', initials='МС', faculty='Факультет прикладных наук', program='Прикладная информатика', course=3, group_name='ПИ-23-02', student_number='AT-2023-002', accent='orange'),
+    ]
+    staff = User(login='dean.demo', password_hash=password_hasher.hash('AtlasStaff!2026-D'), full_name='Кира Миронова', initials='КМ', faculty='Студенческий офис', program='Сопровождение студентов', course=0, group_name='Сотрудник', student_number='AT-STAFF-001', role='staff', accent='blue')
+    db.add_all([*students, staff])
+    db.flush()
+    return students, staff
 
 
 def seed_demo(session=None):
     """Load seed fixtures only if the users table is empty."""
     with (nullcontext(session) if session is not None else SessionLocal()) as db:
         if db.query(User).first(): return
-        students = [
-            User(login='alina.demo', password_hash=password_hasher.hash('AtlasDemo!2026-A'), full_name='Алина Ветрова', initials='АВ', faculty='Институт цифровых технологий', program='Информационные системы и технологии', course=2, group_name='ИТ-24-03', student_number='AT-2024-001', accent='purple'),
-            User(login='mark.demo', password_hash=password_hasher.hash('AtlasDemo!2026-M'), full_name='Марк Северин', initials='МС', faculty='Факультет прикладных наук', program='Прикладная информатика', course=3, group_name='ПИ-23-02', student_number='AT-2023-002', accent='orange'),
-        ]
-        staff = User(login='dean.demo', password_hash=password_hasher.hash('AtlasStaff!2026-D'), full_name='Кира Миронова', initials='КМ', faculty='Студенческий офис', program='Сопровождение студентов', course=0, group_name='Сотрудник', student_number='AT-STAFF-001', role='staff', accent='blue')
-        db.add_all([*students, staff]); db.flush()
+        students, _staff = seed_demo_accounts(db)
         subjects = [
             [('Алгоритмы и структуры данных','М. Орлов',86,6,'exam', 'Экзамен','violet'),('Проектирование интерфейсов','Н. Ласточкина',93,3,'credit','Зачёт','blue'),('Теория вероятностей','Р. Соловьёв',58,-4,'exam','Экзамен','orange'),('Базы данных','Е. Рябинина',79,8,'exam','Экзамен','teal'),('Английский язык','Л. Голубева',100,0,'credit','Зачёт','pink')],
             [('Инженерия ПО','А. Громов',95,6,'exam','Экзамен','violet'),('Компьютерные сети','С. Белова',72,1,'exam','Экзамен','blue'),('Анализ данных','Д. Зорин',64,-3,'exam','Экзамен','orange'),('Управление проектами','В. Весенняя',88,4,'credit','Зачёт','teal'),('Право в цифровой среде','Т. Ларина',80,0,'credit','Зачёт','pink')],
@@ -447,12 +468,10 @@ def initialize_database():
     migrate_database()
     if settings.demo_mode:
         # Fixtures are initialized once, including in deployments with >1 worker.
-        with engine.begin() as connection:
-            if engine.dialect.name == 'postgresql':
-                connection.execute(text('SELECT pg_advisory_xact_lock(2026110602)'))
-            elif engine.dialect.name == 'sqlite':
-                connection.exec_driver_sql('BEGIN IMMEDIATE')
+        with database_setup(2026110602) as connection:
             with SessionLocal(bind=connection) as db:
+                if db.scalar(select(ContestDataset.name).limit(1)) is not None:
+                    return
                 if db.scalar(select(User.id).limit(1)) is None:
                     seed_demo(db)
                 from .learning_db import seed_learning

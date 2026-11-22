@@ -24,6 +24,16 @@ class VucProgram(Base):
     version: Mapped[int] = mapped_column(default=1)
 
 
+def program_data(row):
+    return dict(
+        id=row.id, title=row.title, category=row.category, outcome=row.outcome,
+        duration_months=row.duration_months, academic_link=row.academic_link,
+        requirements=row.requirements, selection=row.selection, state=row.state,
+        source_title=row.source_title, source_url=row.source_url,
+        verified_on=row.verified_on.isoformat() if row.verified_on else None, version=row.version,
+    )
+
+
 class VucCampaign(Base):
     __tablename__ = 'vuc_campaigns'
     __table_args__ = (

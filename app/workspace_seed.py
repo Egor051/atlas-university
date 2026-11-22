@@ -21,9 +21,13 @@ def seed_account(db, login, password, full_name, initials, title, role):
     return actor
 
 
-def seed_workspace(db):
+def seed_workspace_accounts(db):
     seed_account(db, 'schedule.demo', 'AtlasRooms!2026-S', 'София Берестова', 'СБ', 'Диспетчер расписания', 'scheduler')
     seed_account(db, 'registry.demo', 'AtlasRegistry!2026-R', 'Роман Ильин', 'РИ', 'Администратор АТЛАС', 'admin')
+
+
+def seed_workspace(db):
+    seed_workspace_accounts(db)
     if db.scalar(select(AcademicGroup.id).limit(1)) is not None:
         return
     rooms = [

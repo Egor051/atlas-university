@@ -722,7 +722,7 @@ def read_all_notifications(user:User=Depends(require_user),db:Session=Depends(ge
 def dashboard(user:User=Depends(require_student),db:Session=Depends(get_db)):
     from .assignment_workflow import ACTIONABLE, student_assignment_results
     from .schedule_views import student_days
-    now = datetime.now(CAMPUS_TZ)
+    now = utc_now().astimezone(CAMPUS_TZ)
     today = now.date()
     monday=today-timedelta(days=today.weekday())
     days = student_days(db, user, monday, monday + timedelta(days=13), markers=False)

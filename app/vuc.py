@@ -12,7 +12,7 @@ from .db import User, campus_today, utc_now
 from .main import StrictBody, date_iso, get_db, require_same_origin, require_student, require_user
 from .services import begin_idempotent, commit_idempotent
 from .units import edit_row, persist, require_vuc_operator
-from .vuc_db import VucApplication, VucApplicationEvent, VucCampaign, VucProgram
+from .vuc_db import VucApplication, VucApplicationEvent, VucCampaign, VucProgram, program_data
 from .vuc_policy import (CATEGORIES, FEDERAL_REQUIREMENTS, LAW_URL, ORDER_URL, STAGES,
                          ProgramCategory, StageKind, can_manage_vuc, private_account)
 from .workspace import lock_workspace, notify
@@ -168,16 +168,6 @@ def require_source(body):
         raise HTTPException(422, 'Укажите официальный источник, ссылку и дату его проверки')
     if body.verified_on > campus_today():
         raise HTTPException(422, 'Дата проверки источника ещё не наступила')
-
-
-def program_data(row):
-    return dict(
-        id=row.id, title=row.title, category=row.category, outcome=row.outcome,
-        duration_months=row.duration_months, academic_link=row.academic_link,
-        requirements=row.requirements, selection=row.selection, state=row.state,
-        source_title=row.source_title, source_url=row.source_url,
-        verified_on=date_iso(row.verified_on), version=row.version,
-    )
 
 
 def campaign_status(row, today):

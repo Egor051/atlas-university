@@ -70,7 +70,7 @@ def test_additive_legacy_migration_preserves_records_and_is_repeatable():
                 ('0018_academic_calendar',), ('0019_discipline_materials',),
                 ('0020_assignment_deadlines',), ('0021_assignment_feedback',),
                 ('0022_point_register',), ('0023_absence_certificates',),
-                ('0024_vuc_admission',),
+                ('0024_vuc_admission',), ('0025_contest_dataset',),
             ]
             assert database.execute('SELECT COUNT(*) FROM vuc_programs').fetchone() == (3,)
             assert database.execute('SELECT COUNT(*) FROM vuc_campaigns').fetchone() == (0,)

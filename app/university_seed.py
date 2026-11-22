@@ -92,7 +92,7 @@ Precision = 15 / (15 + 5) = 0,75. Recall = 15 / (15 + 5) = 0,75. В этом п�
 ]
 
 
-def seed_university(db):
+def seed_university(db, *, directory_only=False):
     if db.scalar(select(Faculty.id).limit(1)) is not None:
         return
 
@@ -151,12 +151,15 @@ def seed_university(db):
         assignment = add(TeachingAssignment, teacher=teacher, discipline=discipline)
         assignments[key] = assignment
         db.add(DirectContact(user_id=actor.id, label=position))
-        for kind, slots in [('lesson', lessons), ('consultation', [consultation])]:
-            db.add_all(TeachingSlot(assignment=assignment, kind=kind, weekday=day, starts=start, ends=end, room=room)
-                       for day, start, end, room in slots)
+        if not directory_only:
+            for kind, slots in [('lesson', lessons), ('consultation', [consultation])]:
+                db.add_all(TeachingSlot(assignment=assignment, kind=kind, weekday=day, starts=start, ends=end, room=room)
+                           for day, start, end, room in slots)
     office = db.scalar(select(User).where(User.login == 'dean.demo', User.role == 'staff'))
     if office:
         db.add(DirectContact(user_id=office.id, label='Учебный офис'))
+    if directory_only:
+        return
     published = datetime(2026, 11, 10, 10, 0, tzinfo=timezone.utc)
     for key, kind, title, description, body in MATERIALS:
         if key in assignments:

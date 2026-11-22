@@ -826,8 +826,8 @@
   }
   function clearSession({expired=false}={}){improvements.reset(expired);campus.reset();extensions.forEach(ext=>ext.reset?.());clearInterval(pollTimer);state.sessionEpoch++;state.loadingId++;state.modalId++;state.pending=0;removeDraft();removeDraft('certificate');draftMemory.clear();draftStorageAvailable=true;state.user=null;state.data={};state.unread=0;state.staffQuery='';state.requestOffset=state.noticeOffset=state.staffOffset=0;state.requestFilter=state.noticeFilter='all';state.requestView='mine';state.serviceQuery='';state.staffFilter='active';state.staffKind='request';$('.skip-link')?.removeAttribute('inert');document.body.classList.remove('modal-open');}
   const demoAccounts=[
-    {login:'alina.demo',password:'AtlasDemo!2026-A',full_name:'Алина Ветрова',initials:'АВ',accent:'purple',description:'2 курс · ИТ-24-03 · занятия и справки'},
-    {login:'mark.demo',password:'AtlasDemo!2026-M',full_name:'Марк Северин',initials:'МС',accent:'orange',description:'3 курс · ПИ-23-02 · материалы и задания'},
+    {login:'alina.demo',password:'AtlasDemo!2026-A',full_name:'Алина Ветрова',initials:'АВ',accent:'purple',description:'ИТ-24-03 · занятия и справки'},
+    {login:'mark.demo',password:'AtlasDemo!2026-M',full_name:'Марк Северин',initials:'МС',accent:'orange',description:'ПИ-23-02 · материалы и задания'},
     {login:'dean.demo',password:'AtlasStaff!2026-D',full_name:'Кира Миронова',initials:'КМ',accent:'blue',description:'Учебный офис · обработка заявок'},
     {login:'orlov.demo',password:'AtlasTeach!2026-M',full_name:'Михаил Орлов',initials:'МО',accent:'purple',description:'Преподаватель · материалы и переписка'},
     {login:'schedule.demo',password:'AtlasRooms!2026-S',full_name:'София Берестова',initials:'СБ',accent:'blue',description:'Диспетчер · расписание и аудитории'},

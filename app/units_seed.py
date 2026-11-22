@@ -8,9 +8,14 @@ from .units_db import UnitPublication
 from .workspace_seed import seed_account
 
 
-def seed_units(db):
+def seed_unit_accounts(db):
     union = seed_account(db,'union.demo','AtlasUnion!2026-U','Полина Савельева','ПС','Представитель профсоюза','union')
     seed_account(db,'vuc.demo','AtlasCenter!2026-V','Артём Неверов','АН','Сотрудник ВУЦ','vuc')
+    return union
+
+
+def seed_units(db):
+    union = seed_unit_accounts(db)
     day = campus_today()
     if db.scalar(select(UnitPublication.id).where(UnitPublication.unit=='union').limit(1)) is not None or union.role!='union':
         return
