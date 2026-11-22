@@ -219,6 +219,7 @@
        (page==='schedule'?/^20/.test(context.date):Math.abs(dueDays(context.date))<=360))result.date=context.date;
     if(page==='schedule'&&['day','week','month'].includes(context.view))result.view=context.view;
     if(page==='schedule'&&result.id&&context.change==='1')result.change='1';
+    if(page==='grades'&&/^[a-z\d-]{1,32}$/.test(context.period||''))result.period=context.period;
     if(context.subject?.trim())result.subject=context.subject.trim().slice(0,130);
     if(context.kind?.trim())result.kind=context.kind.trim().slice(0,40);
     return result;
@@ -934,6 +935,9 @@
       }
       if(epoch!==state.sessionEpoch)return;
       await refreshUnread();
+      if(epoch===state.sessionEpoch&&state.page==='grades'&&!state.pending&&!$('.modal')){
+        try{await academics.refreshStudent();}catch{/* The page-level refresh can show the error. */}
+      }
       if(epoch===state.sessionEpoch&&state.page==='notifications'&&state.data.notifications&&
          state.unread!==state.data.notifications.unread_count&&!state.pending&&!$('.modal')&&
          !document.activeElement?.closest('.notification-page, [data-action="read-all"]'))await updatePage({quiet:true});
@@ -978,15 +982,13 @@
   }
   async function openSearchResult(page,id){
     if(state.pending||!Number.isSafeInteger(id)||id<1||!pages.some(p=>p.id===page))return;
-    if(page==='assignments')return navigateContext(page,{id});
+    if(page==='assignments'||page==='grades')return navigateContext(page,{id});
     const epoch=state.sessionEpoch;campus.clearFilters(page);
     if(['requests','certificates'].includes(page)){state.requestView='mine';state.requestFilter='all';state.requestOffset=0;}
     if(page==='notifications'){state.noticeFilter='all';state.noticeOffset=0;}
     const loading=route(page);const modalId=state.modalId;const loadId=state.loadingId;await loading;if(epoch!==state.sessionEpoch||page!==state.page||modalId!==state.modalId||loadId!==state.loadingId)return;
     if(['requests','certificates'].includes(page)){await requestDetails(id);return;}
     if(page==='notifications'){await openNotice(id);return;}
-    const row=page==='grades'?$(`[data-record-id="${id}"]`):null;
-    if(row){row.classList.add('search-match');row.tabIndex=-1;row.scrollIntoView({block:'center',behavior:'instant'});row.focus({preventScroll:true});}
   }
   document.addEventListener('submit',e=>{const form=e.target;if(!['login-form','request-form','staff-form','request-followup'].includes(form.id))return;e.preventDefault();if(form.id==='login-form')submitLogin(form);if(form.id==='request-form')submitRequest(form);if(form.id==='staff-form')submitStaff(form);if(form.id==='request-followup')submitFollowup(form);});
   document.addEventListener('click',async e=>{

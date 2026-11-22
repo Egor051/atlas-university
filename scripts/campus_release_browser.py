@@ -137,8 +137,10 @@ def verify_touch_scroll(browser, base):
 
 def exercise_grades(page):
     panel = page.locator('[data-type="points"]')
-    table = panel.get_by_role('table', name='Начисленные баллы')
+    table = panel.get_by_role('table', name='История начислений')
     expect(table).to_be_visible()
+    if not table.locator('[data-academic-record]').count() and page.locator('#period-year [value=unassigned]').count():
+        page.get_by_label('Учебный год').select_option('unassigned')
     sort = table.get_by_role('button', name='Баллы', exact=True)
     sort.press('Enter')
     expect(table.locator('th[aria-sort="ascending"], th[aria-sort="descending"]')).to_have_count(1)

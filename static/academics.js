@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  let c, restoreFilters;
+  let c, restoreFilters, refreshPoints;
   const queue = {id:'absence-certificates', label:'Справки о пропусках', icon:'certificate',
     hint:'Документы студентов и решения об уважительных пропусках', roles:['teacher']};
   const pointKinds = {opening:'Баланс при переносе', teacher:'Начисление преподавателем',
@@ -12,8 +12,8 @@
   const certificateLabels = {pending:'На рассмотрении', accepted:'Принята', rejected:'Отклонена'};
   const pointColumns = [
     ['discipline','Дисциплина'], ['points','Баллы'], ['day','Дата'], ['title','Занятие или работа'],
-    ['kind_label','Вид работы'], ['teacher','Преподаватель'], ['max_points','Максимум'],
-    ['discipline_total','Итог по дисциплине'], ['result','Сведения о результате'],
+    ['kind_label','Вид работы'], ['teacher','Преподаватель'], ['max_points','Максимум за работу'],
+    ['result','Сведения о результате'],
   ];
   const attendanceColumns = [
     ['discipline','Дисциплина'], ['status_label','Посещение'], ['day','Дата и время'], ['kind_label','Вид занятия'],
@@ -21,6 +21,9 @@
   ];
   const collator = new Intl.Collator('ru', {numeric:true, sensitivity:'base'});
   const dayFormatter = new Intl.DateTimeFormat('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric'});
+  const pointFormatter = new Intl.NumberFormat('ru-RU', {maximumFractionDigits:1});
+  const format = value => pointFormatter.format(value);
+  const registerPath = 'learning/point-register';
   const esc = value => c.esc(value);
   const text = value => esc(value ?? '—');
   const dayFmt = value => dayFormatter.format(c.asDate(value));
@@ -40,7 +43,7 @@
   const pointRow = row => ({...row,discipline:row.subject});
 
   async function loadStudent(){
-    const [points,attendance] = await Promise.all([c.api('learning/point-register'),c.api('learning/attendance-register')]);
+    const [points,attendance] = await Promise.all([c.api(registerPath),c.api('learning/attendance-register')]);
     return {points,attendance};
   }
 
@@ -66,7 +69,6 @@
     return [
       '<strong>'+points+'</strong>'+change, day(row.day), title,
       text(row.kind_label), text(row.teacher||'—'), text(row.max_points),
-      '<strong>'+text(row.discipline_total)+'</strong>',
       (row.result?esc(row.result):'')+(row.note!==row.result?paragraph(row.note):'')||'—',
     ];
   }
@@ -100,10 +102,13 @@
     const options = new Map(rows.filter(row=>row[key]).map(row=>[row[key],row[labelKey]]));
     return [...options].sort((a,b)=>collator.compare(a[1],b[1]));
   }
+  function disciplineOptions(rows, attendance){
+    return [['','Все дисциплины'],...filterOptions(rows,attendance?'discipline':'discipline_key','discipline')];
+  }
   function filters(rows, attendance){
     const prefix = attendance ? 'attendance-filter-' : 'points-filter-';
     return '<div class="academic-filters">'+
-      select(prefix,'discipline','Дисциплина',[['','Все дисциплины'],...filterOptions(rows,'discipline')])+
+      select(prefix,'discipline','Дисциплина',disciplineOptions(rows,attendance))+
       select(prefix,'kind',attendance?'Вид занятия':'Вид работы',[['','Все виды'],...(attendance?
         Object.entries(lessonKinds):filterOptions(rows,'kind_label'))])+
       select(prefix,'grouping','Группировка',[['','Без группировки'],['discipline','По дисциплине'],
@@ -119,12 +124,12 @@
 
   function tablePanel(rows, columns, attendance, term, availabilityMessage){
     const id = attendance ? 'academic-attendance' : 'academic-points';
-    const title = attendance ? 'Посещаемость занятий' : 'Начисленные баллы';
-    const scope = attendance ? (term ? esc(term.label)+' · '+day(term.starts_on)+' — '+day(term.ends_on) :
-      'Учебный семестр не опубликован') : 'Итог по дисциплине учитывает все начисления и корректировки.';
+    const title = attendance ? 'Посещаемость занятий' : 'История начислений';
+    const scope = attendance ? '<p>'+(term ? esc(term.label)+' · '+day(term.starts_on)+' — '+day(term.ends_on) :
+      'Учебный семестр не опубликован')+'</p>' : '';
     return '<section class="card card-pad academic-panel" aria-labelledby="'+id+'" data-academic-table '+
       'data-type="'+(attendance?'attendance':'points')+'"><header class="academic-panel-head"><h2 id="'+id+
-      '" tabindex="-1">'+title+'</h2><p>'+scope+'</p></header>'+
+      '" tabindex="-1">'+title+'</h2>'+scope+'</header>'+
       (availabilityMessage?'<p class="academic-availability">'+esc(availabilityMessage)+'</p>':'')+
       filters(rows,attendance)+(attendance?'<div data-attendance-counts class="academic-counts"></div>':'')+
       '<p class="academic-result-count" role="status" data-academic-count></p>'+
@@ -135,11 +140,46 @@
           ' <span aria-hidden="true">↕</span></button></th>').join('')+
       '</tr></thead><tbody></tbody></table></div></section>';
   }
+  function semesterPanel(){
+    return '<section class="card card-pad academic-panel" aria-labelledby="academic-semester" data-semester-panel>'+
+      '<header class="academic-panel-head"><h2 id="academic-semester">Семестровая успеваемость</h2></header>'+
+      '<div class="academic-filters academic-period-controls">'+select('period-','year','Учебный год',[])+
+      select('period-','semester','Семестр',[])+'</div><p class="academic-meta" role="status" data-semester-dates></p>'+
+      '<p class="academic-semester-empty" data-semester-empty hidden></p>'+
+      '<table class="academic-semester-table" aria-labelledby="academic-semester"><thead><tr>'+
+      '<th scope="col">Дисциплина</th><th scope="col">Набрано</th><th scope="col" aria-label="Выполнение">'+
+      '<span class="academic-percent-label">Выполнение</span><span class="academic-percent-short" aria-hidden="true">%</span></th>'+
+      '</tr></thead><tbody></tbody></table></section>';
+  }
+  function semesterDetails(row){
+    const byKind = row.breakdown.map(kind=>'<div><dt>'+esc(kind.label)+'</dt><dd>'+format(kind.points)+'</dd></div>');
+    const dates = [...row.timeline].reverse().map(item=>'<tr><th scope="row">'+day(item.day)+'</th><td>'+esc(signed(item.change))+
+      '</td><td><strong>'+format(item.total)+'</strong></td></tr>');
+    if(!dates.length)return '<p class="academic-meta">Начислений по дисциплине пока нет.</p>';
+    return '<div class="academic-semester-details"><section><h3>Баллы по видам деятельности</h3><dl>'+byKind.join('')+'</dl></section>'+
+      '<section><h3>Динамика начислений</h3><div class="academic-timeline"'+(dates.length>4?
+        ' tabindex="0" role="region" aria-label="Прокрутка динамики начислений"':'')+'><table aria-label="Динамика начислений">'+
+      '<thead><tr><th scope="col">Дата</th><th scope="col">Изменение</th><th scope="col">Итого</th></tr></thead><tbody>'+
+      dates.join('')+'</tbody></table></div></section></div><a class="mini-link academic-history-link" href="#academic-points" '+
+      'data-semester-history="'+esc(row.key)+'">К истории дисциплины '+c.icon('arrow')+'</a>';
+  }
+  function semesterRow(row, open){
+    const key = esc(row.key), detailId = 'semester-detail-'+key;
+    const percentage = row.percent===null ? '—' : format(row.percent)+' %';
+    return '<tr class="academic-semester-row"'+(row.grade_id?' data-record-id="'+Number(row.grade_id)+'"':'')+'>'+
+      '<th scope="row"><button type="button" data-semester-discipline="'+key+'" aria-expanded="'+open+
+      '" aria-controls="'+detailId+'">'+c.icon('right')+'<span>'+esc(row.subject)+'</span></button></th>'+
+      '<td><strong class="academic-earned">'+format(row.earned_points)+'</strong><small class="academic-meta">'+
+      (row.max_points===null?'макс. —':'из '+format(row.max_points))+'</small></td><td><span class="academic-percent">'+
+      percentage+'</span>'+(row.percent===null?'':'<progress aria-hidden="true" max="100" value="'+
+      Math.min(100,row.percent)+'"></progress>')+'</td></tr><tr class="academic-semester-detail" id="'+detailId+'"'+
+      (open?'':' hidden')+'><td colspan="3">'+(open?semesterDetails(row):'')+'</td></tr>';
+  }
   function renderStudent(data){
     const links = '<a class="outline-button" href="#academic-attendance" data-academic-jump>К посещаемости '+c.icon('arrow')+'</a>'+
       '<a class="outline-button" data-route="exams" href="/app/exams">Сессия и зачёты '+c.icon('right')+'</a>';
     return c.head('','Успеваемость и посещаемость','',links)+'<div class="academic-registers">'+
-      tablePanel(data.points.items.map(pointRow),pointColumns,false)+
+      semesterPanel()+tablePanel([],pointColumns,false)+
       tablePanel(data.attendance.items.map(attendanceRow),attendanceColumns,true,data.attendance.term,
         data.attendance.availability_message)+'</div>';
   }
@@ -168,7 +208,7 @@
     }
     return [...groups].sort((a,b)=>collator.compare(a[0],b[0])).map(([label,items])=>{
       const totals = attendance ? counts(items).map(([name,n])=>name+' '+n).join(' · ') :
-        items[0].discipline_total!=null ? 'Итог по дисциплине · '+items[0].discipline_total : '';
+        'Баллы в строках · '+format(items.reduce((sum,row)=>sum+row.points,0));
       return '<tbody><tr class="academic-group"><th scope="rowgroup" colspan="'+columnCount+'">'+esc(label)+
         (totals?'<small class="academic-meta">'+esc(totals)+'</small>':'')+'</th></tr>'+rowsHTML(items,cells)+'</tbody>';
     }).join('');
@@ -189,7 +229,16 @@
     const controls = Object.fromEntries([...panel.querySelectorAll('[name]')].map(control=>[control.name,control]));
     const columns = attendance ? attendanceColumns : pointColumns;
     let sort = saved?.sort||'day', direction = saved?.direction||'descending';
-    const initial = saved||{discipline:subject,from:date,to:date};
+    const initial = saved||{discipline:attendance?subject:rows.find(row=>row.discipline===subject)?.discipline_key,from:date,to:date};
+    function historyOptions(discipline,kind){
+      const options = [[controls.discipline,disciplineOptions(rows,false),discipline],
+        [controls.kind,[['','Все виды'],...filterOptions(rows,'kind_label')],kind]];
+      for(const [control,choices,value] of options){
+        control.innerHTML=choices.map(option).join('');
+        control.value=choices.some(([key])=>key===value)?value:'';
+      }
+    }
+    if(!attendance)historyOptions(initial.discipline,initial.kind);
     for(const [name,control] of Object.entries(controls)){
       if(initial[name]!=null)control.value=initial[name];
       // A scope link can lead to a discipline that has no rows yet.
@@ -200,7 +249,7 @@
     function update(){
       const query = search(controls.search.value.trim());
       const scope = rows.filter(row =>
-        (!controls.discipline.value || row.discipline===controls.discipline.value) &&
+        (!controls.discipline.value || (attendance?row.discipline:row.discipline_key)===controls.discipline.value) &&
         (!controls.kind.value || (attendance?row.kind:row.kind_label)===controls.kind.value) &&
         (!controls.from.value || row.day && row.day>=controls.from.value) &&
         (!controls.to.value || row.day && row.day<=controls.to.value) &&
@@ -220,7 +269,8 @@
         attendance?attendanceCells:pointsCells,attendance) :
         '<tbody><tr><td colspan="'+columns.length+'">'+message+'</td></tr></tbody>';
       table.insertAdjacentHTML('beforeend',body);
-      indicator.textContent='Строк в таблице · '+visible.length;
+      indicator.textContent='Строк в таблице · '+visible.length+
+        (attendance||!visible.length?'':' · Баллы в выбранных строках '+format(visible.reduce((sum,row)=>sum+row.points,0)));
       if(attendance)panel.querySelector('[data-attendance-counts]').innerHTML=attendanceCounts(scope);
       for(const button of table.querySelectorAll('[data-academic-sort]')){
         const picked = button.dataset.academicSort===sort;
@@ -243,22 +293,135 @@
     });
     update();
     if(saved){region.scrollTop=saved.top;region.scrollLeft=saved.left;}
+    return (next, discipline=controls.discipline.value, reset=false)=>{
+      rows=next;
+      if(reset)for(const key of ['kind','search','from','to'])controls[key].value='';
+      historyOptions(discipline,controls.kind.value);
+      update();
+    };
   }
   function showSection(heading){
     heading.scrollIntoView({block:'start',behavior:'instant'});
     heading.focus({preventScroll:true});
   }
+  const yearKey = period => String(period.academic_year??period.id);
+
+  function bindSemesters(root,data,context,saved){
+    const panel = root.querySelector('[data-semester-panel]');
+    const table = panel.querySelector('table');
+    const body = table.querySelector('tbody');
+    const year = panel.querySelector('[name=year]'), term = panel.querySelector('[name=semester]');
+    const history = root.querySelector('[data-type=points]');
+    const historyHeading = history.querySelector('h2');
+    const historyFilter = history.querySelector('[name=discipline]');
+    const scroll = history.querySelector('.academic-scroll');
+    const findPeriod = id => data.points.periods.find(period=>period.id===id);
+    const gradeId = Number(context.id);
+    const matching = data.points.items.filter(row=>row.grade_id===gradeId||context.subject&&row.subject===context.subject);
+    const current = findPeriod(data.points.default_period);
+    const currentMatch = matching.find(row=>row.period===current.id)||
+      current.disciplines.find(row=>row.grade_id===gradeId||row.subject===context.subject);
+    let selected = findPeriod(saved?.period||context.period) ||
+      (!currentMatch && findPeriod(matching[0]?.period)) || current;
+    let expanded = saved?.expanded || '';
+    let historyRows = data.points.items.filter(row=>row.period===selected.id).map(pointRow);
+    const setHistory = bindTable(history,historyRows,{attendance:false,saved:saved?.tables[0]});
+
+    function drawSummary(){
+      const focused = table.contains(document.activeElement) ? document.activeElement : null;
+      body.innerHTML = selected.disciplines.map(row=>semesterRow(row,row.key===expanded)).join('');
+      if(focused?.dataset.semesterDiscipline||focused?.dataset.semesterHistory){
+        const attribute = focused.dataset.semesterDiscipline ? 'semester-discipline' : 'semester-history';
+        const key = CSS.escape(focused.dataset.semesterDiscipline||focused.dataset.semesterHistory);
+        table.querySelector('[data-'+attribute+'="'+key+'"]')?.focus({preventScroll:true});
+      }
+    }
+    function drawPeriod(discipline){
+      const years = new Map(data.points.periods.map(period=>[yearKey(period),period.academic_year===null?
+        period.label:period.academic_year+'/'+(period.academic_year+1)]));
+      year.innerHTML = [...years].map(option).join('');
+      year.value = yearKey(selected);
+      term.innerHTML = data.points.periods.filter(period=>yearKey(period)===year.value)
+        .map(period=>option([period.id,period.label])).join('');
+      term.value = selected.id;
+      term.closest('.filter-field').hidden = selected.academic_year===null;
+      const dates = panel.querySelector('[data-semester-dates]');
+      dates.innerHTML = selected.starts_on?day(selected.starts_on)+' — '+day(selected.ends_on):'';
+      dates.hidden = !selected.starts_on;
+      historyRows = data.points.items.filter(row=>row.period===selected.id).map(pointRow);
+      const empty = panel.querySelector('[data-semester-empty]');
+      table.hidden = !selected.disciplines.length;
+      empty.hidden = !table.hidden;
+      empty.textContent = selected.starts_on ? 'На этот период дисциплины пока не опубликованы.' :
+        historyRows.length ? 'Записи без опубликованного семестра доступны в истории начислений.' :
+        'Учебный семестр пока не опубликован.';
+      drawSummary();
+      setHistory(historyRows,discipline);
+    }
+    const initialDiscipline = data.points.items.find(row=>row.period===selected.id&&matching.includes(row))?.discipline_key;
+    drawPeriod(saved?.tables[0]?.discipline??initialDiscipline);
+    if(saved?.tables[0]){scroll.scrollTop=saved.tables[0].top;scroll.scrollLeft=saved.tables[0].left;}
+
+    function changePeriod(period){
+      if(!period||period.id===selected.id)return;
+      selected = period;
+      expanded = '';
+      c.replaceRouteContext({...c.state.routeContext,period:period.id});
+      drawPeriod();
+    }
+    year.addEventListener('change',()=>{
+      const choices = data.points.periods.filter(period=>yearKey(period)===year.value);
+      changePeriod(choices.find(period=>period.id===data.points.default_period)||
+        choices.find(period=>period.starts_on<=c.today())||choices[0]);
+    });
+    term.addEventListener('change',()=>changePeriod(findPeriod(term.value)));
+    table.addEventListener('click',event=>{
+      const button = event.target.closest('[data-semester-discipline]');
+      if(button){
+        const key = button.dataset.semesterDiscipline;
+        expanded = expanded===key?'':key;
+        drawSummary();
+      }
+      const link = event.target.closest('[data-semester-history]');
+      if(link){
+        event.preventDefault();
+        setHistory(historyRows,link.dataset.semesterHistory,true);
+        showSection(historyHeading);
+      }
+    });
+    if(gradeId&&!saved){
+      queueMicrotask(()=>{
+        const row = panel.querySelector('[data-record-id="'+gradeId+'"]')||history.querySelector('[data-record-id="'+gradeId+'"]');
+        if(row?.isConnected){
+          row.classList.add('search-match');
+          row.tabIndex=-1;
+          row.scrollIntoView({block:'nearest',behavior:'instant'});
+          row.focus({preventScroll:true});
+        }
+      });
+    }
+    refreshPoints = async()=>{
+      if(!panel.isConnected)return;
+      const points = await c.api(registerPath,{quietAuth:true});
+      if(!panel.isConnected||JSON.stringify(points)===JSON.stringify(data.points))return;
+      const period = c.state.routeContext.period||(selected.id===data.points.default_period?points.default_period:selected.id);
+      data.points = points;
+      selected = findPeriod(period)||findPeriod(points.default_period);
+      const top = scroll.scrollTop;
+      drawPeriod(historyFilter.value);
+      scroll.scrollTop = top;
+    };
+  }
+
   function bindStudent(root,data,context){
     const rows = data.attendance.items.map(attendanceRow);
     const points = data.points.items.map(pointRow);
     const subject = context.subject||points.find(row=>row.grade_id===Number(context.id))?.discipline;
     const saved = restoreFilters?.href===c.state.routeHref ? restoreFilters : null;
     restoreFilters = null;
-    root.querySelectorAll('[data-academic-table]').forEach((panel,index)=>{
-      const attendance = panel.dataset.type==='attendance';
-      bindTable(panel,attendance?rows:points,{attendance,subject,saved:saved?.tables[index],
-        date:attendance&&context.kind==='attendance'?context.date:undefined});
-    });
+    bindSemesters(root,data,context,saved);
+    bindTable(root.querySelector('[data-type=attendance]'),rows,{attendance:true,subject,saved:saved?.tables[1],
+      date:context.kind==='attendance'?context.date:undefined});
     const heading = root.querySelector('#academic-attendance');
     root.querySelector('[data-academic-jump]').addEventListener('click',event=>{
       event.preventDefault();
@@ -326,7 +489,9 @@
           body});
       },
       async ()=>{
-        restoreFilters={href:c.state.routeHref,tables:filterValues(root),row:id};
+        restoreFilters={href:c.state.routeHref,tables:filterValues(root),row:id,
+          period:root.querySelector('#period-semester').value,
+          expanded:root.querySelector('[data-semester-discipline][aria-expanded=true]')?.dataset.semesterDiscipline};
         await c.updatePage({quiet:true});
       },'Отправить справку');
   }
@@ -440,6 +605,6 @@
   }
 
   window.ATLASAcademics={pages:[queue],has:page=>page===queue.id,validParts:()=>false,
-    cleanQuery,load:loadQueue,render:renderQueue,init,reset(){restoreFilters=null;},
-    loadStudent,renderStudent,bindStudent,showAward};
+    cleanQuery,load:loadQueue,render:renderQueue,init,reset(){restoreFilters=null;refreshPoints=null;},
+    loadStudent,renderStudent,bindStudent,showAward,refreshStudent:()=>refreshPoints?.()};
 })();

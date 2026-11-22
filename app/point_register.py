@@ -1,18 +1,23 @@
 """Student point postings and confirmed results, including their original sources."""
+import json
+from collections import defaultdict
 from dataclasses import dataclass
+from datetime import date
 
 from sqlalchemy import String, cast, literal, or_, select
 from sqlalchemy.orm import aliased
 
 from .academic_points import (POINT_KINDS, AssignmentPointCorrection, PointAward,
                               manual_correction_query)
-from .assignment_workflow import iso, work_policy
-from .db import CAMPUS_TZ, Deadline, Grade, Notification, User
+from .assignment_workflow import effective_state, iso, work_policy
+from .db import Deadline, Grade, Notification, User, utc_now
 from .learning_db import AssignmentSubmission
 from .schedule_calendar import KIND, occurrence_kind
+from .semester_points import campus_day, student_semester_points
 from .session_security import as_utc
 from .university_db import Discipline
-from .workspace_db import GroupWork, ScheduledClass, TeachingLoad, WorkDelivery, WorkFeedback
+from .workspace_db import (GroupWork, OperationEvent, ScheduleChange, ScheduledClass, TeachingLoad,
+                           WorkDelivery, WorkFeedback)
 
 
 @dataclass(frozen=True)
@@ -22,17 +27,25 @@ class WorkSource:
     subject: str
     title: str
     policy: dict
+    group_id: int
+    day: date
+    visible: bool
 
 
 def work_sources(db, student_id):
     rows = db.execute(
-        select(GroupWork, Deadline.id, Discipline.id, Discipline.title).select_from(Deadline)
+        select(GroupWork, Deadline.id, Discipline.id, Discipline.title, TeachingLoad.group_id, WorkDelivery.active)
+        .select_from(Deadline)
         .join(WorkDelivery).join(GroupWork).join(TeachingLoad).join(Discipline)
         .where(Deadline.student_id == student_id).order_by(Deadline.id)
     )
+    now = utc_now()
     works = {}
-    for work, deadline_id, discipline_id, subject in rows:
-        works.setdefault(str(work.id), WorkSource(deadline_id, discipline_id, subject, work.title, work_policy(work)))
+    for work, deadline_id, discipline_id, subject, group_id, active in rows:
+        works.setdefault(str(work.id), WorkSource(
+            deadline_id, discipline_id, subject, work.title, work_policy(work), group_id,
+            campus_day(work.publish_at) or work.due, active and effective_state(work, now) in ('published', 'closed', 'archived'),
+        ))
     return works
 
 
@@ -53,12 +66,50 @@ def posted_work_reviews(db, student_id):
         .join(User, User.id == WorkFeedback.author_id)
         .where(recipient.student_id == student_id, WorkFeedback.action.in_(('accept', 'grade')),
                WorkFeedback.score.is_not(None), or_(AssignmentSubmission.student_id == student_id, notified))
+        .distinct()
         .order_by(WorkFeedback.id)
     )
 
 
 def local_day(value):
-    return as_utc(value).astimezone(CAMPUS_TZ).date().isoformat() if value else None
+    return day.isoformat() if (day := campus_day(value)) is not None else None
+
+
+def previous_class_days(db, meetings):
+    """Read published moves so a later timetable edit cannot move an earlier award."""
+    changed = [row.id for row in meetings.values() if row.previous_day is not None]
+    history = defaultdict(list)
+    if changed:
+        rows = db.execute(select(ScheduleChange.event_id, OperationEvent).join(
+            OperationEvent, OperationEvent.object_id == ScheduleChange.id).where(
+            ScheduleChange.event_id.in_(changed), OperationEvent.area == 'schedule', OperationEvent.action == 'publish',
+        ).order_by(OperationEvent.created_at, OperationEvent.id))
+        for class_id, event in rows:
+            after = json.loads(event.after) or {}
+            before = (after.get('effects') or {}).get('previous') or json.loads(event.before)
+            if isinstance(before, dict) and before.get('day') and before.get('id') == class_id:
+                history[class_id].append((as_utc(event.created_at), date.fromisoformat(before['day'])))
+    return history
+
+
+def teacher_load_id(award):
+    load_id, separator, _ = award.source_id.partition(':')
+    if award.source_kind == 'teacher' and separator and len(load_id) <= 10 and load_id.isascii() and load_id.isdecimal():
+        value = int(load_id)
+        return value if value < 2147483648 else None
+    return None
+
+
+def award_period_source(award, work, meeting, class_history, load_groups):
+    if award.source_kind == 'opening':
+        return None, None
+    if work:
+        return work.day, work.group_id
+    if meeting:
+        posted = as_utc(award.created_at) if award.created_at else None
+        day = next((day for at, day in class_history[meeting.id] if posted and posted < at), None)
+        return day or campus_day(meeting.starts_at), meeting.group_id
+    return campus_day(award.created_at), load_groups.get(teacher_load_id(award))
 
 
 def work_activity(work):
@@ -77,7 +128,7 @@ def award_activity(award, work, meeting):
         )
         kind = award.kind or original['kind']
         return dict(title=award.title or award.reason or original['title'], kind=kind,
-                    kind_label=award.custom_kind or (POINT_KINDS[kind] if award.kind else original['kind_label']),
+                    kind_label=award.custom_kind or (POINT_KINDS.get(kind, POINT_KINDS['other']) if award.kind else original['kind_label']),
                     max_points=award.max_points if award.max_points is not None else original['max_points'])
     kind = award.kind or (occurrence_kind(meeting.kind) if meeting else 'other')
     class_title = (meeting.title or meeting.note or KIND[occurrence_kind(meeting.kind)]) if meeting else ''
@@ -86,7 +137,8 @@ def award_activity(award, work, meeting):
 
 
 def register_row(entry, grade, *, key, activity, teacher, entry_type, points, result, note='',
-                 discipline_id=None, work=None, meeting=None, previous_points=None, corrected_points=None):
+                 discipline_id=None, work=None, meeting=None, previous_points=None, corrected_points=None,
+                 source_day=None, group_id=None):
     return dict(
         id=key, grade_id=grade.id if grade else None,
         discipline_id=discipline_id if discipline_id is not None else work.discipline_id if work else None,
@@ -96,6 +148,7 @@ def register_row(entry, grade, *, key, activity, teacher, entry_type, points, re
         result=result, note=note, entry_type=entry_type, previous_points=previous_points, corrected_points=corrected_points,
         class_id=meeting.id if meeting else None, class_day=local_day(meeting.starts_at) if meeting else None,
         assignment_id=work.deadline_id if work else None,
+        _source_day=source_day, _group_id=group_id,
     )
 
 
@@ -117,6 +170,10 @@ def student_point_register(db, student_id):
     reviews = posted_work_reviews(db, student_id).all()
     class_ids.update(works[str(work_id)].policy['class_id'] for review, work_id, _, _ in reviews if review.score == 0)
     meetings = {row.id: row for row in db.scalars(select(ScheduledClass).where(ScheduledClass.id.in_(class_ids - {None})))}
+    class_history = previous_class_days(db, meetings)
+    load_ids = {teacher_load_id(award) for award, _ in awards if award.class_id is None} - {None}
+    load_groups = dict(db.execute(select(TeachingLoad.id, TeachingLoad.group_id)
+                                 .where(TeachingLoad.id.in_(load_ids))).all()) if load_ids else {}
     posted = {}
     reviews_by_id = {}
     items = []
@@ -132,22 +189,20 @@ def student_point_register(db, student_id):
                 activity=work_activity(work), teacher=teacher, entry_type='result', points=0,
                 result='Подтверждённый результат', note=review.remarks or review.comment,
                 meeting=meetings.get(work.policy['class_id']),
+                source_day=work.day, group_id=work.group_id,
             ))
     award_by_work = {}
     awards_by_id = {}
-    discipline_ids = {work.subject: work.discipline_id for work in works.values()}
-    for award, _ in awards:
-        if award.discipline_id is not None:
-            discipline_ids[grades[award.grade_id].subject] = award.discipline_id
     for award, teacher in awards:
         grade = grades[award.grade_id]
         work = works.get(award.source_id) if award.source_kind == 'assignment' else None
         meeting = meetings.get(award.class_id)
         activity = award_activity(award, work, meeting)
-        awards_by_id[award.id] = activity
+        source = award_period_source(award, work, meeting, class_history, load_groups)
+        awards_by_id[award.id] = activity, source
         entry_type, result, note = 'award', 'Начислено преподавателем', award.reason
         if award.source_kind == 'assignment':
-            award_by_work[award.source_id] = activity
+            award_by_work[award.source_id] = award, activity, source
             review = (reviews_by_id.get(award.review_id) if award.review_id is not None else
                       posted.get((award.source_id, award.points, award.actor_id)))
             result, note = 'Начислено за проверенную работу', (review.remarks or review.comment) if review else ''
@@ -157,30 +212,38 @@ def student_point_register(db, student_id):
         items.append(register_row(
             award, grade, key=f'award-{award.id}', activity=activity, teacher=teacher,
             entry_type=entry_type, points=award.points, result=result, note=note, work=work, meeting=meeting,
-            discipline_id=award.discipline_id or discipline_ids.get(grade.subject),
+            discipline_id=award.discipline_id, source_day=source[0], group_id=source[1],
         ))
     for correction, teacher in adjustments:
         grade = grades[correction.grade_id]
         work = works.get(str(correction.work_id))
-        activity = award_by_work.get(str(correction.work_id))
-        if activity is None:
+        original = award_by_work.get(str(correction.work_id))
+        meeting = meetings.get(correction.class_id)
+        if original:
+            award, activity, source = original
+            discipline_id = award.discipline_id
+        else:
             activity = work_activity(work) if work else dict(
                 title='Проверенная работа', kind='other', kind_label=POINT_KINDS['other'], max_points=None,
             )
+            source = (work.day, work.group_id) if work else (campus_day(correction.created_at), None)
+            discipline_id = work.discipline_id if work else None
         items.append(register_row(
             correction, grade, key=f'assignment-correction-{correction.id}', activity=activity, teacher=teacher,
             entry_type='correction', points=correction.corrected_points - correction.previous_points,
             result='Корректировка оценки за работу', note=correction.reason, work=work,
-            meeting=meetings.get(correction.class_id), discipline_id=discipline_ids.get(grade.subject),
+            meeting=meeting, discipline_id=discipline_id, source_day=source[0], group_id=source[1],
             previous_points=correction.previous_points, corrected_points=correction.corrected_points,
         ))
     for correction, award, teacher in db.execute(manual_correction_query(student_id)):
+        activity, source = awards_by_id[award.id]
         items.append(register_row(
             correction, grades[award.grade_id], key=f'manual-correction-{correction.id}',
-            activity=awards_by_id[award.id], teacher=teacher,
+            activity=activity, teacher=teacher,
             entry_type='correction', points=correction.corrected_points - correction.previous_points,
             result='Корректировка начисления', note=correction.reason, meeting=meetings.get(award.class_id),
-            discipline_id=award.discipline_id,
+            discipline_id=award.discipline_id, source_day=source[0], group_id=source[1],
             previous_points=correction.previous_points, corrected_points=correction.corrected_points,
         ))
-    return {'items': sorted(items, key=lambda row: (row['created_at'] or '', row['id']), reverse=True)}
+    summary = student_semester_points(db, student_id, grades, works, items)
+    return {'items': sorted(items, key=lambda row: (row['created_at'] or '', row['id']), reverse=True), **summary}

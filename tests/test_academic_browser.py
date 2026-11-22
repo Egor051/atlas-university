@@ -12,7 +12,9 @@ from playwright.sync_api import expect
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
+from app.academic_points import award_points
 from app.db import CAMPUS_TZ, User, campus_today
+from app.schedule_occurrences import campus_instant
 from app.university_db import Discipline, Teacher, TeachingAssignment
 from app.workspace_db import AcademicTerm, Classroom, GroupMember, ScheduledClass, TeachingLoad
 from test_frontend_contracts import frontend_browser, frontend_page, isolated_frontend_server
@@ -36,9 +38,19 @@ def frontend_server():
             room = db.scalar(select(Classroom.id).where(Classroom.code=='А-301'))
             today = campus_today()
             first, last = today-timedelta(days=40),today+timedelta(days=30)
-            db.add(AcademicTerm(academic_year=today.year,number=1,group_id=member.group_id,starts_on=first,
+            db.add(AcademicTerm(academic_year=today.year,number=2,group_id=member.group_id,starts_on=first,
                 ends_on=last,weekdays='0123456',periods=[{'kind':'teaching','start':str(first),'end':str(last)}],
                 source='Изолированный браузерный тест'))
+            teaching_load = db.get(TeachingLoad, load)
+            for year, days, points in [(today.year,60,4),(today.year-1,160,9)]:
+                first = today-timedelta(days=days)
+                last = first+timedelta(days=15)
+                db.add(AcademicTerm(academic_year=year,number=1,group_id=member.group_id,starts_on=first,
+                    ends_on=last,weekdays='0123456',periods=[],source='Изолированный браузерный тест'))
+                award = award_points(db,student_id=student,discipline_id=teaching_load.discipline_id,points=points,
+                    actor_id=teaching_load.assignment.teacher.user_id,source_kind='teacher',source_id=f'{load}:test-{year}',
+                    title=f'Практикум {year}',kind='practice')
+                award.created_at=campus_instant(first)
             for offset, title, kind, actual_teacher in [(3,'Учебная лекция для журнала','lecture',teacher),
                     (8,'Лабораторная работа для справки','lab',teacher),
                     (22,'Практическое занятие для справки','practice',teacher),
@@ -102,10 +114,13 @@ def test_student_combined_table_and_session(frontend_page,width):
     expect(page).to_have_url(base + '/app/grades')
     title = page.get_by_role('heading', name='Успеваемость и посещаемость', exact=True)
     expect(title).to_be_visible()
-    assert page.get_by_role('table').count()==2
+    summary = page.get_by_role('table',name='Семестровая успеваемость')
+    expect(summary).to_be_visible()
+    assert page.get_by_role('table').count()==3
     assert page.evaluate('document.documentElement.scrollWidth === innerWidth')
     points_panel = page.locator('[data-type="points"]')
     points = points_panel.get_by_role('table')
+    page.get_by_label('Учебный год').select_option(label='Без семестра')
     points_panel.get_by_label('Дисциплина',exact=True).select_option(label='Алгоритмы и структуры данных')
     expect(points).to_contain_text('Перенесённый остаток')
     sort = points.get_by_role('button',name='Баллы',exact=True)
@@ -126,6 +141,52 @@ def test_student_combined_table_and_session(frontend_page,width):
     expect(page.get_by_text('В плане', exact=True)).to_have_count(0)
     expect(page.get_by_text('Нужно внимание', exact=True)).to_have_count(0)
     assert page.evaluate('document.documentElement.scrollWidth === innerWidth')
+
+
+def test_semester_switch_and_live_award_keep_details(frontend_page):
+    student,base = frontend_page
+    student.set_viewport_size({'width':360,'height':900})
+    student.clock.install()
+    enter(student,base,0,'/app/grades')
+    summary = student.get_by_role('table',name='Семестровая успеваемость')
+    subject = summary.get_by_role('button',name='Алгоритмы и структуры данных')
+    earned = subject.locator('xpath=ancestor::tr').locator('.academic-earned')
+    history = student.get_by_role('table',name='История начислений')
+    year = campus_today().year
+    student.get_by_label('Семестр',exact=True).select_option(f'{year}-1')
+    expect(earned).to_have_text('4')
+    expect(history).to_contain_text(f'Практикум {year}')
+    student.get_by_label('Учебный год').select_option(str(year-1))
+    expect(earned).to_have_text('9')
+    expect(history).to_contain_text(f'Практикум {year-1}')
+    student.get_by_label('Учебный год').select_option(str(year))
+    expect(student.get_by_label('Семестр',exact=True)).to_have_value(f'{year}-2')
+    before = int(earned.inner_text())
+    subject.press('Enter')
+    expect(subject).to_have_attribute('aria-expanded','true')
+
+    with student.context.browser.new_context() as teacher_context:
+        teacher = teacher_context.new_page()
+        enter(teacher,base,3,'/app/teaching')
+        load = teacher.request.get(base+'/api/teaching').json()['items'][0]
+        roster = f"{base}/api/teaching/{load['id']}"
+        student_id = student.request.get(base+'/api/me').json()['id']
+        grade = next(person['grade'] for person in teacher.request.get(roster).json()['students'] if person['id']==student_id)
+        reply = teacher.request.post(roster+'/points',headers={'Origin':base,'X-Requested-With':'ATLAS'},
+            data={'student_id':student_id,'points':5,'version':grade['version'],'kind':'project',
+                  'title':'Курсовой макет','reason':'Учтён результат проекта'})
+        assert reply.status==201, reply.text()
+
+    student.clock.fast_forward(21000)
+    expect(earned).to_have_text(str(before+5))
+    expect(subject).to_have_attribute('aria-expanded','true')
+    expect(subject).to_be_focused()
+    details = student.locator('#'+subject.get_attribute('aria-controls'))
+    expect(details.get_by_role('heading',name='Динамика начислений')).to_be_visible()
+    details.get_by_role('link',name='К истории дисциплины').click()
+    expect(student.get_by_role('heading',name='История начислений')).to_be_focused()
+    expect(history).to_contain_text('Курсовой макет')
+    assert student.evaluate('document.documentElement.scrollWidth === innerWidth')
 
 
 def test_substitute_teacher_marks_actual_class_from_schedule(frontend_page):
