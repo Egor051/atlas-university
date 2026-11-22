@@ -148,7 +148,7 @@
       '<p class="academic-semester-empty" data-semester-empty hidden></p>'+
       '<table class="academic-semester-table" aria-labelledby="academic-semester"><thead><tr>'+
       '<th scope="col">Дисциплина</th><th scope="col">Набрано</th><th scope="col" aria-label="Выполнение">'+
-      '<span class="academic-percent-label">Выполнение</span><span class="academic-percent-short" aria-hidden="true">%</span></th>'+
+      '<span class="academic-percent-label">Выполнение</span><span class="academic-percent-short">%</span></th>'+
       '</tr></thead><tbody></tbody></table></section>';
   }
   function semesterDetails(row){
